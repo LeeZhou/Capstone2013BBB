@@ -29,6 +29,13 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.jme3.util.TangentBinormalGenerator;
+import com.jme3.niftygui.NiftyJmeDisplay;
+import de.lessvoid.nifty.Nifty;
+import de.lessvoid.nifty.builder.ScreenBuilder;
+import de.lessvoid.nifty.builder.LayerBuilder;
+import de.lessvoid.nifty.builder.PanelBuilder;
+import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
+import de.lessvoid.nifty.screen.DefaultScreenController;
 
 
 public class Main extends SimpleApplication {
@@ -52,15 +59,16 @@ public class Main extends SimpleApplication {
     private Sphere c;   
     private ParticleEmitter fire;    
     private BitmapText ch;
-    private DirectionalLight sun;
+    private DirectionalLight sun;    
     private Spatial ramp_geo;
-    private Control ramp_phy;
+    private Control ramp_phy;    
     
-    
+    // array of ball instances
     private RigidBodyControl [] ball_phy;
     private SphereCollisionShape [] ballShape;
     private Geometry [] ball;
     
+    // Hardcoded number of players for testing
     private int numberPlayer = 3;
     
     public static void main(String[] args) {
@@ -74,9 +82,7 @@ public class Main extends SimpleApplication {
     {
         floor = new Box(Vector3f.ZERO, 10f, 0.1f, 5f);
         floor.scaleTextureCoordinates(new Vector2f(3, 6));
-    }    
-
-    
+    }        
     
     @Override
     public void simpleInitApp() {        
@@ -93,7 +99,6 @@ public class Main extends SimpleApplication {
         setUpKeys();        
         initMaterials();        
         initFloor();
-        initCrossHairs();
         InitObj();
         
     }
@@ -158,6 +163,7 @@ public class Main extends SimpleApplication {
     
     
     private void createBallArray(int number){
+        
         c = new Sphere(20, 20, 0.5f, true, false);
         c.setTextureMode(Sphere.TextureMode.Projected);
         TangentBinormalGenerator.generate(c);  
@@ -179,44 +185,8 @@ public class Main extends SimpleApplication {
             
         }
         
-    }
-    
-    /*
-    //initialize ball
-    private void createBall(){
-        c = new Sphere(20, 20, 0.5f, true, false);
-        c.setTextureMode(Sphere.TextureMode.Projected);
-        TangentBinormalGenerator.generate(c);               
-        
-        
-        // make ball 1 and attach to the map, applying physics
-        ball = new Geometry("Ball1", c);            
-        ball1Shape = new SphereCollisionShape(0.5f);
-        ball.setMaterial(mat_lit);
-        ball.setLocalTranslation(2,gax,3);
-        rootNode.attachChild(ball);
-        ball_phy = new RigidBodyControl(ball1Shape,0.9f);
-        ball.addControl(ball_phy); 
-        bulletAppState.getPhysicsSpace().add(ball_phy);
-        ball_phy.setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
-        ball_phy.addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
-        ball_phy.setRestitution(1f);
-        
-        // make ball 2 and attach to the map, applying phsyics
-        ball2 = new Geometry("Ball2", c);
-        ball2Shape = new SphereCollisionShape(0.5f);
-        ball2.setMaterial(mat_rock);
-        ball2.setLocalTranslation(4,gax,3);
-        rootNode.attachChild(ball2);
-        ball2_phy = new RigidBodyControl(ball2Shape,0.9f);
-        ball2.addControl(ball2_phy);        
-        bulletAppState.getPhysicsSpace().add(ball2_phy); 
-        ball2_phy.setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
-        ball2_phy.addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);        
-        ball2_phy.setRestitution(1f);
-    }    
-    */
-    
+    }   
+  
         private void createObstacle(){
         bear_geo = assetManager.loadModel("Models/bear.j3o");
         bear_geo.setLocalTranslation(0f,0f,0f);        
@@ -233,7 +203,6 @@ public class Main extends SimpleApplication {
         rootNode.attachChild(ramp_geo);
         ramp_phy = new RigidBodyControl(0f);
         ramp_geo.addControl(ramp_phy);
-        //bear_phy.setPhysicsLocation(new Vector3f(0f,10f,0f));
         bulletAppState.getPhysicsSpace().add(ramp_phy);
     }
     
@@ -299,9 +268,7 @@ public class Main extends SimpleApplication {
         
         //System Keys
         
-        //inputManager.addMapping("Pause",  new KeyTrigger(KeyInput.KEY_P));
         inputManager.addMapping("Reset",  new KeyTrigger(KeyInput.KEY_P));
-        //inputManager.addListener(this, "Pause");
         inputManager.addListener(actionListener, "Reset");
         
         
@@ -310,6 +277,7 @@ public class Main extends SimpleApplication {
         inputManager.addMapping("Dash", new KeyTrigger(KeyInput.KEY_M));
         inputManager.addListener(actionListener, "Jump");
         inputManager.addListener(actionListener, "Dash");
+        
         // Player 1 keybindings and listener
         
         inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_F));
@@ -339,55 +307,7 @@ public class Main extends SimpleApplication {
     
     private AnalogListener analogListener = new AnalogListener() {
         public void onAnalog(String binding, float value, float tpf) {
-            //Old Code
-            //player 1 actions listener
-            /*
-                if (binding.equals("Left")) {                
-                    Vector3f v = ball.getLocalTranslation();
-                    ball.setLocalTranslation(v.x + value*speed*3, v.y, v.z);
-                    ball.rotate(-value*speed*3, 0, 0);
-                    ball_phy.applyForce(new Vector3f(-3f, 0, 0),new Vector3f(-3f, 0, 0)); // push the ball foward
-                } else if (binding.equals("Right")) {
-                    Vector3f v = ball.getLocalTranslation();
-                    ball.setLocalTranslation(v.x - value*speed*3, v.y, v.z);
-                    ball.rotate(value*speed*3, 0, 0);
-                    ball_phy.applyForce(new Vector3f(3f, 0, 0),new Vector3f(3f, 0, 0));
-                } else if (binding.equals("Up")) {
-                    Vector3f v = ball.getLocalTranslation();
-                    ball.setLocalTranslation(v.x , v.y , v.z + value*speed*3);
-                    ball.rotate(0, 0, -value*speed*3);
-                    ball_phy.applyForce(new Vector3f(0, 0, -3f),new Vector3f(0, 0, -3f));
-                } else if (binding.equals("Down")) {
-                    Vector3f v = ball.getLocalTranslation();
-                    ball.setLocalTranslation(v.x , v.y, v.z - value*speed*3);
-                    ball.rotate(0, 0, value*speed*3);
-                    ball_phy.applyForce(new Vector3f(0, 0, 3f),new Vector3f(0, 0, 3f));
-                }           
-            
-            //player 2 action listener
            
-              if (binding.equals("Left2")) {
-                  Vector3f v = ball2.getLocalTranslation();
-                  ball2.setLocalTranslation(v.x + value*speed*3, v.y, v.z);
-                  ball2.rotate(-value*speed*3, 0, 0);
-                  ball2_phy.applyForce(new Vector3f(-3f, 0, 0),new Vector3f(-3f, 0, 0)); // push the ball foward
-              } else if (binding.equals("Right2")) {
-                  Vector3f v = ball2.getLocalTranslation();
-                  ball2.setLocalTranslation(v.x - value*speed*3, v.y, v.z);
-                  ball2.rotate(value*speed*3, 0, 0);
-                  ball2_phy.applyForce(new Vector3f(3f, 0, 0),new Vector3f(3f, 0, 0));
-              } else if (binding.equals("Up2")) {
-                  Vector3f v = ball2.getLocalTranslation();
-                  ball2.setLocalTranslation(v.x , v.y , v.z + value*speed*3);
-                  ball2.rotate(0, 0, -value*speed*3);
-                  ball2_phy.applyForce(new Vector3f(0, 0, -3f),new Vector3f(0, 0, -3f));
-              } else if (binding.equals("Down2")) {
-                  Vector3f v = ball2.getLocalTranslation();
-                  ball2.setLocalTranslation(v.x , v.y, v.z - value*speed*3);
-                  ball2.rotate(0, 0, value*speed*3);
-                  ball2_phy.applyForce(new Vector3f(0, 0, 3f),new Vector3f(0, 0, 3f));
-              }          
-             */       
             // New code: maps ball array (HARDCODED)
             // player 1 action listener
             if (binding.equals("Left")) {                
@@ -457,8 +377,7 @@ public class Main extends SimpleApplication {
                     ball[2].setLocalTranslation(v.x , v.y, v.z - value*speed*3);
                     ball[2].rotate(0, 0, value*speed*3);
                     ball_phy[2].applyForce(new Vector3f(0, 0, 3f),new Vector3f(0, 0, 3f));
-                }    
-            
+                }                
         }
     };     
     
@@ -470,7 +389,8 @@ public class Main extends SimpleApplication {
             System.out.println("RESET");
           
       } else if (name.equals("Jump") && !keyPressed) {
-          if(getyLocation() < 0.5 && getyLocation() > 0){
+          Vector3f v = ball[0].getLocalTranslation(); 
+          if( v.y < 0.6 && v.y > 0){
             ball_phy[0].applyImpulse(new Vector3f(0, 7f, 0), Vector3f.ZERO );               
           }             
       } else if(name.equals("Dash") && !keyPressed){                       
@@ -481,12 +401,6 @@ public class Main extends SimpleApplication {
       }
     }
   };    
-    
-    //return y coords
-    private float getyLocation(){
-        Vector3f v = ball[0].getLocalTranslation(); 
-        return v.y;
-    }    
 
     
     // Listens to collision between objects
@@ -498,18 +412,8 @@ public class Main extends SimpleApplication {
             }    
             }
         }
-    };
-    
-    // creates a cool crosshair
-    protected void initCrossHairs() {
-        ch = new BitmapText(guiFont, false);        
-        ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);
-        ch.setText("+");        // fake crosshairs :)
-        ch.setLocalTranslation( // center
-        settings.getWidth() / 2 - guiFont.getCharSet().getRenderedSize() / 3 * 2,
-        settings.getHeight() / 2 + ch.getLineHeight() / 2, 0);
-        guiNode.attachChild(ch);
-  }     
+    };  
+
     
     @Override
     public void simpleUpdate(float tpf) {
@@ -522,7 +426,7 @@ public class Main extends SimpleApplication {
       if(loc1.y < 0 && isBall1Alive){
           System.out.println("Ball 1 DEAD");   
           isBall1Alive = false;           
-          if(!isBall2Alive || isBall3Alive){
+          if(!isBall2Alive || !isBall3Alive){
               ch.detachAllChildren();
           }
           ch = new BitmapText(guiFont, false);  
