@@ -24,6 +24,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.control.Control;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
@@ -57,7 +58,8 @@ public class Main extends SimpleApplication {
     private ParticleEmitter fire;    
     private BitmapText ch;
     private DirectionalLight sun;
-    
+    private Spatial ramp_geo;
+    private Control ramp_phy;
     
     public static void main(String[] args) {
         Main app = new Main();
@@ -70,6 +72,7 @@ public class Main extends SimpleApplication {
         floor = new Box(Vector3f.ZERO, 10f, 0.1f, 5f);
         floor.scaleTextureCoordinates(new Vector2f(3, 6));
     }    
+
     
     
     @Override
@@ -89,6 +92,7 @@ public class Main extends SimpleApplication {
         initFloor();
         initCrossHairs();
         createPowerUp();
+        createRamp();
         
     }
     
@@ -209,6 +213,11 @@ public class Main extends SimpleApplication {
         floor_phy.setKinematic(false);
         bulletAppState.getPhysicsSpace().add(floor_phy);
     }   
+    
+    private void ramp(){
+        
+        
+    }
 
     @Override
     public void simpleRender(RenderManager rm) {
@@ -411,6 +420,17 @@ public class Main extends SimpleApplication {
         bear_phy.setPhysicsLocation(new Vector3f(0f,10f,0f));
         bulletAppState.getPhysicsSpace().add(bear_phy);
     }
+    
+     private void createRamp(){
+        ramp_geo = assetManager.loadModel("Models/ramp.j3o");
+        ramp_geo.setLocalTranslation(4f,0f,-1f);        
+        rootNode.attachChild(ramp_geo);
+        ramp_phy = new RigidBodyControl(0f);
+        ramp_geo.addControl(ramp_phy);
+        //bear_phy.setPhysicsLocation(new Vector3f(0f,10f,0f));
+        bulletAppState.getPhysicsSpace().add(ramp_phy);
+    }
+    
  
 
 }
