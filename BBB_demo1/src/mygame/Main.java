@@ -35,7 +35,7 @@ public class Main extends SimpleApplication {
     private Boolean isRunning = true;
     private Boolean isBall1Alive = true;
     private Boolean isBall2Alive = true;   
-    private boolean gameEnd = false;    
+    private Boolean gameEnd = false;    
     
     private BulletAppState bulletAppState;
     private Geometry ball;
@@ -56,8 +56,7 @@ public class Main extends SimpleApplication {
     private Sphere c;   
     private ParticleEmitter fire;    
     private BitmapText ch;
-    
-    
+    private DirectionalLight sun;
     
     
     public static void main(String[] args) {
@@ -74,29 +73,15 @@ public class Main extends SimpleApplication {
     
     
     @Override
-    public void simpleInitApp() {
-        
-        // Set camera
-        flyCam.setEnabled(false);        
-        cam.setLocation(new Vector3f(0f,15f,20f));        
-        cam.setAxes(new Vector3f(0f,0f,0f),new Vector3f(0f,0f,0f),new Vector3f(-100f,0f,0f));
-        cam.lookAt(new Vector3f(0f,0f,0f), cam.getUp());
+    public void simpleInitApp() {        
         
         /** Set up Physics Game */
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
-        
-        c = new Sphere(20, 20, 0.5f, true, false);               
+        bulletAppState.getPhysicsSpace().addCollisionListener(physicsCollisionListener);               
  
-        // Initialize map, objects, UI
-        
-        /** Must add a light to make the lit object visible! */
-        DirectionalLight sun = new DirectionalLight();
-        sun.setDirection(new Vector3f(1,0,-2).normalizeLocal());
-        sun.setColor(ColorRGBA.White);
-        rootNode.addLight(sun);      
-        
-        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
+        // Initialize map, objects, UI             
+        setCam();
         setUpLight();
         setUpKeys();        
         initMaterials();
@@ -104,7 +89,21 @@ public class Main extends SimpleApplication {
         initFloor();
         initCrossHairs();
         createPowerUp();
-        bulletAppState.getPhysicsSpace().addCollisionListener(physicsCollisionListener);
+        
+    }
+    
+    // set camera position and light
+    private void setCam(){
+        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
+        flyCam.setEnabled(false);        
+        cam.setLocation(new Vector3f(0f,15f,20f));        
+        cam.setAxes(new Vector3f(0f,0f,0f),new Vector3f(0f,0f,0f),new Vector3f(-100f,0f,0f));
+        cam.lookAt(new Vector3f(0f,0f,0f), cam.getUp());
+        sun = new DirectionalLight();
+        sun.setDirection(new Vector3f(1,0,-2).normalizeLocal());
+        sun.setColor(ColorRGBA.White);
+        rootNode.addLight(sun);     
+        
     }
     
     //Initialize power-up objects
@@ -135,6 +134,7 @@ public class Main extends SimpleApplication {
     
     //initialize ball
     private void createBall(){
+        c = new Sphere(20, 20, 0.5f, true, false);
         c.setTextureMode(Sphere.TextureMode.Projected);
         TangentBinormalGenerator.generate(c);        
         
@@ -348,7 +348,7 @@ public class Main extends SimpleApplication {
     
     // creates a cool crosshair
     protected void initCrossHairs() {
-        BitmapText ch = new BitmapText(guiFont, false);        
+        ch = new BitmapText(guiFont, false);        
         ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);
         ch.setText("+");        // fake crosshairs :)
         ch.setLocalTranslation( // center
