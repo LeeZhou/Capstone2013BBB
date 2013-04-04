@@ -146,7 +146,7 @@ public class Main extends SimpleApplication {
         bulletAppState.getPhysicsSpace().enableDebug(assetManager);
         
         //Selected map
-        currentmap = 4;
+        currentmap = 1;
         
         //Load Map texture and object arraies
         maptexture = selectedMapTexture(currentmap);

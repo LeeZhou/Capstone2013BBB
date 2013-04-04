@@ -29,13 +29,8 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.jme3.util.TangentBinormalGenerator;
-import com.jme3.niftygui.NiftyJmeDisplay;
-import de.lessvoid.nifty.Nifty;
-import de.lessvoid.nifty.builder.ScreenBuilder;
-import de.lessvoid.nifty.builder.LayerBuilder;
-import de.lessvoid.nifty.builder.PanelBuilder;
-import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
-import de.lessvoid.nifty.screen.DefaultScreenController;
+import java.math.BigInteger;
+
 
 
 public class Main extends SimpleApplication {
@@ -61,7 +56,11 @@ public class Main extends SimpleApplication {
     private BitmapText ch;
     private DirectionalLight sun;    
     private Spatial ramp_geo;
-    private Control ramp_phy;    
+    private Control ramp_phy;   
+    private int abilitySize = 2;
+    BigInteger[] p1Abilities = new BigInteger[abilitySize];
+    BigInteger[] p2Abilities = new BigInteger[abilitySize]; 
+
     
     // array of ball instances
     private RigidBodyControl [] ball_phy;
@@ -83,10 +82,11 @@ public class Main extends SimpleApplication {
         floor = new Box(Vector3f.ZERO, 10f, 0.1f, 5f);
         floor.scaleTextureCoordinates(new Vector2f(3, 6));
     }        
+ 
     
     @Override
     public void simpleInitApp() {        
-        
+          
         /** Set up Physics Game */
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
@@ -100,6 +100,8 @@ public class Main extends SimpleApplication {
         initMaterials();        
         initFloor();
         InitObj();
+        initAbilities(p1Abilities);
+        initAbilities(p2Abilities);
         
     }
     
@@ -388,12 +390,12 @@ public class Main extends SimpleApplication {
       } else if (name.equals("Reset") && !keyPressed){
             System.out.println("RESET");
           
-      } else if (name.equals("Jump") && !keyPressed) {
+      } else if (name.equals("Jump") && !keyPressed && !onCooldown(p1Abilities,1)) {
           Vector3f v = ball[0].getLocalTranslation(); 
           if( v.y < 0.6 && v.y > 0){
             ball_phy[0].applyImpulse(new Vector3f(0, 7f, 0), Vector3f.ZERO );               
           }             
-      } else if(name.equals("Dash") && !keyPressed){                       
+      } else if(name.equals("Dash") && !keyPressed && !onCooldown(p2Abilities,1)){                       
             Vector3f v = ball_phy[1].getLinearVelocity();
             if(v.x != 0 && v.z!=0){
                 ball_phy[1].applyImpulse(new Vector3f(v.x*20,0,v.z*20), Vector3f.ZERO);
@@ -491,6 +493,23 @@ public class Main extends SimpleApplication {
         rootNode.detachChild(fire); 
         
     }    
+    
+     public void initAbilities(BigInteger[] temp) {
+        for (int i = 0; i < abilitySize; i++) {
+            temp[i] = new BigInteger(String.valueOf(System.nanoTime()));
+        }
+    }
+    
+    public boolean onCooldown(BigInteger[] temp, int i) {
+        if (temp[i].compareTo(new BigInteger(String.valueOf(System.nanoTime()))) < 0) {
+            temp[i] = new BigInteger(String.valueOf(System.nanoTime())).add(
+                    new BigInteger("5000000000"));
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
  
 
 }
