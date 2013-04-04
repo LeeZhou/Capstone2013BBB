@@ -40,15 +40,9 @@ public class Main extends SimpleApplication {
     private Boolean gameEnd = false;    
     
     private BulletAppState bulletAppState;
-    //private Geometry ball;
-    //private Geometry ball2;
     private Spatial bear_geo;
     private RigidBodyControl floor_phy;
-    //private RigidBodyControl ball_phy;
-    //private RigidBodyControl ball2_phy;
     private RigidBodyControl bear_phy;
-    //private SphereCollisionShape ball1Shape;
-    //private SphereCollisionShape ball2Shape;
     private static final Box floor;
     private Material floor_mat;
     private Material mat_lit;
@@ -107,7 +101,6 @@ public class Main extends SimpleApplication {
     // initialize balls, obstacle and pwrups
     private void InitObj(){
         variableInit();
-        //createBall();
         createPowerUp();
         createRamp();
         createBallArray(numberPlayer);
@@ -116,7 +109,8 @@ public class Main extends SimpleApplication {
     private void variableInit(){
         isRunning = true;
         isBall1Alive = true;
-        isBall2Alive = true;   
+        isBall2Alive = true;  
+        isBall3Alive = true;
         gameEnd = false;
        
         
@@ -522,10 +516,10 @@ public class Main extends SimpleApplication {
       
       //Check if ball is within the map; if not, destroy the ball
       //System.out.println(tpf);
-      Vector3f loc = ball_phy[0].getPhysicsLocation();
+      Vector3f loc1 = ball_phy[0].getPhysicsLocation();
       Vector3f loc2 = ball_phy[1].getPhysicsLocation();
       Vector3f loc3 = ball_phy[2].getPhysicsLocation();
-      if(loc.y < 0 && isBall1Alive){
+      if(loc1.y < 0 && isBall1Alive){
           System.out.println("Ball 1 DEAD");   
           isBall1Alive = false;           
           if(!isBall2Alive || isBall3Alive){
@@ -558,7 +552,7 @@ public class Main extends SimpleApplication {
           bulletAppState.getPhysicsSpace().remove(ball_phy[1]);
           rootNode.detachChild(ball[1]);
       } else if(loc3.y < 0 && isBall3Alive){
-          System.out.println("Ball 2 Dead");
+          System.out.println("Ball 3 Dead");
           isBall3Alive = false;            
           if(!isBall2Alive || !isBall1Alive){
               ch.detachAllChildren();
