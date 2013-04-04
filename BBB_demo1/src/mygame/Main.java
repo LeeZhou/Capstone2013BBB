@@ -64,6 +64,7 @@ public class Main extends SimpleApplication {
     public static void main(String[] args) {
         Main app = new Main();
         app.start();
+
     }
     /*floor stuff*/   
     
@@ -83,16 +84,32 @@ public class Main extends SimpleApplication {
         stateManager.attach(bulletAppState);
         bulletAppState.getPhysicsSpace().addCollisionListener(physicsCollisionListener);               
  
-        // Initialize map, objects, UI             
+        // Initialize map and keys
+        variableInit();
         setCam();
         setUpLight();
         setUpKeys();        
-        initMaterials();
-        createBall();
+        initMaterials();        
         initFloor();
         initCrossHairs();
+        InitObj();
+        
+    }
+    
+    // initialize balls, obstacle and pwrups
+    private void InitObj(){
+        variableInit();
+        createBall();
         createPowerUp();
         createRamp();
+    }
+    
+    private void variableInit(){
+        isRunning = true;
+        isBall1Alive = true;
+        isBall2Alive = true;   
+        gameEnd = false;
+       
         
     }
     
@@ -169,6 +186,26 @@ public class Main extends SimpleApplication {
         ball2_phy.setRestitution(1f);
     }    
     
+        private void createObstacle(){
+        bear_geo = assetManager.loadModel("Models/bear.j3o");
+        bear_geo.setLocalTranslation(0f,0f,0f);        
+        rootNode.attachChild(bear_geo);
+        bear_phy = new RigidBodyControl(2f);
+        bear_geo.addControl(bear_phy);
+        bear_phy.setPhysicsLocation(new Vector3f(0f,10f,0f));
+        bulletAppState.getPhysicsSpace().add(bear_phy);
+    }
+    
+     private void createRamp(){
+        ramp_geo = assetManager.loadModel("Models/ramp.j3o");
+        ramp_geo.setLocalTranslation(4f,0f,-1f);        
+        rootNode.attachChild(ramp_geo);
+        ramp_phy = new RigidBodyControl(0f);
+        ramp_geo.addControl(ramp_phy);
+        //bear_phy.setPhysicsLocation(new Vector3f(0f,10f,0f));
+        bulletAppState.getPhysicsSpace().add(ramp_phy);
+    }
+    
     //Initialize material and texture
     public void initMaterials(){
         
@@ -213,11 +250,6 @@ public class Main extends SimpleApplication {
         floor_phy.setKinematic(false);
         bulletAppState.getPhysicsSpace().add(floor_phy);
     }   
-    
-    private void ramp(){
-        
-        
-    }
 
     @Override
     public void simpleRender(RenderManager rm) {
@@ -327,12 +359,12 @@ public class Main extends SimpleApplication {
           
       } else if (name.equals("Jump") && !keyPressed) {
           if(getyLocation() < 0.5 && getyLocation() > 0){
-            ball2_phy.applyImpulse(new Vector3f(0, 10f, 0), Vector3f.ZERO );               
+            ball2_phy.applyImpulse(new Vector3f(0, 7f, 0), Vector3f.ZERO );               
           }             
       } else if(name.equals("Dash") && !keyPressed){                       
             Vector3f v = ball_phy.getLinearVelocity();
             if(v.x != 0 && v.z!=0){
-                ball_phy.applyImpulse(new Vector3f(v.x*50,0,v.z*50), Vector3f.ZERO);
+                ball_phy.applyImpulse(new Vector3f(v.x*20,0,v.z*20), Vector3f.ZERO);
             }
       }
     }
@@ -408,29 +440,19 @@ public class Main extends SimpleApplication {
       } 
       if(!isBall1Alive && !isBall2Alive && !gameEnd){
           gameEnd = true;
-          createObstacle();
+          destroyObj();
+          InitObj();
       }
   }
-    private void createObstacle(){
-        bear_geo = assetManager.loadModel("Models/bear.j3o");
-        bear_geo.setLocalTranslation(0f,0f,0f);        
-        rootNode.attachChild(bear_geo);
-        bear_phy = new RigidBodyControl(2f);
-        bear_geo.addControl(bear_phy);
-        bear_phy.setPhysicsLocation(new Vector3f(0f,10f,0f));
-        bulletAppState.getPhysicsSpace().add(bear_phy);
-    }
     
-     private void createRamp(){
-        ramp_geo = assetManager.loadModel("Models/ramp.j3o");
-        ramp_geo.setLocalTranslation(4f,0f,-1f);        
-        rootNode.attachChild(ramp_geo);
-        ramp_phy = new RigidBodyControl(0f);
-        ramp_geo.addControl(ramp_phy);
-        //bear_phy.setPhysicsLocation(new Vector3f(0f,10f,0f));
-        bulletAppState.getPhysicsSpace().add(ramp_phy);
-    }
-    
+    // destroy objects
+    private void destroyObj(){
+        ch.detachAllChildren();
+        bulletAppState.getPhysicsSpace().remove(ramp_phy);
+        rootNode.detachChild(ramp_geo);
+        rootNode.detachChild(fire); 
+        
+    }    
  
 
 }
