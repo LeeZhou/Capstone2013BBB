@@ -73,8 +73,9 @@ public class Main extends SimpleApplication {
     BigInteger[] p1Abilities = new BigInteger[abilitySize];
     BigInteger[] p2Abilities = new BigInteger[abilitySize];    
     
-    //Testing for Destory
-    RigidBodyControl[] ctrl;
+    //Destory Map stuff
+    BigInteger deathClk = new BigInteger(String.valueOf(
+            System.nanoTime())).add(new BigInteger("5000000000"));
     
     //Map data
     private int[] map1 = {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -447,6 +448,7 @@ public class Main extends SimpleApplication {
           gameEnd = true;
           createObstacle();
       }
+      deathTimer();
   }
     private void createObstacle(){
         bear_geo = assetManager.loadModel("Models/bear.j3o");
@@ -645,8 +647,23 @@ public class Main extends SimpleApplication {
     
     //Destory a piece of the Map
     public void destoryMap(int i) {
-        rootNode.getChild(i).getControl(RigidBodyControl.class).setMass(100f);
-        //rootNode.detachChildAt(i);
+        rootNode.getChild(i).getControl(RigidBodyControl.class).setMass(1f);
+        rootNode.getChild(i).getControl(RigidBodyControl.class).setGravity(
+                new Vector3f(0f,-10f,0f));
+        rootNode.getChild(i).getControl(RigidBodyControl.class).activate();
+    }
+    
+    //Timer to destory the Map
+    public void deathTimer() {
+        if (deathClk.compareTo(new BigInteger(String.valueOf(
+                System.nanoTime()))) < 0 && counter < boardLength*boardWidth) {
+            destoryMap(counter);
+            deathClk = new BigInteger(String.valueOf(System.nanoTime())).add(
+                    new BigInteger("5000000000"));
+            System.out.println(counter);
+            counter++;
+            
+        }
     }
     
     public void initAbilities(BigInteger[] temp) {
