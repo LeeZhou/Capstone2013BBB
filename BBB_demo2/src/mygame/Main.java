@@ -471,9 +471,6 @@ public class Main extends SimpleApplication {
         int check = 0;
         Vector3f coord = new Vector3f(0,0,0);
         
-        //Iitiallize RigidBotyControl array
-        ctrl = new RigidBodyControl[boardLength*boardWidth];
-        
         //populate populate map in a spiral fashion
         while (i < boardLength*boardWidth) {
             //Create a Tile
