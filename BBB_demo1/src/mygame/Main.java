@@ -39,6 +39,7 @@ public class Main extends SimpleApplication {
     private Boolean isBall1Alive = true;
     private Boolean isBall2Alive = true;   
     private Boolean isBall3Alive = true;
+    private Boolean isBall4Alive = true;
     private Boolean gameEnd = false;    
     
     private BulletAppState bulletAppState;
@@ -49,6 +50,8 @@ public class Main extends SimpleApplication {
     private Material floor_mat;
     private Material mat_lit;
     private Material mat_rock;
+    private Material mat_dirt;
+    private Material mat_road;
     private Material mat_red;
     private final float gax = (float) 0.5;       
     private Sphere c;   
@@ -68,7 +71,7 @@ public class Main extends SimpleApplication {
     private Geometry [] ball;
     
     // Hardcoded number of players for testing
-    private int numberPlayer = 3;
+    private int numberPlayer = 4;
     
     public static void main(String[] args) {
         Main app = new Main();
@@ -118,6 +121,7 @@ public class Main extends SimpleApplication {
         isBall1Alive = true;
         isBall2Alive = true;  
         isBall3Alive = true;
+        isBall4Alive = true;
         gameEnd = false;
        
         
@@ -175,8 +179,27 @@ public class Main extends SimpleApplication {
         for(int i = 0; i < number; i++){
             ball[i] = new Geometry("Ball "+i, c);
             ballShape[i] = new SphereCollisionShape(0.5f);
-            ball[i].setMaterial(mat_lit);
-            ball[i].setLocalTranslation(4+2*i,gax,4-2*i);
+            if(i==0)
+            {
+                ball[i].setMaterial(mat_lit);
+                ball[i].setLocalTranslation(-8,gax,4);
+            }
+            else if(i==1)
+            {
+                ball[1].setMaterial(mat_rock);
+                ball[i].setLocalTranslation(-8,gax,-3);
+            }
+            else if(i==2)
+            {
+                ball[i].setMaterial(mat_dirt);
+                ball[i].setLocalTranslation(8,gax,-3);
+            }
+            else if(i==3)
+            {
+                ball[i].setMaterial(mat_road);
+                ball[i].setLocalTranslation(8,gax,4);
+            }
+            
             rootNode.attachChild(ball[i]);
             ball_phy[i] = new RigidBodyControl(ballShape[i],0.9f);
             ball[i].addControl(ball_phy[i]); 
@@ -235,7 +258,26 @@ public class Main extends SimpleApplication {
         mat_rock.setBoolean("UseMaterialColors",true);    
         mat_rock.setColor("Specular",ColorRGBA.White);
         mat_rock.setColor("Diffuse",ColorRGBA.White);
-        mat_rock.setFloat("Shininess", 5f); // [1,128]   
+        mat_rock.setFloat("Shininess", 5f); // [1,128]
+        
+        //Defining Ball 3 material
+        mat_dirt = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        mat_dirt.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Terrain/splat/dirt.jpg"));
+        mat_dirt.setTexture("NormalMap", assetManager.loadTexture("Textures/Terrain/splat/dirt.jpg"));
+        mat_dirt.setBoolean("UseMaterialColors",true);    
+        mat_dirt.setColor("Specular",ColorRGBA.White);
+        mat_dirt.setColor("Diffuse",ColorRGBA.White);
+        mat_dirt.setFloat("Shininess", 5f); // [1,128]
+        
+        //Defining Ball 4 material
+        mat_road = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        mat_road.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Terrain/splat/road.jpg"));
+        mat_road.setTexture("NormalMap", assetManager.loadTexture("Textures/Terrain/splat/road.jpg"));
+        mat_road.setBoolean("UseMaterialColors",true);    
+        mat_road.setColor("Specular",ColorRGBA.White);
+        mat_road.setColor("Diffuse",ColorRGBA.White);
+        mat_road.setFloat("Shininess", 5f); // [1,128]
+        
     }
     
     //Initalizing floor
@@ -282,28 +324,37 @@ public class Main extends SimpleApplication {
         
         // Player 1 keybindings and listener
         
-        inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_F));
-        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_H));
-        inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_T));
-        inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_G));        
+        inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
+        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
+        inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_S));        
         
         inputManager.addListener(analogListener,new String[]{ "Left","Right", "Up", "Down"});
-      
+        
         // Player 2 keybindings and listener
-        inputManager.addMapping("Left2", new KeyTrigger(KeyInput.KEY_J));
-        inputManager.addMapping("Right2", new KeyTrigger(KeyInput.KEY_L));
-        inputManager.addMapping("Up2", new KeyTrigger(KeyInput.KEY_I));
-        inputManager.addMapping("Down2", new KeyTrigger(KeyInput.KEY_K));
+        
+        inputManager.addMapping("Left2", new KeyTrigger(KeyInput.KEY_F));
+        inputManager.addMapping("Right2", new KeyTrigger(KeyInput.KEY_H));
+        inputManager.addMapping("Up2", new KeyTrigger(KeyInput.KEY_T));
+        inputManager.addMapping("Down2", new KeyTrigger(KeyInput.KEY_G));        
         
         inputManager.addListener(analogListener,new String[]{ "Left2","Right2", "Up2", "Down2"});
-        
+      
         // Player 3 keybindings and listener
-        inputManager.addMapping("Left3", new KeyTrigger(KeyInput.KEY_NUMPAD4));
-        inputManager.addMapping("Right3", new KeyTrigger(KeyInput.KEY_NUMPAD6));
-        inputManager.addMapping("Up3", new KeyTrigger(KeyInput.KEY_NUMPAD8));
-        inputManager.addMapping("Down3", new KeyTrigger(KeyInput.KEY_NUMPAD5));
+        inputManager.addMapping("Left3", new KeyTrigger(KeyInput.KEY_J));
+        inputManager.addMapping("Right3", new KeyTrigger(KeyInput.KEY_L));
+        inputManager.addMapping("Up3", new KeyTrigger(KeyInput.KEY_I));
+        inputManager.addMapping("Down3", new KeyTrigger(KeyInput.KEY_K));
         
         inputManager.addListener(analogListener,new String[]{ "Left3","Right3", "Up3", "Down3"});
+        
+        // Player 4 keybindings and listener
+        inputManager.addMapping("Left4", new KeyTrigger(KeyInput.KEY_NUMPAD4));
+        inputManager.addMapping("Right4", new KeyTrigger(KeyInput.KEY_NUMPAD6));
+        inputManager.addMapping("Up4", new KeyTrigger(KeyInput.KEY_NUMPAD8));
+        inputManager.addMapping("Down4", new KeyTrigger(KeyInput.KEY_NUMPAD5));
+        
+        inputManager.addListener(analogListener,new String[]{ "Left4","Right4", "Up4", "Down4"});
         
     }
     
@@ -379,7 +430,31 @@ public class Main extends SimpleApplication {
                     ball[2].setLocalTranslation(v.x , v.y, v.z - value*speed*3);
                     ball[2].rotate(0, 0, value*speed*3);
                     ball_phy[2].applyForce(new Vector3f(0, 0, 3f),new Vector3f(0, 0, 3f));
-                }                
+                }
+              
+              
+              //player 4 action listener
+              if (binding.equals("Left4")) {                
+                    Vector3f v = ball[3].getLocalTranslation();
+                    ball[3].setLocalTranslation(v.x + value*speed*3, v.y, v.z);
+                    ball[3].rotate(-value*speed*3, 0, 0);
+                    ball_phy[3].applyForce(new Vector3f(-3f, 0, 0),new Vector3f(-3f, 0, 0)); // push the ball foward
+                } else if (binding.equals("Right4")) {
+                    Vector3f v = ball[3].getLocalTranslation();
+                    ball[3].setLocalTranslation(v.x - value*speed*3, v.y, v.z);
+                    ball[3].rotate(value*speed*3, 0, 0);
+                    ball_phy[3].applyForce(new Vector3f(3f, 0, 0),new Vector3f(3f, 0, 0));
+                } else if (binding.equals("Up4")) {
+                    Vector3f v = ball[3].getLocalTranslation();
+                    ball[3].setLocalTranslation(v.x , v.y , v.z + value*speed*3);
+                    ball[3].rotate(0, 0, -value*speed*3);
+                    ball_phy[3].applyForce(new Vector3f(0, 0, -3f),new Vector3f(0, 0, -3f));
+                } else if (binding.equals("Down4")) {
+                    Vector3f v = ball[3].getLocalTranslation();
+                    ball[3].setLocalTranslation(v.x , v.y, v.z - value*speed*3);
+                    ball[3].rotate(0, 0, value*speed*3);
+                    ball_phy[3].applyForce(new Vector3f(0, 0, 3f),new Vector3f(0, 0, 3f));
+                }
         }
     };     
     
@@ -425,10 +500,11 @@ public class Main extends SimpleApplication {
       Vector3f loc1 = ball_phy[0].getPhysicsLocation();
       Vector3f loc2 = ball_phy[1].getPhysicsLocation();
       Vector3f loc3 = ball_phy[2].getPhysicsLocation();
+      Vector3f loc4 = ball_phy[3].getPhysicsLocation();
       if(loc1.y < 0 && isBall1Alive){
           System.out.println("Ball 1 DEAD");   
           isBall1Alive = false;           
-          if(!isBall2Alive || !isBall3Alive){
+          if(!isBall2Alive || !isBall3Alive || !isBall4Alive){
               ch.detachAllChildren();
           }
           ch = new BitmapText(guiFont, false);  
@@ -442,9 +518,9 @@ public class Main extends SimpleApplication {
           bulletAppState.getPhysicsSpace().remove(ball_phy[0]);
           rootNode.detachChild(ball[0]);
       } else if(loc2.y < 0 && isBall2Alive){
-          System.out.println("Ball 2 Dead");
+          System.out.println("Ball 2 DEAD");
           isBall2Alive = false;            
-          if(!isBall1Alive || !isBall3Alive){
+          if(!isBall1Alive || !isBall3Alive || !isBall4Alive){
               ch.detachAllChildren();
           }
           ch = new BitmapText(guiFont, false); 
@@ -460,7 +536,7 @@ public class Main extends SimpleApplication {
       } else if(loc3.y < 0 && isBall3Alive){
           System.out.println("Ball 3 Dead");
           isBall3Alive = false;            
-          if(!isBall2Alive || !isBall1Alive){
+          if(!isBall2Alive || !isBall1Alive || !isBall4Alive){
               ch.detachAllChildren();
           }
           ch = new BitmapText(guiFont, false); 
@@ -474,11 +550,29 @@ public class Main extends SimpleApplication {
           bulletAppState.getPhysicsSpace().remove(ball_phy[2]);
           rootNode.detachChild(ball[2]);
       
+        } else if(loc4.y < 0 && isBall4Alive){
+          System.out.println("Ball 4 Dead");
+          isBall4Alive = false;            
+          if(!isBall2Alive || !isBall1Alive || !isBall3Alive){
+              ch.detachAllChildren();
+          }
+          ch = new BitmapText(guiFont, false); 
+          ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
+          ch.setText("Ball 4 DEAD");        
+          ch.setColor(ColorRGBA.Red);
+          ch.setLocalTranslation(
+          settings.getWidth() / 3f,
+          settings.getHeight() / 4f, 0);
+          guiNode.attachChild(ch);
+          bulletAppState.getPhysicsSpace().remove(ball_phy[3]);
+          rootNode.detachChild(ball[3]);
+      
         }
       
       
       
-      if(!isBall1Alive && !isBall2Alive && !isBall3Alive && !gameEnd){
+      
+      if(!isBall1Alive && !isBall2Alive && !isBall3Alive && !isBall4Alive && !gameEnd){
           gameEnd = true;
           destroyObj();
           InitObj();
