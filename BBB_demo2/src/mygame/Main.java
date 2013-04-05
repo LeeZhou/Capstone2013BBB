@@ -42,9 +42,6 @@ public class Main extends SimpleApplication {
     private Boolean gameEnd = false;    
     
     private BulletAppState bulletAppState;
-    private Spatial bear_geo;
-    private RigidBodyControl bear_phy;
-
 
     private Material mat_lit;
     private Material mat_rock;
@@ -55,14 +52,11 @@ public class Main extends SimpleApplication {
     private Sphere c;   
     private ParticleEmitter fire;    
     private BitmapText ch;
-    private DirectionalLight sun;    
-    private Spatial ramp_geo;
-    private Control ramp_phy;   
+    private DirectionalLight sun;       
     private int abilitySize = 2;
     BigInteger[] p1Abilities = new BigInteger[abilitySize];
     BigInteger[] p2Abilities = new BigInteger[abilitySize]; 
     private int counter = 0;
-
      
     //board parameter
     private int boardLength;
@@ -72,8 +66,7 @@ public class Main extends SimpleApplication {
     private int[] mapobjects;    
         
     //Destory Map stuff
-    BigInteger deathClk = new BigInteger(String.valueOf(
-            System.nanoTime())).add(new BigInteger("5000000000"));
+    private BigInteger deathClk;
     
     //Map data
     private int[] map1 = {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -147,14 +140,11 @@ public class Main extends SimpleApplication {
         stateManager.attach(bulletAppState);
         bulletAppState.getPhysicsSpace().addCollisionListener(physicsCollisionListener);               
         //Selected map
-        currentmap = 1;
+        currentmap = 0;
         
         //Load Map texture and object arraies
         maptexture = selectedMapTexture(currentmap);
-        mapobjects = selectedMapObject(currentmap);
-        
-        //creates Map
-        
+        mapobjects = selectedMapObject(currentmap);        
         
         // Initialize map and keys
         variableInit();
@@ -173,7 +163,6 @@ public class Main extends SimpleApplication {
         variableInit();
         createFloor(currentmap);
         createPowerUp();
-        createRamp();
         createBallArray(numberPlayer);
     }
     
@@ -184,7 +173,8 @@ public class Main extends SimpleApplication {
         isBall3Alive = true;
         isBall4Alive = true;
         gameEnd = false;      
-        
+        deathClk = new BigInteger(String.valueOf(
+            System.nanoTime())).add(new BigInteger("5000000000"));        
     }
     
     // set camera position and light
@@ -198,8 +188,7 @@ public class Main extends SimpleApplication {
         sun = new DirectionalLight();
         sun.setDirection(new Vector3f(1,0,-2).normalizeLocal());
         sun.setColor(ColorRGBA.White);
-        rootNode.addLight(sun);     
-        
+        rootNode.addLight(sun);             
     }
     
     //Initialize power-up objects
@@ -260,39 +249,16 @@ public class Main extends SimpleApplication {
                 ball[i].setMaterial(mat_road);
                 ball[i].setLocalTranslation(2*boardLength -2,gax,0);
             }
-            
-
-            
+                        
             rootNode.attachChild(ball[i]);
             ball_phy[i] = new RigidBodyControl(ballShape[i],0.9f);
             ball[i].addControl(ball_phy[i]); 
             bulletAppState.getPhysicsSpace().add(ball_phy[i]);
             ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
             ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
-            ball_phy[i].setRestitution(1f);
-            
-        }
-        
-    }   
-  
-        private void createObstacle(){
-        bear_geo = assetManager.loadModel("Models/bear.j3o");
-        bear_geo.setLocalTranslation(0f,0f,0f);        
-        rootNode.attachChild(bear_geo);
-        bear_phy = new RigidBodyControl(2f);
-        bear_geo.addControl(bear_phy);
-        bear_phy.setPhysicsLocation(new Vector3f(0f,10f,0f));
-        bulletAppState.getPhysicsSpace().add(bear_phy);
-    }
-    
-     private void createRamp(){
-        ramp_geo = assetManager.loadModel("Models/ramp.j3o");
-        ramp_geo.setLocalTranslation(4f,0f,-1f);        
-        rootNode.attachChild(ramp_geo);
-        ramp_phy = new RigidBodyControl(0f);
-        ramp_geo.addControl(ramp_phy);
-        bulletAppState.getPhysicsSpace().add(ramp_phy);
-    }
+            ball_phy[i].setRestitution(1f);            
+        }        
+    }       
     
     //Initialize material and texture
     public void initMaterials(){
@@ -350,8 +316,7 @@ public class Main extends SimpleApplication {
 
     private void setUpKeys() {
         
-        //System Keys
-        
+        //System Keys        
         inputManager.addMapping("Reset",  new KeyTrigger(KeyInput.KEY_P));
         inputManager.addListener(actionListener, "Reset");
         
@@ -377,8 +342,7 @@ public class Main extends SimpleApplication {
         inputManager.addMapping("Up2", new KeyTrigger(KeyInput.KEY_T));
         inputManager.addMapping("Down2", new KeyTrigger(KeyInput.KEY_G));
         
-        inputManager.addListener(analogListener,new String[]{ "Left2","Right2", "Up2", "Down2"});
-        
+        inputManager.addListener(analogListener,new String[]{ "Left2","Right2", "Up2", "Down2"});        
         
         // Player 3 keybindings and listener
         inputManager.addMapping("Left3", new KeyTrigger(KeyInput.KEY_J));
@@ -425,7 +389,7 @@ public class Main extends SimpleApplication {
                     ball_phy[0].applyForce(new Vector3f(0, 0, 3f),new Vector3f(0, 0, 3f));
                 }           
             
-            //player 2 action listener
+                //player 2 action listener
            
               if (binding.equals("Left2")) {                
                     Vector3f v = ball[1].getLocalTranslation();
@@ -613,8 +577,7 @@ public class Main extends SimpleApplication {
           bulletAppState.getPhysicsSpace().remove(ball_phy[3]);
           rootNode.detachChild(ball[3]);
 
-         }
-      
+         }      
       
       if(!isBall1Alive && !isBall2Alive && !isBall3Alive && !isBall4Alive && !gameEnd){
           gameEnd = true;
@@ -628,9 +591,7 @@ public class Main extends SimpleApplication {
     private void destroyObj(){
         rootNode.detachAllChildren();
         counter = 0;
-        ch.detachAllChildren();
-        bulletAppState.getPhysicsSpace().remove(ramp_phy);
-        
+        ch.detachAllChildren();        
     }    
     
      public void initAbilities(BigInteger[] temp) {
@@ -725,8 +686,8 @@ public class Main extends SimpleApplication {
         tile.getControl(RigidBodyControl.class).setKinematic(false);
         bulletAppState.getPhysicsSpace().add(tile);
         rootNode.attachChildAt(tile, i);
-        Vector3f objcoord = new Vector3f(loc.x,loc.y+1,loc.z);
-        loadObject(objcoord,mapobjects[i],tile);
+        Vector3f objcoord = new Vector3f(loc.x,loc.y,loc.z);
+        loadObject(loc,mapobjects[i],tile);
 
     }
     
@@ -824,10 +785,10 @@ public class Main extends SimpleApplication {
         else {
             return;
         }
-        temp.setLocalTranslation(loc);        
+        temp.setLocalTranslation(loc.mult(2));        
         rootNode.attachChild(temp);
         temp.addControl(new RigidBodyControl(0f));
-        temp.getControl(RigidBodyControl.class).setPhysicsLocation(loc);
+        //temp.getControl(RigidBodyControl.class).setPhysicsLocation(loc);
         bulletAppState.getPhysicsSpace().add(temp.getControl(RigidBodyControl.class));
     }
     
