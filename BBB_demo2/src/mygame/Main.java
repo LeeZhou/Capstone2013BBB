@@ -178,12 +178,13 @@ public class Main extends SimpleApplication {
     
     // set camera position and light
     private void setCam(){
+        
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
         flyCam.setEnabled(false);        
-        //cam.setLocation(new Vector3f(0f,15f,20f)); 
-        cam.setLocation(new Vector3f(0f, 25f,35f));
+        cam.setLocation(new Vector3f(11f,20f,25f)); 
+        //cam.setLocation(new Vector3f(0f, 25f,35f));
         cam.setAxes(new Vector3f(0f,0f,0f),new Vector3f(0f,0f,0f),new Vector3f(-100f,0f,0f));
-        cam.lookAt(new Vector3f(0f,0f,0f), cam.getUp());
+        cam.lookAt(new Vector3f(11f,-25f,-10f), cam.getUp());
         sun = new DirectionalLight();
         sun.setDirection(new Vector3f(1,0,-2).normalizeLocal());
         sun.setColor(ColorRGBA.White);
