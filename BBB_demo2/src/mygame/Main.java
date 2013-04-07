@@ -329,10 +329,14 @@ public class Main extends SimpleApplication {
         
         
         // Ability keybindings and listener
-        inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addMapping("Dash", new KeyTrigger(KeyInput.KEY_M));
+        inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_X));
+        inputManager.addMapping("Dash", new KeyTrigger(KeyInput.KEY_B));
+        inputManager.addMapping("Mine", new KeyTrigger(KeyInput.KEY_COMMA));
+        inputManager.addMapping("Ghost", new KeyTrigger(KeyInput.KEY_NUMPAD2));
         inputManager.addListener(actionListener, "Jump");
         inputManager.addListener(actionListener, "Dash");
+        inputManager.addListener(actionListener, "Mine");
+        inputManager.addListener(actionListener, "Ghost");
         
         // Player 1 keybindings and listener
         
@@ -483,6 +487,26 @@ public class Main extends SimpleApplication {
             if(v.x != 0 && v.z!=0){
                 ball_phy[1].applyImpulse(new Vector3f(v.x*20,0,v.z*20), Vector3f.ZERO);
             }
+      } else if(name.equals("Mine") && !keyPressed){
+      //MINE
+                Sphere c = new Sphere(5, 5, 0.2f, true, false);
+                c.setTextureMode(Sphere.TextureMode.Projected);
+                TangentBinormalGenerator.generate(c);
+                Geometry mine=new Geometry("Mine",c);
+                Material min_mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+                TextureKey key2 = new TextureKey("Textures/Terrain/Rock/Rock.PNG");
+                key2.setGenerateMips(true);
+                min_mat.setBoolean("UseMaterialColors",true);   
+                min_mat.setColor("Specular",ColorRGBA.Blue);
+                min_mat.setColor("Diffuse",ColorRGBA.Blue);
+                mine.setMaterial(min_mat);
+                rootNode.attachChild(mine);
+                mine.setLocalTranslation(ball_phy[2].getPhysicsLocation());
+                RigidBodyControl mine_phy=new RigidBodyControl(1f);
+                mine.addControl(mine_phy);
+                bulletAppState.getPhysicsSpace().add(mine);
+                mine_phy.setMass(1000f);
+                mine_phy.setRestitution(3f);
       }
     }
   };    
@@ -491,7 +515,7 @@ public class Main extends SimpleApplication {
     // Listens to collision between objects
     private PhysicsCollisionListener physicsCollisionListener = new PhysicsCollisionListener(){        
         public void collision(PhysicsCollisionEvent event) {
-            if (event.getNodeA().getName().equals("Ball1") || event.getNodeB().getName().equals("Ball1l")) {                
+            if (event.getNodeA().getName().equals("Ball1") || event.getNodeB().getName().equals("Ball1")) {                
             if (event.getNodeA().getName().equals("Ball2") || event.getNodeB().getName().equals("Ball2")) {
                 System.out.println("Ouch my balls!!!!!!!!"); 
             }    
