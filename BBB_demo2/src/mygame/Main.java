@@ -19,12 +19,10 @@ import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.control.Control;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
@@ -67,6 +65,8 @@ public class Main extends SimpleApplication {
         
     //Destory Map stuff
     private BigInteger deathClk;
+    private Spatial[] mapObj;
+    private int objNum;
     
     //Map data
     private int[] map1 = {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -102,19 +102,18 @@ public class Main extends SimpleApplication {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    private int[] obj3 = {5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 
-        5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 
-        0, 0, 0, 8, 0, 0, 0, 0, 8, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 6, 7, 0, 0, 
-        0, 0, 6, 7, 0, 0};
+    private int[] obj3 = {5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 5, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 
+        8, 0, 0, 8, 0, 0, 0, 0, 0, 8, 0, 0, 0, 7, 0, 6, 0, 0, 6, 0, 7, 0, 0};
     private int[] obj4 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 
         0, 4, 4, 0, 4, 0, 0, 0, 4, 0, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    private int[] obj5 = {0, 0, 0, 0, 6, 0, 7, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 
-        0, 0, 0, 7, 0, 6, 0, 0, 0, 0, 0, 0, 7, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 7, 
-        0, 0, 0, 0, 7, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    private int[] obj5 = {0, 0, 0, 0, 7, 0, 6, 0, 0, 0, 0, 0, 0, 7, 7, 0, 0, 0, 
+        0, 0, 0, 6, 0, 7, 0, 0, 0, 0, 0, 0, 6, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 6, 
+        0, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
     // array of ball instances
     private RigidBodyControl [] ball_phy;
@@ -626,6 +625,12 @@ public class Main extends SimpleApplication {
             //Create a Tile
             makeMapTile(coord.set((boardLength-x-1), -.1f, 
                     (boardWidth-y-1)), i++);
+        
+        //Create Obj array if current map has objects to load    
+        if (currentmap > 1) {
+            mapObj = new Spatial[20];
+            objNum = 0;
+        }
             
             /*Algorithm for spiral: Move straight until 
              * it reaches a corner, then turn Right and continue 
@@ -667,6 +672,7 @@ public class Main extends SimpleApplication {
                 y++;
             }
         }
+        objNum = 0;
     }
     
     //create a Map tile with randomly generated terrain to attach to Map
@@ -753,7 +759,7 @@ public class Main extends SimpleApplication {
             key = new TextureKey("Textures/Terrain/Pond/Pond.jpg");
         }
         else if (i == 2) {
-            key = new TextureKey("Textures/Terrain/splat/dirt.jpg");            
+            key = new TextureKey("Textures/lava.png");            
         }
         else {
             key = new TextureKey("Textures/Terrain/splat/dirt.jpg");
@@ -761,35 +767,49 @@ public class Main extends SimpleApplication {
         return key;
     }
     
-    //Attach an object to the if it exsist on the selected map
+        //Attach an object to the if it exsist on the selected map
     public void loadObject(Vector3f loc, int i, Geometry j) {
         Spatial temp;
         if (i == 4) {
             temp = assetManager.loadModel("Models/boulder_02.j3o");
-            temp.scale(.2f);
+            temp.scale(.4f);
         }
         else if (i == 5) {
             temp = assetManager.loadModel("Models/ground_pallisade.j3o");
-            temp.scale(.9f);
+            temp.scale(2f);
         }
         else if (i == 6) {
             temp = assetManager.loadModel("Models/ramp.j3o");
+            temp.rotate(0, 29.8f, 0);
         }
         else if (i == 7) {
             temp = assetManager.loadModel("Models/ramp.j3o");
-            temp.rotate(0, 180, 0);
+            temp.rotate(0, 45.55f, 0);
         }
         else if (i == 8) {
             temp = assetManager.loadModel("Models/barrel.j3o");
+            temp.scale(2);
         }
         else {
             return;
         }
-        temp.setLocalTranslation(loc.mult(2));        
+        
+        temp.setLocalTranslation(loc.mult(2));
+        mapObj[objNum++] = temp;
         rootNode.attachChild(temp);
         temp.addControl(new RigidBodyControl(0f));
-        //temp.getControl(RigidBodyControl.class).setPhysicsLocation(loc);
         bulletAppState.getPhysicsSpace().add(temp.getControl(RigidBodyControl.class));
+    }
+    
+    //Destory Object on the map when tile is destoryed
+    public void onDestroy(int i) {
+        if (mapobjects[i] > 0 && currentmap > 1) {
+            mapObj[objNum].getControl(RigidBodyControl.class).setMass(1f);
+            mapObj[objNum].getControl(RigidBodyControl.class).setGravity(
+                new Vector3f(0f,-10f,0f));
+            mapObj[objNum].getControl(RigidBodyControl.class).activate();
+            objNum++;
+        }
     }
     
     //Destory a piece of the Map
@@ -798,6 +818,7 @@ public class Main extends SimpleApplication {
         rootNode.getChild(i).getControl(RigidBodyControl.class).setGravity(
                 new Vector3f(0f,-10f,0f));
         rootNode.getChild(i).getControl(RigidBodyControl.class).activate();
+        onDestroy(i);
     }
     
     //Timer to destory the Map
