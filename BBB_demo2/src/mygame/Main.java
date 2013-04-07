@@ -231,22 +231,22 @@ public class Main extends SimpleApplication {
             if(i==0)
             {
             ball[i].setMaterial(mat_lit);
-            ball[i].setLocalTranslation(0,gax,0);
+            ball[i].setLocalTranslation(1,gax,1);
             }
             else if(i==1)
             {
                 ball[1].setMaterial(mat_rock);
-                ball[i].setLocalTranslation(0,gax,2*boardWidth -2);
+                ball[i].setLocalTranslation(1,gax,2*boardWidth-3);
             }
             else if(i==2)
             {
                 ball[i].setMaterial(mat_dirt);
-                ball[i].setLocalTranslation(2*boardLength -2,gax,2*boardWidth -2);
+                ball[i].setLocalTranslation(2*boardLength-3,gax,2*boardWidth-3);
             }
             else if(i==3)
             {
                 ball[i].setMaterial(mat_road);
-                ball[i].setLocalTranslation(2*boardLength -2,gax,0);
+                ball[i].setLocalTranslation(2*boardLength-3,gax,1);
             }
                         
             rootNode.attachChild(ball[i]);
