@@ -29,7 +29,6 @@ import com.jme3.texture.Texture;
 import com.jme3.util.TangentBinormalGenerator;
 import java.math.BigInteger;
 
-
 public class Main extends SimpleApplication {
   
     private Boolean isRunning = true;
@@ -50,11 +49,15 @@ public class Main extends SimpleApplication {
     private Sphere c;   
     private ParticleEmitter fire;    
     private BitmapText ch;
-    private DirectionalLight sun;       
-    private int abilitySize = 2;
-    BigInteger[] p1Abilities = new BigInteger[abilitySize];
-    BigInteger[] p2Abilities = new BigInteger[abilitySize]; 
+    private DirectionalLight sun;     
+    
+    //Ability variables
     private int counter = 0;
+    BigInteger[] abilityMapping = new BigInteger[4];
+    
+    //Buff varaibles
+    BigInteger buffTimer = new BigInteger(String.valueOf(
+            System.nanoTime())).add(new BigInteger("5000000000"));
      
     //board parameter
     private int boardLength;
@@ -81,8 +84,7 @@ public class Main extends SimpleApplication {
     private int[] map3 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-        0, 0, 0, 0, 0, 0};
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     private int[] map4 = {3, 0, 0, 0, 3, 3, 3, 0, 0, 0, 3, 0, 0, 3, 3, 0, 0, 3, 
         0, 0, 0, 3, 3, 3, 0, 0, 0, 3, 0, 0, 3, 3, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3, 
         0, 3, 0, 0, 3, 0, 3, 0, 0, 0, 0, 0, 3, 0, 3, 0, 0, 3, 0, 0, 0, 3, 0, 0, 
@@ -127,10 +129,8 @@ public class Main extends SimpleApplication {
     public static void main(String[] args) {
         Main app = new Main();
         app.start();
+    } 
 
-    }
-    /*floor stuff*/   
- 
     
     @Override
     public void simpleInitApp() {        
@@ -153,15 +153,13 @@ public class Main extends SimpleApplication {
         setUpKeys();        
         initMaterials();        
         InitObj();
-        initAbilities(p1Abilities);
-        initAbilities(p2Abilities);
-        
+        initAbilities(abilityMapping);
     }
     
     // initialize balls, obstacle and pwrups
     private void InitObj(){
         variableInit();
-        ballSpeed = new int[numberPlayer];
+        ballSpeed = new int [numberPlayer];
         createFloor(currentmap);
         createPowerUp();
         createBallArray(numberPlayer);
@@ -201,7 +199,7 @@ public class Main extends SimpleApplication {
     }
     
     //Initialize power-up objects
-    private void createPowerUp(){        
+    private void createPowerUp(){
         //create and edit properties
         fire = 
            new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 30);
@@ -223,7 +221,7 @@ public class Main extends SimpleApplication {
         fire.getParticleInfluencer().setVelocityVariation(0.1f);
         fire.setLocalTranslation(new Vector3f(boardWidth+2f,0.1f,boardLength-3f));        
         //place on the map
-        rootNode.attachChild(fire);         
+        rootNode.attachChild(fire);
     }
     
     
@@ -241,31 +239,32 @@ public class Main extends SimpleApplication {
             if(i==0)
             {
             ball[i].setMaterial(mat_lit);
-            ball[i].setLocalTranslation(1,gax,1);
+            ball[i].setLocalTranslation(1.5f,gax,1.5f);
             }
             else if(i==1)
             {
                 ball[1].setMaterial(mat_rock);
-                ball[i].setLocalTranslation(1,gax,2*boardWidth-3);
+                ball[i].setLocalTranslation(1.5f,gax,2*boardWidth-3.5f);
             }
             else if(i==2)
             {
                 ball[i].setMaterial(mat_dirt);
-                ball[i].setLocalTranslation(2*boardLength-3,gax,2*boardWidth-3);
+                ball[i].setLocalTranslation(2*boardLength-3.5f,gax,2*boardWidth-3.5f);
             }
             else if(i==3)
             {
                 ball[i].setMaterial(mat_road);
-                ball[i].setLocalTranslation(2*boardLength-3,gax,1);
+                ball[i].setLocalTranslation(2*boardLength-3.5f,gax,1.5f);
             }
-            ballSpeed[i] = 1;            
+            ballSpeed[i] = 1;     
             rootNode.attachChild(ball[i]);
             ball_phy[i] = new RigidBodyControl(ballShape[i],0.9f);
             ball[i].addControl(ball_phy[i]); 
             bulletAppState.getPhysicsSpace().add(ball_phy[i]);
             ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
             ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
-            ball_phy[i].setRestitution(1f);            
+            ball_phy[i].setRestitution(1f);
+            ball_phy[i].setDamping(.4f, .4f);
         }        
     }       
     
@@ -472,7 +471,7 @@ public class Main extends SimpleApplication {
                 }
 
         }
-    };          
+    };     
     
     private ActionListener actionListener = new ActionListener() {
     public void onAction(String name, boolean keyPressed, float tpf) {
@@ -481,15 +480,15 @@ public class Main extends SimpleApplication {
       } else if (name.equals("Reset") && !keyPressed){
             System.out.println("RESET");
           
-      } else if (name.equals("Jump") && !keyPressed && !onCooldown(p1Abilities,1)) {
+      } else if (name.equals("Jump") && !keyPressed && !onCooldown(abilityMapping,0)) {
           ball_phy[0].applyImpulse(new Vector3f(0, 7f, 0), Vector3f.ZERO );               
       
-      } else if(name.equals("Dash") && !keyPressed && !onCooldown(p2Abilities,1)){                       
+      } else if(name.equals("Dash") && !keyPressed && !onCooldown(abilityMapping,1)){                       
             Vector3f v = ball_phy[1].getLinearVelocity();
-            if(v.x != 0 && v.z!=0){
-                ball_phy[1].applyImpulse(new Vector3f(v.x*20,0,v.z*20), Vector3f.ZERO);
+            if(v.x != 0 || v.z!=0){
+                ball_phy[1].applyImpulse(new Vector3f(v.x*2,0,v.z*2), Vector3f.ZERO);
             }
-      } else if(name.equals("Mine") && !keyPressed){
+      } else if(name.equals("Mine") && !keyPressed && !onCooldown(abilityMapping,2)){
       //MINE
                 Sphere c = new Sphere(5, 5, 0.2f, true, false);
                 c.setTextureMode(Sphere.TextureMode.Projected);
@@ -504,17 +503,17 @@ public class Main extends SimpleApplication {
                 mine.setMaterial(min_mat);
                 rootNode.attachChild(mine);
                 mine.setLocalTranslation(ball_phy[2].getPhysicsLocation());
-                RigidBodyControl mine_phy=new RigidBodyControl(1f);
+                RigidBodyControl mine_phy = new RigidBodyControl(1f);
                 mine.addControl(mine_phy);
                 bulletAppState.getPhysicsSpace().add(mine);
                 mine_phy.setMass(1000f);
+                mine_phy.setDamping(0f, 1f); 
                 mine_phy.setGravity(new Vector3f(0f,-10f,0f));
                 mine_phy.setRestitution(3f);
       }
     }
   };    
 
-    
     // Listens to collision between objects
     private PhysicsCollisionListener physicsCollisionListener = new PhysicsCollisionListener(){        
         public void collision(PhysicsCollisionEvent event) {
@@ -523,10 +522,10 @@ public class Main extends SimpleApplication {
                 System.out.println("Ouch my balls!!!!!!!!"); 
             }    
             }
+            
         }
     };  
 
-    
     @Override
     public void simpleUpdate(float tpf) {
       
@@ -628,7 +627,13 @@ public class Main extends SimpleApplication {
         ch.detachAllChildren();        
     }    
     
-//Damage buff
+     public void initAbilities(BigInteger[] temp) {
+        for (int i = 0; i < numberPlayer; i++) {
+            temp[i] = new BigInteger(String.valueOf(System.nanoTime()));
+        }
+    }
+     
+     //Damage buff
      public void buffDamage(int player, boolean on) {
          if (on) {
             ball_phy[player].setRestitution(1f);
@@ -652,6 +657,7 @@ public class Main extends SimpleApplication {
          }
      }
      
+     //Juggernaut buff
      public void buffJugg(int player, boolean on) {//Juggarnaut ability
          if (on) {
             ball_phy[player].setRestitution(.5f);
@@ -663,14 +669,20 @@ public class Main extends SimpleApplication {
             ball_phy[player].setMass(1);
             ballSpeed[player] = 1;   
          }
-     }    
-    
-     public void initAbilities(BigInteger[] temp) {
-        for (int i = 0; i < abilitySize; i++) {
-            temp[i] = new BigInteger(String.valueOf(System.nanoTime()));
-        }
-    }
-    
+     }
+     
+     //Size buff
+     public void buffSize(int player, boolean on) {
+         if (on) {
+            ball[player].scale(2);
+            ball_phy[player].setMass(2);
+         }
+         else {
+            ball[player].scale(1f);
+            ball_phy[player].setMass(1);
+         }
+     }
+     
     public boolean onCooldown(BigInteger[] temp, int i) {
         if (temp[i].compareTo(new BigInteger(String.valueOf(System.nanoTime()))) < 0) {
             temp[i] = new BigInteger(String.valueOf(System.nanoTime())).add(
@@ -696,7 +708,8 @@ public class Main extends SimpleApplication {
         if (currentmap > 1) {
             mapObj = new Spatial[20];
             objNum = 0;
-        }        
+        }
+        
         
         //populate populate map in a spiral fashion
         while (i < boardLength*boardWidth) {
@@ -704,8 +717,6 @@ public class Main extends SimpleApplication {
             makeMapTile(coord.set((boardLength-x-1), -.1f, 
                     (boardWidth-y-1)), i++);
         
-
-            
             /*Algorithm for spiral: Move straight until 
              * it reaches a corner, then turn Right and continue 
              * until all blocks filled*/
@@ -763,10 +774,23 @@ public class Main extends SimpleApplication {
         tile.setMaterial(mat2);
         tile.setLocalTranslation(loc.mult(2));
         tile.addControl(new RigidBodyControl(0.0f));
-        tile.getControl(RigidBodyControl.class).setKinematic(false);
         bulletAppState.getPhysicsSpace().add(tile);
         rootNode.attachChildAt(tile, i);
-        Vector3f objcoord = new Vector3f(loc.x,loc.y,loc.z);
+        if (maptexture[i] == 0) {
+           tile.getControl(RigidBodyControl.class).setFriction(10f);
+           tile.getControl(RigidBodyControl.class);
+        }
+        else if (maptexture[i] == 1) {
+            tile.getControl(RigidBodyControl.class).setFriction(100f);
+            tile.getControl(RigidBodyControl.class);
+        }
+        else if (maptexture[i] == 2) {
+            tile.getControl(RigidBodyControl.class).setEnabled(false);
+        }
+        else {
+            tile.getControl(RigidBodyControl.class).setFriction(100f);
+            tile.getControl(RigidBodyControl.class);
+        }
         loadObject(loc,mapobjects[i],tile);
 
     }
@@ -854,7 +878,7 @@ public class Main extends SimpleApplication {
         }
         else if (i == 6) {
             temp = assetManager.loadModel("Models/ramp.j3o");
-            temp.rotate(0, 29.8f, 0);
+            temp.rotate(0, 29.855f, 0);
         }
         else if (i == 7) {
             temp = assetManager.loadModel("Models/ramp.j3o");
@@ -867,10 +891,10 @@ public class Main extends SimpleApplication {
         else {
             return;
         }
-        
+        loc.y = 0;
         temp.setLocalTranslation(loc.mult(2));
-        mapObj[objNum++] = temp;
-        rootNode.attachChild(temp);
+        mapObj[objNum] = temp;
+        rootNode.attachChild(mapObj[objNum++]);
         temp.addControl(new RigidBodyControl(0f));
         bulletAppState.getPhysicsSpace().add(temp.getControl(RigidBodyControl.class));
     }
@@ -891,6 +915,7 @@ public class Main extends SimpleApplication {
         rootNode.getChild(i).getControl(RigidBodyControl.class).setMass(1f);
         rootNode.getChild(i).getControl(RigidBodyControl.class).setGravity(
                 new Vector3f(0f,-10f,0f));
+        rootNode.getChild(i).getControl(RigidBodyControl.class).setEnabled(true);
         rootNode.getChild(i).getControl(RigidBodyControl.class).activate();
         onDestroy(i);
     }
@@ -902,7 +927,6 @@ public class Main extends SimpleApplication {
             destroyMap(counter);
             deathClk = new BigInteger(String.valueOf(System.nanoTime())).add(
                     new BigInteger("5000000000"));
-            System.out.println(counter);
             counter++;
             
         }
