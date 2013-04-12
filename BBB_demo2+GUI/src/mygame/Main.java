@@ -448,94 +448,45 @@ public class Main extends SimpleApplication {
            
             // New code: maps ball array (HARDCODED)
             // player 1 action listener
-            if (binding.equals("Left")) {                
-                    Vector3f v = ball[0].getLocalTranslation();
-                    ball[0].setLocalTranslation(v.x + value*speed*ballSpeed[0]*3, v.y, v.z);
-                    ball[0].rotate(-value*speed*3, 0, 0);
+            if (binding.equals("Left")) {                     
                     ball_phy[0].applyForce(new Vector3f(-3f*ballSpeed[0], 0, 0),new Vector3f(-3f*ballSpeed[0], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right")) {
-                    Vector3f v = ball[0].getLocalTranslation();
-                    ball[0].setLocalTranslation(v.x - value*speed*ballSpeed[0]*3, v.y, v.z);
-                    ball[0].rotate(value*speed*ballSpeed[0]*3, 0, 0);
+                } else if (binding.equals("Right")) {                   
                     ball_phy[0].applyForce(new Vector3f(3f*ballSpeed[0], 0, 0),new Vector3f(3f*ballSpeed[0], 0, 0));
-                } else if (binding.equals("Up")) {
-                    Vector3f v = ball[0].getLocalTranslation();
-                    ball[0].setLocalTranslation(v.x , v.y , v.z + value*speed*3*ballSpeed[0]);
-                    ball[0].rotate(0, 0, -value*speed*3*ballSpeed[0]);
+                } else if (binding.equals("Up")) {                    
                     ball_phy[0].applyForce(new Vector3f(0, 0, -3f*ballSpeed[0]),new Vector3f(0, 0, -3f*ballSpeed[0]));
                 } else if (binding.equals("Down")) {
-                    Vector3f v = ball[0].getLocalTranslation();
-                    ball[0].setLocalTranslation(v.x , v.y, v.z - value*speed*3*ballSpeed[0]);
-                    ball[0].rotate(0, 0, value*speed*3*ballSpeed[0]);
                     ball_phy[0].applyForce(new Vector3f(0, 0, 3f*ballSpeed[0]),new Vector3f(0, 0, 3f*ballSpeed[0]));
-                }           
-            
+                }                       
                 //player 2 action listener
            
-              if (binding.equals("Left2")) {                
-                    Vector3f v = ball[1].getLocalTranslation();
-                    ball[1].setLocalTranslation(v.x + value*speed*3*ballSpeed[1], v.y, v.z);
-                    ball[1].rotate(-value*speed*3*ballSpeed[1], 0, 0);
+              if (binding.equals("Left2")) {                   
                     ball_phy[1].applyForce(new Vector3f(-3f*ballSpeed[1], 0, 0),new Vector3f(-3f*ballSpeed[1], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right2")) {
-                    Vector3f v = ball[1].getLocalTranslation();
-                    ball[1].setLocalTranslation(v.x - value*speed*3*ballSpeed[1], v.y, v.z);
-                    ball[1].rotate(value*speed*3*ballSpeed[1], 0, 0);
+                } else if (binding.equals("Right2")) {                    
                     ball_phy[1].applyForce(new Vector3f(3f*ballSpeed[1], 0, 0),new Vector3f(3f*ballSpeed[1], 0, 0));
-                } else if (binding.equals("Up2")) {
-                    Vector3f v = ball[1].getLocalTranslation();
-                    ball[1].setLocalTranslation(v.x , v.y , v.z + value*speed*3*ballSpeed[1]);
-                    ball[1].rotate(0, 0, -value*speed*3*ballSpeed[1]);
+                } else if (binding.equals("Up2")) {                    
                     ball_phy[1].applyForce(new Vector3f(0, 0, -3f*ballSpeed[1]),new Vector3f(0, 0, -3f*ballSpeed[1]));
-                } else if (binding.equals("Down2")) {
-                    Vector3f v = ball[1].getLocalTranslation();
-                    ball[1].setLocalTranslation(v.x , v.y, v.z - value*speed*3*ballSpeed[1]);
-                    ball[1].rotate(0, 0, value*speed*3*ballSpeed[1]);
+                } else if (binding.equals("Down2")) {                  
                     ball_phy[1].applyForce(new Vector3f(0, 0, 3f*ballSpeed[1]),new Vector3f(0, 0, 3f*ballSpeed[1]));
                 }      
               
               //player 3 action listener
               if (binding.equals("Left3") && numberPlayer >= 3) {                
-                    Vector3f v = ball[2].getLocalTranslation();
-                    ball[2].setLocalTranslation(v.x + value*speed*3*ballSpeed[2], v.y, v.z);
-                    ball[2].rotate(-value*speed*3*ballSpeed[2], 0, 0);
                     ball_phy[2].applyForce(new Vector3f(-3f*ballSpeed[2], 0, 0),new Vector3f(-3f*ballSpeed[2], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right3")&& numberPlayer >= 3) {
-                    Vector3f v = ball[2].getLocalTranslation();
-                    ball[2].setLocalTranslation(v.x - value*speed*3*ballSpeed[2], v.y, v.z);
-                    ball[2].rotate(value*speed*3*ballSpeed[2], 0, 0);
+                } else if (binding.equals("Right3")&& numberPlayer >= 3) {                    
                     ball_phy[2].applyForce(new Vector3f(3f*ballSpeed[2], 0, 0),new Vector3f(3f*ballSpeed[2], 0, 0));
-                } else if (binding.equals("Up3")&& numberPlayer >= 3) {
-                    Vector3f v = ball[2].getLocalTranslation();
-                    ball[2].setLocalTranslation(v.x , v.y , v.z + value*speed*3*ballSpeed[2]);
-                    ball[2].rotate(0, 0, -value*speed*3*ballSpeed[2]);
+                } else if (binding.equals("Up3")&& numberPlayer >= 3) {                   
                     ball_phy[2].applyForce(new Vector3f(0, 0, -3f*ballSpeed[2]),new Vector3f(0, 0, -3f*ballSpeed[2]));
                 } else if (binding.equals("Down3")&& numberPlayer >= 3) {
-                    Vector3f v = ball[2].getLocalTranslation();
-                    ball[2].setLocalTranslation(v.x , v.y, v.z - value*speed*3*ballSpeed[2]);
-                    ball[2].rotate(0, 0, value*speed*3*ballSpeed[2]);
                     ball_phy[2].applyForce(new Vector3f(0, 0, 3f*ballSpeed[2]),new Vector3f(0, 0, 3f*ballSpeed[2]));
                 } 
                //player 4 action listener
-              if (binding.equals("Left4") && numberPlayer == 4) {                
-                    Vector3f v = ball[3].getLocalTranslation();
-                    ball[3].setLocalTranslation(v.x + value*speed*3*ballSpeed[3], v.y, v.z);
-                    ball[3].rotate(-value*speed*3*ballSpeed[3], 0, 0);
+              if (binding.equals("Left4") && numberPlayer == 4) {  
                     ball_phy[3].applyForce(new Vector3f(-3f*ballSpeed[3], 0, 0),new Vector3f(-3f*ballSpeed[3], 0, 0)); // push the ball foward
                 } else if (binding.equals("Right4") && numberPlayer == 4) {
-                    Vector3f v = ball[3].getLocalTranslation();
-                    ball[3].setLocalTranslation(v.x - value*speed*3*ballSpeed[3], v.y, v.z);
-                    ball[3].rotate(value*speed*3*ballSpeed[3], 0, 0);
                     ball_phy[3].applyForce(new Vector3f(3f*ballSpeed[3], 0, 0),new Vector3f(3f*ballSpeed[3], 0, 0));
                 } else if (binding.equals("Up4")&& numberPlayer == 4) {
-                    Vector3f v = ball[3].getLocalTranslation();
-                    ball[3].setLocalTranslation(v.x , v.y , v.z + value*speed*3*ballSpeed[3]);
-                    ball[3].rotate(0, 0, -value*speed*3*ballSpeed[3]);
                     ball_phy[3].applyForce(new Vector3f(0, 0, -3f*ballSpeed[3]),new Vector3f(0, 0, -3f*ballSpeed[3]));
                 } else if (binding.equals("Down4")&& numberPlayer == 4) {
-                    Vector3f v = ball[3].getLocalTranslation();
-                    ball[3].setLocalTranslation(v.x , v.y, v.z - value*speed*3*ballSpeed[3]);
-                    ball[3].rotate(0, 0, value*speed*3*ballSpeed[3]);
                     ball_phy[3].applyForce(new Vector3f(0, 0, 3f*ballSpeed[3]),new Vector3f(0, 0, 3f*ballSpeed[3]));
                 }
 
