@@ -48,6 +48,18 @@ import de.lessvoid.nifty.examples.controls.dropdown.DropDownDialogController;
 import de.lessvoid.nifty.screen.DefaultScreenController;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.tools.Color;
+import com.jme3.bullet.control.GhostControl;
+import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
+import com.jme3.material.RenderState.BlendMode;
+import com.jme3.math.FastMath;
+import com.jme3.math.Matrix3f;
+import com.jme3.math.Ray;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.scene.Node;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.math.BigInteger;
 
 public class Main extends SimpleApplication {
@@ -59,6 +71,7 @@ public class Main extends SimpleApplication {
     private Boolean isBall4Alive = true;
     private Boolean gameEnd = false;    
     private Boolean isScreenEnd = false;
+    private Boolean isghost=false;
     private int ballLeft;
     
     private BulletAppState bulletAppState;
@@ -68,6 +81,7 @@ public class Main extends SimpleApplication {
     private Material mat_dirt;
     private Material mat_road;
     private Material mat_red;
+    private Material mat_ghost;
     private final float gax = (float) 0.5;   
     
     private Sphere c;   
@@ -87,6 +101,11 @@ public class Main extends SimpleApplication {
     private BigInteger deathClk;
     private Spatial[] mapObj;
     private int objNum;
+    
+    //Ghost Control
+    GhostControl ghost=new GhostControl(new SphereCollisionShape(5));
+    GhostControl ghosts=new GhostControl(new SphereCollisionShape(21));
+    Node gnode = new Node("a ghost-controlled thing");
     
     // array of ball instances
     private RigidBodyControl [] ball_phy;
@@ -331,6 +350,7 @@ public class Main extends SimpleApplication {
             bulletAppState.getPhysicsSpace().add(ball_phy[i]);
             ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
             ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
+            ball_phy[i].setCollisionGroup(2);
             ball_phy[i].setRestitution(1f);            
             ball_phy[i].setDamping(.4f,.4f);
         }        
@@ -402,10 +422,16 @@ public class Main extends SimpleApplication {
         inputManager.addMapping("Dash", new KeyTrigger(KeyInput.KEY_B));
         inputManager.addMapping("Mine", new KeyTrigger(KeyInput.KEY_COMMA));
         inputManager.addMapping("Ghost", new KeyTrigger(KeyInput.KEY_NUMPAD2));
+        inputManager.addMapping("Glue", new KeyTrigger(KeyInput.KEY_Z));
+        inputManager.addMapping("Satellite",new KeyTrigger(KeyInput.KEY_V));
+        inputManager.addMapping("Force Push", new KeyTrigger(KeyInput.KEY_PERIOD));
         inputManager.addListener(actionListener, "Jump");
         inputManager.addListener(actionListener, "Dash");
         inputManager.addListener(actionListener, "Mine");
         inputManager.addListener(actionListener, "Ghost");
+        inputManager.addListener(actionListener, "Glue");
+        inputManager.addListener(actionListener, "Satellite");
+        inputManager.addListener(actionListener, "Force Push");
         
         
         // Player 1 keybindings and listener
@@ -504,7 +530,7 @@ public class Main extends SimpleApplication {
                 ball_phy[1].applyImpulse(new Vector3f(v.x*2,0,v.z*2), Vector3f.ZERO);
             }
       } else if(name.equals("Mine") && !keyPressed && !onCooldown(abilityMapping,2)){
-          Sphere c = new Sphere(5, 5, 0.2f, true, false);
+                Sphere c = new Sphere(5, 5, 0.2f, true, false);
                 c.setTextureMode(Sphere.TextureMode.Projected);
                 TangentBinormalGenerator.generate(c);
                 mine = new Geometry("Mine",c);
@@ -519,12 +545,157 @@ public class Main extends SimpleApplication {
                 mine.setLocalTranslation(ball_phy[2].getPhysicsLocation());
                 mine_phy = new RigidBodyControl(1f);
                 mine.addControl(mine_phy);
+                mine.addControl(ghost);
+                bulletAppState.getPhysicsSpace().add(ghost);
                 bulletAppState.getPhysicsSpace().add(mine);
                 mine_phy.setMass(1000f);
                 mine_phy.setDamping(0f, 1f); 
                 mine_phy.setGravity(new Vector3f(0f,-10f,0f));
                 mine_phy.setRestitution(3f);
                 mineCnt++;
+      }
+      else if(name.equals("Ghost") && !keyPressed)
+      {
+                if(isghost)
+                {
+                    isghost=false;
+                    ball[3].setMaterial(mat_road);
+                }
+                else
+                {   
+                    isghost=true;
+                    gnode.addControl(ghosts);
+                    rootNode.attachChild(gnode);            
+                    mat_ghost= new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+                    mat_ghost.setColor("Color", new ColorRGBA(0,0,0,0.5f));
+                    mat_ghost.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+                    ball[3].setMaterial(mat_ghost);
+                    ball[3].setQueueBucket(Bucket.Transparent);
+                    bulletAppState.getPhysicsSpace().add(ghosts);
+                }
+      }
+      else if(name.equals("Glue") && !keyPressed)
+      {
+                ball_phy[0].setLinearVelocity(new Vector3f(0,0,0));
+      }
+      else if(name.equals("Satellite") && !keyPressed)
+      {
+                Random generator = new Random();
+                int roll = generator.nextInt(3);
+                int roll2 = generator.nextInt(2)+1;
+                int roll3 = generator.nextInt(2)+1;
+                int roll4 = generator.nextInt(4);
+                if(isBall1Alive && roll==0)
+                {
+                    if(roll4==0)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[0].getPhysicsLocation().x+roll2,
+                        ball_phy[0].getPhysicsLocation().y+roll3,
+                        ball_phy[0].getPhysicsLocation().z));
+                    }
+                    else if(roll4==1)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[0].getPhysicsLocation().x-roll2,
+                        ball_phy[0].getPhysicsLocation().y+roll3,
+                        ball_phy[0].getPhysicsLocation().z));
+                    }
+                    else if(roll4==2)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[0].getPhysicsLocation().x+roll2,
+                        ball_phy[0].getPhysicsLocation().y-roll3,
+                        ball_phy[0].getPhysicsLocation().z));
+                    }
+                    else if(roll4==3)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[0].getPhysicsLocation().x-roll2,
+                        ball_phy[0].getPhysicsLocation().y-roll3,
+                        ball_phy[0].getPhysicsLocation().z));
+                    }
+                }
+                else if(isBall3Alive && roll==1)
+                {
+                        if(roll4==0)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[2].getPhysicsLocation().x+roll2,
+                        ball_phy[2].getPhysicsLocation().y+roll3,
+                        ball_phy[2].getPhysicsLocation().z));
+                    }
+                    else if(roll4==1)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[2].getPhysicsLocation().x-roll2,
+                        ball_phy[2].getPhysicsLocation().y+roll3,
+                        ball_phy[2].getPhysicsLocation().z));
+                    }
+                    else if(roll4==2)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[2].getPhysicsLocation().x+roll2,
+                        ball_phy[2].getPhysicsLocation().y-roll3,
+                        ball_phy[2].getPhysicsLocation().z));
+                    }
+                    else if(roll4==3)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[2].getPhysicsLocation().x-roll2,
+                        ball_phy[2].getPhysicsLocation().y-roll3,
+                        ball_phy[2].getPhysicsLocation().z));
+                    }
+                }
+                else if(isBall4Alive && roll==2)
+                {
+                        if(roll4==0)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[3].getPhysicsLocation().x+roll2,
+                        ball_phy[3].getPhysicsLocation().y+roll3,
+                        ball_phy[3].getPhysicsLocation().z));
+                    }
+                    else if(roll4==1)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[3].getPhysicsLocation().x-roll2,
+                        ball_phy[3].getPhysicsLocation().y+roll3,
+                        ball_phy[3].getPhysicsLocation().z));
+                    }
+                    else if(roll4==2)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[3].getPhysicsLocation().x+roll2,
+                        ball_phy[3].getPhysicsLocation().y-roll3,
+                        ball_phy[3].getPhysicsLocation().z));
+                    }
+                    else if(roll4==3)
+                    {
+                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[3].getPhysicsLocation().x-roll2,
+                        ball_phy[3].getPhysicsLocation().y-roll3,
+                        ball_phy[3].getPhysicsLocation().z));
+                    }
+                }
+               
+      }
+      else if(name.equals("Force Push") && !keyPressed)
+      {
+               Ray push = new Ray(ball_phy[2].getPhysicsLocation(), ball_phy[2].getLinearVelocity()); 
+               CollisionResult cr;
+               CollisionResults results= new CollisionResults();
+               int x=1;
+               results.clear();
+               
+               rootNode.collideWith(push, results);
+               
+               
+               while(x<results.size())
+               {
+                   cr = results.getCollision(x);
+                   if(cr.getGeometry()==ball[0])
+                   {
+                        ball_phy[0].applyImpulse(push.getDirection(), Vector3f.ZERO );
+                   }
+                   else if(cr.getGeometry()==ball[1])
+                   {
+                        ball_phy[1].applyImpulse(push.getDirection(), Vector3f.ZERO );
+                   }
+                   else if(cr.getGeometry()==ball[3])
+                   {
+                        ball_phy[3].applyImpulse(push.getDirection(), Vector3f.ZERO );
+                   }
+                   x++;
+               }
       }
     }
   };    
@@ -557,6 +728,29 @@ public class Main extends SimpleApplication {
             loc[i] = ball_phy[i].getPhysicsLocation();
         }
 
+      
+        
+      //Update ghost node
+      int z=0;
+      if(isghost)
+      {
+         gnode.move(ball_phy[3].getPhysicsLocation());
+         while(z<ghosts.getOverlappingCount())
+         {
+            List k = ghosts.getOverlappingObjects();
+            
+            if(k.get(z).equals(ball_phy[0])||k.get(z).equals(ball_phy[1])||k.get(z).equals(ball_phy[2]))
+            {
+                ball_phy[3].removeCollideWithGroup(2);
+            }
+            z++;
+         }
+      }
+      else if(!isghost)
+      {
+          ball_phy[3].addCollideWithGroup(2);
+      }
+        
         if(loc[0].y < 0 && isBall1Alive){          
             isBall1Alive = false;  
             ballLeft--;
