@@ -44,6 +44,7 @@ import de.lessvoid.nifty.examples.controls.common.CommonBuilders;
 import de.lessvoid.nifty.examples.controls.common.DialogPanelControlDefinition;
 import de.lessvoid.nifty.examples.controls.common.MenuButtonControlDefinition;
 import de.lessvoid.nifty.examples.controls.dropdown.DropDownDialogControlDefinition;
+import de.lessvoid.nifty.examples.controls.dropdown.DropDownDialogController;
 import de.lessvoid.nifty.screen.DefaultScreenController;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.tools.Color;
@@ -58,6 +59,7 @@ public class Main extends SimpleApplication {
     private Boolean isBall4Alive = true;
     private Boolean gameEnd = false;    
     private Boolean isScreenEnd = false;
+    private int ballLeft;
     
     private BulletAppState bulletAppState;
 
@@ -91,6 +93,7 @@ public class Main extends SimpleApplication {
     private SphereCollisionShape [] ballShape;
     private Geometry [] ball;
     private int [] ballSpeed;
+    private Vector3f [] loc;
     
     // Mine instance
     private RigidBodyControl mine_phy;
@@ -98,7 +101,7 @@ public class Main extends SimpleApplication {
     private int mineCnt = 0;
     
     // Hardcoded number of players for testing
-    private int numberPlayer = 4;
+    public int numberPlayer;
     private static Main app;
     
     // GUI instance
@@ -190,7 +193,7 @@ public class Main extends SimpleApplication {
    
     // initialize balls, obstacle and GUI
     private void InitObj(){ 
-          
+        getInputFromGUI();
         flyCam.setDragToRotate(false);
         variableInit();
         initMaterials(); 
@@ -492,44 +495,44 @@ public class Main extends SimpleApplication {
                 }      
               
               //player 3 action listener
-              if (binding.equals("Left3")) {                
+              if (binding.equals("Left3") && numberPlayer >= 3) {                
                     Vector3f v = ball[2].getLocalTranslation();
                     ball[2].setLocalTranslation(v.x + value*speed*3*ballSpeed[2], v.y, v.z);
                     ball[2].rotate(-value*speed*3*ballSpeed[2], 0, 0);
                     ball_phy[2].applyForce(new Vector3f(-3f*ballSpeed[2], 0, 0),new Vector3f(-3f*ballSpeed[2], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right3")) {
+                } else if (binding.equals("Right3")&& numberPlayer >= 3) {
                     Vector3f v = ball[2].getLocalTranslation();
                     ball[2].setLocalTranslation(v.x - value*speed*3*ballSpeed[2], v.y, v.z);
                     ball[2].rotate(value*speed*3*ballSpeed[2], 0, 0);
                     ball_phy[2].applyForce(new Vector3f(3f*ballSpeed[2], 0, 0),new Vector3f(3f*ballSpeed[2], 0, 0));
-                } else if (binding.equals("Up3")) {
+                } else if (binding.equals("Up3")&& numberPlayer >= 3) {
                     Vector3f v = ball[2].getLocalTranslation();
                     ball[2].setLocalTranslation(v.x , v.y , v.z + value*speed*3*ballSpeed[2]);
                     ball[2].rotate(0, 0, -value*speed*3*ballSpeed[2]);
                     ball_phy[2].applyForce(new Vector3f(0, 0, -3f*ballSpeed[2]),new Vector3f(0, 0, -3f*ballSpeed[2]));
-                } else if (binding.equals("Down3")) {
+                } else if (binding.equals("Down3")&& numberPlayer >= 3) {
                     Vector3f v = ball[2].getLocalTranslation();
                     ball[2].setLocalTranslation(v.x , v.y, v.z - value*speed*3*ballSpeed[2]);
                     ball[2].rotate(0, 0, value*speed*3*ballSpeed[2]);
                     ball_phy[2].applyForce(new Vector3f(0, 0, 3f*ballSpeed[2]),new Vector3f(0, 0, 3f*ballSpeed[2]));
                 } 
                //player 4 action listener
-              if (binding.equals("Left4")) {                
+              if (binding.equals("Left4") && numberPlayer == 4) {                
                     Vector3f v = ball[3].getLocalTranslation();
                     ball[3].setLocalTranslation(v.x + value*speed*3*ballSpeed[3], v.y, v.z);
                     ball[3].rotate(-value*speed*3*ballSpeed[3], 0, 0);
                     ball_phy[3].applyForce(new Vector3f(-3f*ballSpeed[3], 0, 0),new Vector3f(-3f*ballSpeed[3], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right4")) {
+                } else if (binding.equals("Right4") && numberPlayer == 4) {
                     Vector3f v = ball[3].getLocalTranslation();
                     ball[3].setLocalTranslation(v.x - value*speed*3*ballSpeed[3], v.y, v.z);
                     ball[3].rotate(value*speed*3*ballSpeed[3], 0, 0);
                     ball_phy[3].applyForce(new Vector3f(3f*ballSpeed[3], 0, 0),new Vector3f(3f*ballSpeed[3], 0, 0));
-                } else if (binding.equals("Up4")) {
+                } else if (binding.equals("Up4")&& numberPlayer == 4) {
                     Vector3f v = ball[3].getLocalTranslation();
                     ball[3].setLocalTranslation(v.x , v.y , v.z + value*speed*3*ballSpeed[3]);
                     ball[3].rotate(0, 0, -value*speed*3*ballSpeed[3]);
                     ball_phy[3].applyForce(new Vector3f(0, 0, -3f*ballSpeed[3]),new Vector3f(0, 0, -3f*ballSpeed[3]));
-                } else if (binding.equals("Down4")) {
+                } else if (binding.equals("Down4")&& numberPlayer == 4) {
                     Vector3f v = ball[3].getLocalTranslation();
                     ball[3].setLocalTranslation(v.x , v.y, v.z - value*speed*3*ballSpeed[3]);
                     ball[3].rotate(0, 0, value*speed*3*ballSpeed[3]);
@@ -583,14 +586,7 @@ public class Main extends SimpleApplication {
                 if (event.getNodeA().getName().equals("Ball 2") || event.getNodeB().getName().equals("Ball 2")) {
                     System.out.println("Ouch my balls!!!!!!!!"); 
                 }    
-            }
-            
-            if(event.getNodeA().getName().equals("Mine") || event.getNodeB().getName().equals("Mine")){
-                
-            }
-            
-            
-
+            }          
         }
     };  
 
@@ -602,106 +598,119 @@ public class Main extends SimpleApplication {
           isScreenEnd = false;
           InitObj();
       }
-        Vector3f loc1,loc2,loc3,loc4;
+      loc = new Vector3f [numberPlayer];
       //Check if ball is within the map; if not, destroy the ball
       if(isRunning == true){      
         deathTimer();
-        loc1 = ball_phy[0].getPhysicsLocation();
-        loc2 = ball_phy[1].getPhysicsLocation();
-        loc3 = ball_phy[2].getPhysicsLocation();
-        loc4 = ball_phy[3].getPhysicsLocation();
-      
-      if(loc1.y < 0 && isBall1Alive){
-          System.out.println("Ball 1 DEAD");   
-          isBall1Alive = false;           
+        for(int i = 0; i < numberPlayer; i++){
+            loc[i] = ball_phy[i].getPhysicsLocation();
+        }
 
-              if(!isBall2Alive || !isBall3Alive || !isBall4Alive){
-                ch.detachAllChildren();
-              }
-
-          ch = new BitmapText(guiFont, false);  
-          ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
-          ch.setText("Ball 1 DEAD");       
-          ch.setColor(ColorRGBA.Red);
-          ch.setLocalTranslation(
-          settings.getWidth() / 3f,
-          settings.getHeight() / 4f, 0);
-          guiNode.attachChild(ch);
-          bulletAppState.getPhysicsSpace().remove(ball_phy[0]);
-          rootNode.detachChild(ball[0]);
-      } else if(loc2.y < 0 && isBall2Alive){
-          System.out.println("Ball 2 Dead");
-          isBall2Alive = false;            
-
-              if(!isBall1Alive || !isBall3Alive || !isBall4Alive){
-                ch.detachAllChildren();
-              }
-
-          ch = new BitmapText(guiFont, false); 
-          ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
-          ch.setText("Ball 2 DEAD");        
-          ch.setColor(ColorRGBA.Red);
-          ch.setLocalTranslation(
-          settings.getWidth() / 3f,
-          settings.getHeight() / 4f, 0);
-          guiNode.attachChild(ch);
-          bulletAppState.getPhysicsSpace().remove(ball_phy[1]);
-          rootNode.detachChild(ball[1]);
-      } else if(loc3.y < 0 && isBall3Alive){
-          System.out.println("Ball 3 Dead");
-          isBall3Alive = false;            
-
-              if(!isBall2Alive || !isBall1Alive || !isBall4Alive){
-                ch.detachAllChildren();
-              }
-
-          ch = new BitmapText(guiFont, false); 
-          ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
-          ch.setText("Ball 3 DEAD");        
-          ch.setColor(ColorRGBA.Red);
-          ch.setLocalTranslation(
-          settings.getWidth() / 3f,
-          settings.getHeight() / 4f, 0);
-          guiNode.attachChild(ch);
-          bulletAppState.getPhysicsSpace().remove(ball_phy[2]);
-          rootNode.detachChild(ball[2]);
-      
-         } else if(loc4.y < 0 && isBall4Alive){
-          System.out.println("Ball 4 Dead");
-          isBall4Alive = false;      
-
-            if(!isBall2Alive || !isBall1Alive || !isBall3Alive){
-                ch.detachAllChildren();
+        if(loc[0].y < 0 && isBall1Alive){          
+            isBall1Alive = false;  
+            ballLeft--;
+            if(!isBall2Alive || !isBall3Alive || !isBall4Alive){
+              ch.detachAllChildren();
+            }
+            ch = new BitmapText(guiFont, false);  
+            ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
+            ch.setText("Ball 1 DEAD");       
+            ch.setColor(ColorRGBA.Red);
+            ch.setLocalTranslation(
+            settings.getWidth() / 3f,
+            settings.getHeight() / 4f, 0);
+            guiNode.attachChild(ch);
+            bulletAppState.getPhysicsSpace().remove(ball_phy[0]);
+            rootNode.detachChild(ball[0]);
+        } 
+        else if(loc[1].y < 0 && isBall2Alive){
+            isBall2Alive = false;            
+            ballLeft--;
+            if(!isBall1Alive || !isBall3Alive || !isBall4Alive){
+              ch.detachAllChildren();
             }
 
-          ch = new BitmapText(guiFont, false); 
-          ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
-          ch.setText("Ball 4 DEAD");        
-          ch.setColor(ColorRGBA.Red);
-          ch.setLocalTranslation(
-          settings.getWidth() / 3f,
-          settings.getHeight() / 4f, 0);
-          guiNode.attachChild(ch);
-          bulletAppState.getPhysicsSpace().remove(ball_phy[3]);
-          rootNode.detachChild(ball[3]);
-          
+            ch = new BitmapText(guiFont, false); 
+            ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
+            ch.setText("Ball 2 DEAD");        
+            ch.setColor(ColorRGBA.Red);
+            ch.setLocalTranslation(
+            settings.getWidth() / 3f,
+            settings.getHeight() / 4f, 0);
+            guiNode.attachChild(ch);
+            bulletAppState.getPhysicsSpace().remove(ball_phy[1]);
+            rootNode.detachChild(ball[1]);
+        }
+        else if(numberPlayer>=3){
+            if(loc[2].y < 0 && isBall3Alive){
+                isBall3Alive = false;            
+                ballLeft--;
+                if(!isBall2Alive || !isBall1Alive || !isBall4Alive){
+                  ch.detachAllChildren();
+                }
 
-         }      
+                ch = new BitmapText(guiFont, false); 
+                ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
+                ch.setText("Ball 3 DEAD");        
+                ch.setColor(ColorRGBA.Red);
+                ch.setLocalTranslation(
+                settings.getWidth() / 3f,
+                settings.getHeight() / 4f, 0);
+                guiNode.attachChild(ch);
+                bulletAppState.getPhysicsSpace().remove(ball_phy[2]);
+                rootNode.detachChild(ball[2]);   
+            }
+            else if(numberPlayer==4){
+                if(loc[3].y < 0 && isBall4Alive){
+                isBall4Alive = false;      
+                ballLeft--;
+                if(!isBall2Alive || !isBall1Alive || !isBall3Alive){
+                    ch.detachAllChildren();
+                }
+                ch = new BitmapText(guiFont, false); 
+                ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
+                ch.setText("Ball 4 DEAD");        
+                ch.setColor(ColorRGBA.Red);
+                ch.setLocalTranslation(
+                settings.getWidth() / 3f,
+                settings.getHeight() / 4f, 0);
+                guiNode.attachChild(ch);
+                bulletAppState.getPhysicsSpace().remove(ball_phy[3]);
+                rootNode.detachChild(ball[3]);
+                }    
+            }
+        }
+      
       }
-      if(!isBall1Alive && !isBall2Alive && !isBall3Alive && !isBall4Alive && !gameEnd){
-          gameEnd = true;
-          isRunning = false;
-          isScreenEnd = false;
-          destroyObj();
-          InitGUI();
+      if(ballLeft==1 && !gameEnd){
+            if(isBall1Alive){
+                bulletAppState.getPhysicsSpace().remove(ball_phy[0]);         
+            }
+            else if(isBall2Alive){
+                bulletAppState.getPhysicsSpace().remove(ball_phy[1]);         
+            }
+            else if(isBall3Alive){
+                bulletAppState.getPhysicsSpace().remove(ball_phy[2]);         
+            }
+            else if(isBall4Alive){
+                bulletAppState.getPhysicsSpace().remove(ball_phy[3]);         
+            }
+            gameEnd = true;
+            isRunning = false;
+            isScreenEnd = false;
+            destroyObj();
+            InitGUI();
       }      
   }
     
     // destroy objects
     private void destroyObj(){
-        rootNode.detachAllChildren();        
+        for (int i = counter; i < boardLength*boardWidth; i++) {
+            destroyMap(i);
+        }
+        rootNode.detachAllChildren(); 
         counter = 0;        
-        ch.detachAllChildren();    
+        ch.detachAllChildren();        
         if(mineCnt > 0){
             bulletAppState.getPhysicsSpace().remove(mine_phy);
         }
@@ -981,6 +990,9 @@ public class Main extends SimpleApplication {
         rootNode.attachChild(temp);
         temp.addControl(new RigidBodyControl(0f));
         bulletAppState.getPhysicsSpace().add(temp.getControl(RigidBodyControl.class));
+        if (i== 6||i==7) {
+            temp.getControl(RigidBodyControl.class).setFriction(-.5f);
+        }
     }
     
     //Destory Object on the map when tile is destoryed
@@ -1002,7 +1014,9 @@ public class Main extends SimpleApplication {
                 new Vector3f(0f,-10f,0f));
         rootNode.getChild(i).getControl(RigidBodyControl.class).setEnabled(true);
         rootNode.getChild(i).getControl(RigidBodyControl.class).activate();
-        rootNode.getChild(i).getControl(RigidBodyControl.class).setLinearVelocity(new Vector3f(0,4,0));
+        rootNode.getChild(i).getControl(
+                RigidBodyControl.class).setLinearVelocity(new Vector3f(0,4,0));
+        
         onDestroy(i);
     }
     
@@ -1013,7 +1027,6 @@ public class Main extends SimpleApplication {
             destroyMap(counter);
             deathClk = new BigInteger(String.valueOf(System.nanoTime())).add(
                     new BigInteger("1000000000"));
-            System.out.println(counter);
             counter++;
             
         }
@@ -1062,6 +1075,7 @@ public class Main extends SimpleApplication {
             @Override
             public void onEndScreen(){
                 app.isScreenEnd = true;
+                app.getInputFromGUI();
             }        
         });
         
@@ -1109,33 +1123,6 @@ public class Main extends SimpleApplication {
                 height("50px");
                 width("100%");
                 backgroundColor("#5588");
-                panel(new PanelBuilder() {
-                  {
-                    paddingLeft("25px");
-                    paddingRight("25px");
-                    height("50%");
-                    width("100%");
-                    alignCenter();
-                    valignCenter();
-                    childLayoutHorizontal();
-                    control(new LabelBuilder() {
-                      {
-                        label("Screen Resolution:");
-                      }
-                    });
-                    panel(common.hspacer("7px"));                    
-                    control(new DropDownBuilder("resolutions") {
-                      {                                     
-                        width("200px");                    
-                      }
-                    });                
-                    panel(common.hspacer("*"));
-                    control(new ButtonBuilder("resetScreenButton", "Restart Screen") {
-                      {
-                      }
-                    });
-                  }
-                });
               }
             });
           }
@@ -1304,6 +1291,11 @@ public class Main extends SimpleApplication {
         });
       }
     }.registerPopup(nifty);
+  }    
+  
+  public void getInputFromGUI(){       
+        numberPlayer = DropDownDialogController.getNumberPlayer();  
+        ballLeft = numberPlayer;
   }
-
+  
 }

@@ -199,9 +199,7 @@ public class DropDownDialogControlDefinition {
         
         
         panel(builders.vspacer());       
-        panel(builders.vspacer());
-        
-        
+        panel(builders.vspacer());       
         
         
       }});
