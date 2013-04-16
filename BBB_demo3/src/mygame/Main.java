@@ -124,6 +124,7 @@ public class Main extends SimpleApplication {
     
     // abilities variables
     BigInteger[] abilityMapping = new BigInteger[4];
+    private int [] abilityFromUI;
     
     //Buff varaibles
     BigInteger buffTimer = new BigInteger(String.valueOf(
@@ -195,7 +196,7 @@ public class Main extends SimpleApplication {
         
        
         //Selected map
-        currentmap = 2;
+        currentmap = 4;
         setCam();
         setUpLight();
         //Load Map texture and object arraies
@@ -245,6 +246,7 @@ public class Main extends SimpleApplication {
     
     private void variableInit(){
         ballSpeed = new int [numberPlayer];
+        abilityFromUI = new int[4];
         isRunning = true;
         isBall1Alive = true;
         isBall2Alive = true;  
@@ -1434,6 +1436,12 @@ public class Main extends SimpleApplication {
     public void getInputFromGUI(){       
           numberPlayer = DropDownDialogController.getNumberPlayer();  
           ballLeft = numberPlayer;
+          
+          abilityFromUI = DropDownDialogController.getPlayerAbility();
+          System.out.println("p1: " + abilityFromUI[0]);
+          System.out.println("p2: " + abilityFromUI[1]);
+          System.out.println("p3: " + abilityFromUI[2]);
+          System.out.println("p4: " + abilityFromUI[3]);
     }
 
 }
