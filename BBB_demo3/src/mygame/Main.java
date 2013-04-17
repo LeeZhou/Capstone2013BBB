@@ -52,9 +52,7 @@ import de.lessvoid.nifty.examples.controls.dropdown.DropDownDialogController;
 import de.lessvoid.nifty.screen.DefaultScreenController;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.tools.Color;
-import java.math.BigInteger;
 import java.util.List;
-import java.util.Random;
 
 public class Main extends SimpleApplication {
   
@@ -92,7 +90,7 @@ public class Main extends SimpleApplication {
     private int[] mapobjects;    
         
     //Destory Map stuff
-    private BigInteger deathClk;
+    private long deathClk;
     private Spatial[] mapObj;
     private int objNum;
     
@@ -123,12 +121,12 @@ public class Main extends SimpleApplication {
     private Nifty nifty;
     
     // abilities variables
-    BigInteger[] abilityMapping = new BigInteger[4];
-    private int [] abilityFromUI;
+    private long [] abilityMapping;
+    public int [] assignAbility;
+    public int [] abilityFromUI;
     
     //Buff varaibles
-    BigInteger buffTimer = new BigInteger(String.valueOf(
-            System.nanoTime())).add(new BigInteger("100000000"));
+    private long buffTimer = (System.nanoTime()/1000000000) + 5;
     
     //Map data
     private int[] map1 = {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -214,7 +212,8 @@ public class Main extends SimpleApplication {
         createBallArray(numberPlayer); 
         setUpKeys();             
         createFloor(currentmap);
-        createPowerUp();
+        createPowerUp();  
+        abilityMapping = new long [numberPlayer];
         initAbilities(abilityMapping);
     }
     
@@ -246,7 +245,7 @@ public class Main extends SimpleApplication {
     
     private void variableInit(){
         ballSpeed = new int [numberPlayer];
-        abilityFromUI = new int[4];
+        //abilityFromUI = new int[4];
         isRunning = true;
         isBall1Alive = true;
         isBall2Alive = true;  
@@ -254,8 +253,7 @@ public class Main extends SimpleApplication {
         isBall4Alive = true;
         gameEnd = false;      
         mineCnt = 0;
-        deathClk = new BigInteger(String.valueOf(
-            System.nanoTime())).add(new BigInteger("5000000000"));        
+        deathClk = (System.nanoTime()/1000000000) + 5;        
     }
     
     // set camera position and light
@@ -414,20 +412,14 @@ public class Main extends SimpleApplication {
         
         
         // Ability keybindings and listener
-        inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_X));
-        inputManager.addMapping("Dash", new KeyTrigger(KeyInput.KEY_B));
-       // inputManager.addMapping("Mine", new KeyTrigger(KeyInput.KEY_COMMA));
-        //inputManager.addMapping("Ghost", new KeyTrigger(KeyInput.KEY_NUMPAD2));
-        inputManager.addMapping("Glue", new KeyTrigger(KeyInput.KEY_COMMA));
-       // inputManager.addMapping("Satellite",new KeyTrigger(KeyInput.KEY_V));
-        inputManager.addMapping("Force Push", new KeyTrigger(KeyInput.KEY_NUMPAD2));
-        inputManager.addListener(actionListener, "Jump");
-        inputManager.addListener(actionListener, "Dash");
-        //inputManager.addListener(actionListener, "Mine");
-        //inputManager.addListener(actionListener, "Ghost");
-        inputManager.addListener(actionListener, "Glue");
-        //inputManager.addListener(actionListener, "Satellite");
-        inputManager.addListener(actionListener, "Force Push");
+        inputManager.addMapping("Ability1", new KeyTrigger(KeyInput.KEY_X));
+        inputManager.addMapping("Ability2", new KeyTrigger(KeyInput.KEY_B));
+        inputManager.addMapping("Ability3", new KeyTrigger(KeyInput.KEY_COMMA));
+        inputManager.addMapping("Ability4", new KeyTrigger(KeyInput.KEY_NUMPAD2));
+        inputManager.addListener(actionListener, "Ability1");
+        inputManager.addListener(actionListener, "Ability2");
+        inputManager.addListener(actionListener, "Ability3");
+        inputManager.addListener(actionListener, "Ability4");        
         
         
         // Player 1 keybindings and listener
@@ -517,7 +509,16 @@ public class Main extends SimpleApplication {
     
     private ActionListener actionListener = new ActionListener() {
     public void onAction(String name, boolean keyPressed, float tpf) {
-      if (name.equals("Jump") && !keyPressed && !onCooldown(abilityMapping,0)) {
+        if (name.equals("Ability1") && !keyPressed && !onCooldown(abilityMapping,0)) {
+            actAbility(0);               
+        } else if (name.equals("Ability2") && !keyPressed && !onCooldown(abilityMapping,1)) {
+            actAbility(1);
+        } else if (name.equals("Ability3") && !keyPressed && !onCooldown(abilityMapping,2)) {
+            actAbility(2);
+        } else if (name.equals("Ability4") && !keyPressed && !onCooldown(abilityMapping,3)) {
+            actAbility(3);
+        }
+      /*if (name.equals("Jump") && !keyPressed && !onCooldown(abilityMapping,0)) {
           ball_phy[0].applyImpulse(new Vector3f(0, 7f, 0), Vector3f.ZERO );               
       
       } else if(name.equals("Dash") && !keyPressed && !onCooldown(abilityMapping,1)){                       
@@ -691,10 +692,119 @@ public class Main extends SimpleApplication {
                    }
                    x++;
                }
-      }
+      }*/
     }
   };    
+    //looks for the player's ability
+    public void actAbility(int i) {
+        if (abilityFromUI[i] == 1) {
+            dash(i);
+        }
+        else if (abilityFromUI[i] == 2) {
+            jump(i);
+        }
+        else if (abilityFromUI[i] == 3) {
+            glue(i);
+        }
+        else if (abilityFromUI[i] == 4) {
+            forcePush(i);
+        }
+        else if (abilityFromUI[i] == 5) {
+            ghost(i);
+        }
+        else if (abilityFromUI[i] == 6) {
+            
+        }
+        else if (abilityFromUI[i] == 7) {
+            
+        }
+    }
+    
+    public void dash(int i) {
+        Vector3f v = ball_phy[i].getLinearVelocity();
+            if(v.x != 0 && v.z!=0){
+                ball_phy[i].applyImpulse(new Vector3f(v.x*2,0,v.z*2), Vector3f.ZERO);
+            }
+    }
 
+    public void jump(int i) {
+        ball_phy[i].applyImpulse(new Vector3f(0, 7f, 0), Vector3f.ZERO );
+    }
+    
+    public void mine(int i) {
+        Sphere c = new Sphere(5, 5, 0.2f, true, false);
+        c.setTextureMode(Sphere.TextureMode.Projected);
+        TangentBinormalGenerator.generate(c);
+        mine = new Geometry("Mine",c);
+        Material min_mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        TextureKey key2 = new TextureKey("Textures/Terrain/Rock/Rock.PNG");
+        key2.setGenerateMips(true);
+        min_mat.setBoolean("UseMaterialColors",true);   
+        min_mat.setColor("Specular",ColorRGBA.Blue);
+        min_mat.setColor("Diffuse",ColorRGBA.Blue);
+        mine.setMaterial(min_mat);
+        rootNode.attachChild(mine);
+        mine.setLocalTranslation(ball_phy[i].getPhysicsLocation());
+        mine_phy = new RigidBodyControl(1f);
+        mine.addControl(mine_phy);
+        mine.addControl(ghost);
+        bulletAppState.getPhysicsSpace().add(ghost);
+        bulletAppState.getPhysicsSpace().add(mine);
+        mine_phy.setMass(1000f);
+        mine_phy.setDamping(0f, 1f); 
+        mine_phy.setGravity(new Vector3f(0f,-10f,0f));
+        mine_phy.setRestitution(3f);
+        mineCnt++;
+    }
+    
+    public void ghost(int i) {
+        if(isghost)
+                {
+                    isghost=false;
+                    ball[i].setMaterial(mat_road);
+                }
+                else
+                {   
+                    isghost=true;
+                    gnode.addControl(ghosts);
+                    rootNode.attachChild(gnode);            
+                    mat_ghost= new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+                    mat_ghost.setColor("Color", new ColorRGBA(0,0,0,0.5f));
+                    mat_ghost.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+                    ball[i].setMaterial(mat_ghost);
+                    ball[i].setQueueBucket(Bucket.Transparent);
+                    bulletAppState.getPhysicsSpace().add(ghosts);
+                }
+    }
+    
+    public void forcePush(int i) {
+        Ray push = new Ray(ball_phy[i].getPhysicsLocation(), ball_phy[i].getLinearVelocity()); 
+        CollisionResult cr;
+        CollisionResults results= new CollisionResults();
+        int x=1;
+        results.clear();
+        rootNode.collideWith(push, results);              
+               
+        while(x<results.size())
+        {
+            cr = results.getCollision(x);
+            cr.getGeometry().getControl(RigidBodyControl.class).applyImpulse(
+                    push.getDirection(), Vector3f.ZERO);
+            x++;
+         }
+    }
+    
+    public void blink(int i) {
+        Vector3f temp = ball[i].getLocalTranslation();
+        //System.out.println(ball_phy[i].getLinearVelocity().x+ball_phy[i].getLinearVelocity().z);
+        temp.add(ball_phy[i].getLinearVelocity().mult(3));
+        //ball[i].setLocalTranslation(temp);
+        ball_phy[i].setPhysicsLocation(temp);
+    }
+    
+    public void glue(int i) {
+        ball_phy[i].setLinearVelocity(new Vector3f(0,0,0));
+    }
     
     // Listens to collision between objects
     private PhysicsCollisionListener physicsCollisionListener = new PhysicsCollisionListener(){        
@@ -856,9 +966,9 @@ public class Main extends SimpleApplication {
         }
     }    
     
-     public void initAbilities(BigInteger[] temp) {
+     public void initAbilities(long[] temp) {
         for (int i = 0; i < numberPlayer; i++) {
-            temp[i] = new BigInteger(String.valueOf(System.nanoTime()));
+            temp[i] = System.nanoTime()/1000000000;
         }
     }
     
@@ -912,10 +1022,9 @@ public class Main extends SimpleApplication {
          }
      }
     
-    public boolean onCooldown(BigInteger[] temp, int i) {
-        if (temp[i].compareTo(new BigInteger(String.valueOf(System.nanoTime()))) < 0) {
-            temp[i] = new BigInteger(String.valueOf(System.nanoTime())).add(
-                    new BigInteger("5000000000"));
+    public boolean onCooldown(long[] temp, int i) {
+        if (temp[i] < (System.nanoTime()/1000000000)) {
+            temp[i] = (System.nanoTime()/1000000000) + 5;
             return false;
         }
         else {
@@ -945,8 +1054,6 @@ public class Main extends SimpleApplication {
             makeMapTile(coord.set((boardLength-x-1), -.1f, 
                     (boardWidth-y-1)), i++);
         
-
-            
             /*Algorithm for spiral: Move straight until 
              * it reaches a corner, then turn Right and continue 
              * until all blocks filled*/
@@ -1161,11 +1268,9 @@ public class Main extends SimpleApplication {
     
     //Timer to destory the Map
     public void deathTimer() {
-        if (deathClk.compareTo(new BigInteger(String.valueOf(
-                System.nanoTime()))) < 0 && counter < boardLength*boardWidth) {
+        if (deathClk < (System.nanoTime()/1000000000) && counter < boardLength*boardWidth) {
             destroyMap(counter);
-            deathClk = new BigInteger(String.valueOf(System.nanoTime())).add(
-                    new BigInteger("1000000000"));
+            deathClk = (System.nanoTime()/1000000000) + 5;
             counter++;
             
         }
