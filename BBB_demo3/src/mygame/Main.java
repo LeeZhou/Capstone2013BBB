@@ -34,6 +34,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
+import com.jme3.util.SkyFactory;
 import com.jme3.util.TangentBinormalGenerator;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.builder.ControlBuilder;
@@ -44,15 +45,15 @@ import de.lessvoid.nifty.builder.PopupBuilder;
 import de.lessvoid.nifty.builder.ScreenBuilder;
 import de.lessvoid.nifty.builder.StyleBuilder;
 import de.lessvoid.nifty.controls.console.builder.ConsoleBuilder;
-import de.lessvoid.nifty.examples.controls.common.CommonBuilders;
-import de.lessvoid.nifty.examples.controls.common.DialogPanelControlDefinition;
-import de.lessvoid.nifty.examples.controls.common.MenuButtonControlDefinition;
-import de.lessvoid.nifty.examples.controls.dropdown.DropDownDialogControlDefinition;
-import de.lessvoid.nifty.examples.controls.dropdown.DropDownDialogController;
-import de.lessvoid.nifty.screen.DefaultScreenController;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.tools.Color;
 import java.util.List;
+import niftyclass.CommonBuilders;
+import niftyclass.DialogPanelControlDefinition;
+import niftyclass.MenuButtonControlDefinition;
+import screens.GameSettingControlDefinition;
+import screens.GameSettingController;
+import screens.JmeScreenController;
 
 public class Main extends SimpleApplication {
   
@@ -219,6 +220,7 @@ public class Main extends SimpleApplication {
     
     private void InitGUI(){                
         // GUI init
+        
         flyCam.setDragToRotate(true);
         isScreenEnd = false;
         isRunning = false;
@@ -230,22 +232,19 @@ public class Main extends SimpleApplication {
         nifty.loadControlFile("nifty-default-controls.xml");
 
         registerMenuButtonHintStyle(nifty);
-        registerStyles(nifty);
         registerConsolePopup(nifty);
         // register some helper controls
         MenuButtonControlDefinition.register(nifty);
         DialogPanelControlDefinition.register(nifty);
         // register the dialog controls
-        DropDownDialogControlDefinition.register(nifty);
-        createIntroScreen(nifty);
-        createDemoScreen(nifty);
-        nifty.gotoScreen("start");
+        GameSettingControlDefinition.register(nifty);
+        openGameSettingScreen(nifty);
+        nifty.gotoScreen("settings");
         
     }
     
     private void variableInit(){
         ballSpeed = new int [numberPlayer];
-        //abilityFromUI = new int[4];
         isRunning = true;
         isBall1Alive = true;
         isBall2Alive = true;  
@@ -258,7 +257,8 @@ public class Main extends SimpleApplication {
     
     // set camera position and light
     private void setCam(){
-        
+        rootNode.attachChild(SkyFactory.createSky(
+            assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
         flyCam.setEnabled(false);        
         if(currentmap == 0){
@@ -413,14 +413,17 @@ public class Main extends SimpleApplication {
         
         // Ability keybindings and listener
         inputManager.addMapping("Ability1", new KeyTrigger(KeyInput.KEY_X));
-        inputManager.addMapping("Ability2", new KeyTrigger(KeyInput.KEY_B));
-        inputManager.addMapping("Ability3", new KeyTrigger(KeyInput.KEY_COMMA));
-        inputManager.addMapping("Ability4", new KeyTrigger(KeyInput.KEY_NUMPAD2));
         inputManager.addListener(actionListener, "Ability1");
+        inputManager.addMapping("Ability2", new KeyTrigger(KeyInput.KEY_B));
         inputManager.addListener(actionListener, "Ability2");
-        inputManager.addListener(actionListener, "Ability3");
-        inputManager.addListener(actionListener, "Ability4");        
-        
+        if(numberPlayer >= 3){
+            inputManager.addMapping("Ability3", new KeyTrigger(KeyInput.KEY_COMMA));
+            inputManager.addListener(actionListener, "Ability3");
+            if(numberPlayer == 4){
+            inputManager.addMapping("Ability4", new KeyTrigger(KeyInput.KEY_NUMPAD2));        
+            inputManager.addListener(actionListener, "Ability4");     
+            }
+        }
         
         // Player 1 keybindings and listener
         
@@ -440,27 +443,30 @@ public class Main extends SimpleApplication {
         inputManager.addListener(analogListener,new String[]{ "Left2","Right2", "Up2", "Down2"});        
         
         // Player 3 keybindings and listener
+        if(numberPlayer >= 3){
         inputManager.addMapping("Left3", new KeyTrigger(KeyInput.KEY_J));
         inputManager.addMapping("Right3", new KeyTrigger(KeyInput.KEY_L));
         inputManager.addMapping("Up3", new KeyTrigger(KeyInput.KEY_I));
         inputManager.addMapping("Down3", new KeyTrigger(KeyInput.KEY_K));
          
         inputManager.addListener(analogListener,new String[]{ "Left3","Right3", "Up3", "Down3"});        
+        if(numberPlayer == 4){
+            // Player 4 keybindings and listener
+            inputManager.addMapping("Left4", new KeyTrigger(KeyInput.KEY_NUMPAD4));
+            inputManager.addMapping("Right4", new KeyTrigger(KeyInput.KEY_NUMPAD6));
+            inputManager.addMapping("Up4", new KeyTrigger(KeyInput.KEY_NUMPAD8));
+            inputManager.addMapping("Down4", new KeyTrigger(KeyInput.KEY_NUMPAD5));
+
+            inputManager.addListener(analogListener,new String[]{ "Left4","Right4", "Up4", "Down4"});
+            }
         
-        // Player 4 keybindings and listener
-        inputManager.addMapping("Left4", new KeyTrigger(KeyInput.KEY_NUMPAD4));
-        inputManager.addMapping("Right4", new KeyTrigger(KeyInput.KEY_NUMPAD6));
-        inputManager.addMapping("Up4", new KeyTrigger(KeyInput.KEY_NUMPAD8));
-        inputManager.addMapping("Down4", new KeyTrigger(KeyInput.KEY_NUMPAD5));
-        
-        inputManager.addListener(analogListener,new String[]{ "Left4","Right4", "Up4", "Down4"});
-        
+        }
     }
     
     private AnalogListener analogListener = new AnalogListener() {
         public void onAnalog(String binding, float value, float tpf) {
            
-            // New code: maps ball array (HARDCODED)
+            // New code: maps ball array
             // player 1 action listener
             if (binding.equals("Left")) {                     
                     ball_phy[0].applyForce(new Vector3f(-3f*ballSpeed[0], 0, 0),new Vector3f(-3f*ballSpeed[0], 0, 0)); // push the ball foward
@@ -514,185 +520,14 @@ public class Main extends SimpleApplication {
         } else if (name.equals("Ability2") && !keyPressed && !onCooldown(abilityMapping,1)) {
             actAbility(1);
         } else if (name.equals("Ability3") && !keyPressed && !onCooldown(abilityMapping,2)) {
-            actAbility(2);
-        } else if (name.equals("Ability4") && !keyPressed && !onCooldown(abilityMapping,3)) {
-            actAbility(3);
-        }
-      /*if (name.equals("Jump") && !keyPressed && !onCooldown(abilityMapping,0)) {
-          ball_phy[0].applyImpulse(new Vector3f(0, 7f, 0), Vector3f.ZERO );               
-      
-      } else if(name.equals("Dash") && !keyPressed && !onCooldown(abilityMapping,1)){                       
-            Vector3f v = ball_phy[1].getLinearVelocity();
-            if(v.x != 0 && v.z!=0){
-                ball_phy[1].applyImpulse(new Vector3f(v.x*2,0,v.z*2), Vector3f.ZERO);
+            if(numberPlayer >=3){
+                actAbility(2);
             }
-      } else if(name.equals("Mine") && !keyPressed && !onCooldown(abilityMapping,2)){
-                Sphere c = new Sphere(5, 5, 0.2f, true, false);
-                c.setTextureMode(Sphere.TextureMode.Projected);
-                TangentBinormalGenerator.generate(c);
-                mine = new Geometry("Mine",c);
-                Material min_mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-                TextureKey key2 = new TextureKey("Textures/Terrain/Rock/Rock.PNG");
-                key2.setGenerateMips(true);
-                min_mat.setBoolean("UseMaterialColors",true);   
-                min_mat.setColor("Specular",ColorRGBA.Blue);
-                min_mat.setColor("Diffuse",ColorRGBA.Blue);
-                mine.setMaterial(min_mat);
-                rootNode.attachChild(mine);
-                mine.setLocalTranslation(ball_phy[2].getPhysicsLocation());
-                mine_phy = new RigidBodyControl(1f);
-                mine.addControl(mine_phy);
-                mine.addControl(ghost);
-                bulletAppState.getPhysicsSpace().add(ghost);
-                bulletAppState.getPhysicsSpace().add(mine);
-                mine_phy.setMass(1000f);
-                mine_phy.setDamping(0f, 1f); 
-                mine_phy.setGravity(new Vector3f(0f,-10f,0f));
-                mine_phy.setRestitution(3f);
-                mineCnt++;
-      }
-      else if(name.equals("Ghost") && !keyPressed)
-      {
-                if(isghost)
-                {
-                    isghost=false;
-                    ball[3].setMaterial(mat_road);
-                }
-                else
-                {   
-                    isghost=true;
-                    gnode.addControl(ghosts);
-                    rootNode.attachChild(gnode);            
-                    mat_ghost= new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-                    mat_ghost.setColor("Color", new ColorRGBA(0,0,0,0.5f));
-                    mat_ghost.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
-                    ball[3].setMaterial(mat_ghost);
-                    ball[3].setQueueBucket(Bucket.Transparent);
-                    bulletAppState.getPhysicsSpace().add(ghosts);
-                }
-      }
-      else if(name.equals("Glue") && !keyPressed && numberPlayer >=3 && !onCooldown(abilityMapping,2))
-      {
-                ball_phy[2].setLinearVelocity(new Vector3f(0,0,0));
-      }
-      else if(name.equals("Satellite") && !keyPressed)
-      {
-                Random generator = new Random();
-                int roll = generator.nextInt(3);
-                int roll2 = generator.nextInt(2)+1;
-                int roll3 = generator.nextInt(2)+1;
-                int roll4 = generator.nextInt(4);
-                if(isBall1Alive && roll==0)
-                {
-                    if(roll4==0)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[0].getPhysicsLocation().x+roll2,
-                        ball_phy[0].getPhysicsLocation().y+roll3,
-                        ball_phy[0].getPhysicsLocation().z));
-                    }
-                    else if(roll4==1)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[0].getPhysicsLocation().x-roll2,
-                        ball_phy[0].getPhysicsLocation().y+roll3,
-                        ball_phy[0].getPhysicsLocation().z));
-                    }
-                    else if(roll4==2)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[0].getPhysicsLocation().x+roll2,
-                        ball_phy[0].getPhysicsLocation().y-roll3,
-                        ball_phy[0].getPhysicsLocation().z));
-                    }
-                    else if(roll4==3)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[0].getPhysicsLocation().x-roll2,
-                        ball_phy[0].getPhysicsLocation().y-roll3,
-                        ball_phy[0].getPhysicsLocation().z));
-                    }
-                }
-                else if(isBall3Alive && roll==1)
-                {
-                        if(roll4==0)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[2].getPhysicsLocation().x+roll2,
-                        ball_phy[2].getPhysicsLocation().y+roll3,
-                        ball_phy[2].getPhysicsLocation().z));
-                    }
-                    else if(roll4==1)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[2].getPhysicsLocation().x-roll2,
-                        ball_phy[2].getPhysicsLocation().y+roll3,
-                        ball_phy[2].getPhysicsLocation().z));
-                    }
-                    else if(roll4==2)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[2].getPhysicsLocation().x+roll2,
-                        ball_phy[2].getPhysicsLocation().y-roll3,
-                        ball_phy[2].getPhysicsLocation().z));
-                    }
-                    else if(roll4==3)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[2].getPhysicsLocation().x-roll2,
-                        ball_phy[2].getPhysicsLocation().y-roll3,
-                        ball_phy[2].getPhysicsLocation().z));
-                    }
-                }
-                else if(isBall4Alive && roll==2)
-                {
-                        if(roll4==0)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[3].getPhysicsLocation().x+roll2,
-                        ball_phy[3].getPhysicsLocation().y+roll3,
-                        ball_phy[3].getPhysicsLocation().z));
-                    }
-                    else if(roll4==1)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[3].getPhysicsLocation().x-roll2,
-                        ball_phy[3].getPhysicsLocation().y+roll3,
-                        ball_phy[3].getPhysicsLocation().z));
-                    }
-                    else if(roll4==2)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[3].getPhysicsLocation().x+roll2,
-                        ball_phy[3].getPhysicsLocation().y-roll3,
-                        ball_phy[3].getPhysicsLocation().z));
-                    }
-                    else if(roll4==3)
-                    {
-                        ball_phy[1].setPhysicsLocation(new Vector3f(ball_phy[3].getPhysicsLocation().x-roll2,
-                        ball_phy[3].getPhysicsLocation().y-roll3,
-                        ball_phy[3].getPhysicsLocation().z));
-                    }
-                }
-               
-      }
-      else if(name.equals("Force Push") && !keyPressed && numberPlayer ==4 && !onCooldown(abilityMapping,3))
-      {
-               Ray push = new Ray(ball_phy[3].getPhysicsLocation(), ball_phy[3].getLinearVelocity()); 
-               CollisionResult cr;
-               CollisionResults results= new CollisionResults();
-               int x=1;
-               results.clear();
-               
-               rootNode.collideWith(push, results);              
-               
-               while(x<results.size())
-               {
-                   cr = results.getCollision(x);
-                   if(cr.getGeometry()==ball[0])
-                   {
-                        ball_phy[0].applyImpulse(push.getDirection(), Vector3f.ZERO );
-                   }
-                   else if(cr.getGeometry()==ball[1])
-                   {
-                        ball_phy[1].applyImpulse(push.getDirection(), Vector3f.ZERO );
-                   }
-                   else if(cr.getGeometry()==ball[2])
-                   {
-                        ball_phy[2].applyImpulse(push.getDirection(), Vector3f.ZERO );
-                   }
-                   x++;
-               }
-      }*/
+        } else if (name.equals("Ability4") && !keyPressed && !onCooldown(abilityMapping,3)) {
+            if(numberPlayer==4){
+                actAbility(3);
+            }
+        }     
     }
   };    
     //looks for the player's ability
@@ -713,10 +548,10 @@ public class Main extends SimpleApplication {
             ghost(i);
         }
         else if (abilityFromUI[i] == 6) {
-            
+            blink(i);
         }
         else if (abilityFromUI[i] == 7) {
-            
+            mine(i);
         }
     }
     
@@ -776,6 +611,18 @@ public class Main extends SimpleApplication {
                     bulletAppState.getPhysicsSpace().add(ghosts);
                 }
     }
+    
+
+    /*
+     * 
+     *   Force Push is buggy: Happens when you use the ability when only two players are left
+     *  java.lang.NullPointerException
+     * 	at mygame.Main.forcePush(Main.java:639)
+     * 	at mygame.Main.actAbility(Main.java:546)
+     * 	at mygame.Main$2.onAction(Main.java:520)
+     *  
+     * 
+     */
     
     public void forcePush(int i) {
         Ray push = new Ray(ball_phy[i].getPhysicsLocation(), ball_phy[i].getLinearVelocity()); 
@@ -1277,49 +1124,17 @@ public class Main extends SimpleApplication {
     }
     
     // GUI
-    
-    private static Screen createIntroScreen(final Nifty nifty) {
-      Screen screen = new ScreenBuilder("start") {
-
-        {
-          controller(new DefaultScreenController() {
-
-            @Override
-            public void onStartScreen() {
-              nifty.gotoScreen("demo");
-            }    
-
-          });
-          layer(new LayerBuilder() {
-
-            {
-              backgroundColor("#ddff");
-              onStartScreenEffect(new EffectBuilder("fade") {
-
-                {
-                  length(1000);
-                  effectParameter("start", "#0");
-                  effectParameter("end", "#f");
-                }
-              });
-            }
-          });
-        }
-      }.build(nifty);
-      return screen;
-    }
-
-    private static Screen createDemoScreen(final Nifty nifty) {
+    private static Screen openGameSettingScreen(final Nifty nifty) {
       final CommonBuilders common = new CommonBuilders();
-      Screen screen = new ScreenBuilder("demo") {
+      Screen screen = new ScreenBuilder("settings") {
 
         {        
-          controller(new JmeControlsDemoScreenController(
+          controller(new JmeScreenController(
                   "menuButtonDropDown", "dialogDropDown"){
               @Override
               public void onEndScreen(){
                   app.isScreenEnd = true;
-                  app.getInputFromGUI();
+                  
               }        
           });
 
@@ -1340,6 +1155,7 @@ public class Main extends SimpleApplication {
 
                   control(MenuButtonControlDefinition.getControlBuilder("menuButtonDropDown", "Game Set-up", "Game Settings"));
                   panel(builders.hspacer("10px"));
+
                 }
               });
               panel(new PanelBuilder("dialogParent") {
@@ -1349,7 +1165,7 @@ public class Main extends SimpleApplication {
                   height("100%");
                   alignCenter();
                   valignCenter();
-                  control(new ControlBuilder("dialogDropDown", DropDownDialogControlDefinition.NAME));                   
+                  control(new ControlBuilder("dialogDropDown", GameSettingControlDefinition.NAME));
                 }
               });
             }
@@ -1458,46 +1274,10 @@ public class Main extends SimpleApplication {
       }.build(nifty);
     }
 
-    private static void registerStyles(final Nifty nifty) {
-      new StyleBuilder() {
-        {
-          id("base-font-link");
-          base("base-font");
-          color("#8fff");
-          interactOnRelease("$action");
-
-        }
-      }.build(nifty);
-
-      new StyleBuilder() {
-        {
-          id("creditsImage");
-          alignCenter();
-        }
-      }.build(nifty);
-
-      new StyleBuilder() {
-        {
-          id("creditsCaption");
-          font("Interface/verdana-48-regular.fnt");
-          width("100%");
-          textHAlignCenter();
-        }
-      }.build(nifty);
-
-      new StyleBuilder() {
-        {
-          id("creditsCenter");
-          base("base-font");
-          width("100%");
-          textHAlignCenter();
-        }
-      }.build(nifty);
-    }
-
     private static void registerConsolePopup(Nifty nifty) {
       new PopupBuilder("consolePopup") {
         {
+            
           childLayoutAbsolute();
           panel(new PanelBuilder() {
             {
@@ -1539,10 +1319,13 @@ public class Main extends SimpleApplication {
     }    
 
     public void getInputFromGUI(){       
-          numberPlayer = DropDownDialogController.getNumberPlayer();  
+          if(GameSettingController.getExitStatus()){
+              app.stop();
+          }
+          numberPlayer = GameSettingController.getNumberPlayer();  
           ballLeft = numberPlayer;
           
-          abilityFromUI = DropDownDialogController.getPlayerAbility();
+          abilityFromUI = GameSettingController.getPlayerAbility();
           System.out.println("p1: " + abilityFromUI[0]);
           System.out.println("p2: " + abilityFromUI[1]);
           System.out.println("p3: " + abilityFromUI[2]);
