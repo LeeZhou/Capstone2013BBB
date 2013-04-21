@@ -45,6 +45,7 @@ public class JmeScreenController implements ScreenController, KeyInputHandler {
   private Element creditsPopup;
   private Console console;
   private ConsoleCommands consoleCommands;
+  private static Boolean exit = false;
 
   // This simply maps the IDs of the MenuButton elements to the corresponding Dialog elements we'd
   // like to show with the given MenuButton. This map will make our life a little bit easier when
@@ -120,6 +121,7 @@ public class JmeScreenController implements ScreenController, KeyInputHandler {
 
   @Override
   public void onEndScreen() {
+      
   }
 
   @Override
@@ -160,12 +162,23 @@ public class JmeScreenController implements ScreenController, KeyInputHandler {
     nifty.closePopup(creditsPopup.getId());
   }
 
-  @NiftyEventSubscriber(id="resetScreenButton")
-  public void onTestButtonClick(final String id, final ButtonClickedEvent clickedEvent) {
+  @NiftyEventSubscriber(id="startGameButton")
+  public void onTestButton1Click(final String id, final ButtonClickedEvent clickedEvent) {
     screen.findElementByName(buttonToDialogMap.get(currentMenuButtonId)).hide(new EndNotify() {
       @Override
       public void perform() {
-        nifty.gotoScreen("demo");
+        nifty.exit();
+      }
+    });
+  }
+  
+  @NiftyEventSubscriber(id="quitGameButton")
+  public void onTestButton2Click(final String id, final ButtonClickedEvent clickedEvent) {
+    screen.findElementByName(buttonToDialogMap.get(currentMenuButtonId)).hide(new EndNotify() {
+      @Override
+      public void perform() {
+          exit = true;
+          nifty.exit();
       }
     });
   }
@@ -329,6 +342,10 @@ public class JmeScreenController implements ScreenController, KeyInputHandler {
     public void execute(final String[] args) {
       console.clear();
 }
+  }
+  
+  public static Boolean getExitStatus(){
+      return exit;
   }
 
 }

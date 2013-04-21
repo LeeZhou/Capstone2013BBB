@@ -44,13 +44,17 @@ import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.PopupBuilder;
 import de.lessvoid.nifty.builder.ScreenBuilder;
 import de.lessvoid.nifty.builder.StyleBuilder;
+import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
 import de.lessvoid.nifty.controls.console.builder.ConsoleBuilder;
+import de.lessvoid.nifty.controls.dropdown.builder.DropDownBuilder;
+import de.lessvoid.nifty.controls.label.builder.LabelBuilder;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.tools.Color;
 import java.util.List;
 import niftyclass.CommonBuilders;
 import niftyclass.DialogPanelControlDefinition;
 import niftyclass.MenuButtonControlDefinition;
+import screens.GameCustomizeControlDefinition;
 import screens.GameSettingControlDefinition;
 import screens.GameSettingController;
 import screens.JmeScreenController;
@@ -195,7 +199,7 @@ public class Main extends SimpleApplication {
         
        
         //Selected map
-        currentmap = 4;
+        currentmap = 2;
         setCam();
         setUpLight();
         //Load Map texture and object arraies
@@ -238,6 +242,7 @@ public class Main extends SimpleApplication {
         DialogPanelControlDefinition.register(nifty);
         // register the dialog controls
         GameSettingControlDefinition.register(nifty);
+        GameCustomizeControlDefinition.register(nifty);
         openGameSettingScreen(nifty);
         nifty.gotoScreen("settings");
         
@@ -1130,7 +1135,8 @@ public class Main extends SimpleApplication {
 
         {        
           controller(new JmeScreenController(
-                  "menuButtonDropDown", "dialogDropDown"){
+                  "menuButtonDialog1", "dialog1",
+                  "menuButtonDialog2", "dialog2"){
               @Override
               public void onEndScreen(){
                   app.isScreenEnd = true;
@@ -1153,7 +1159,9 @@ public class Main extends SimpleApplication {
                   childLayoutHorizontal();
                   padding("50px");
 
-                  control(MenuButtonControlDefinition.getControlBuilder("menuButtonDropDown", "Game Set-up", "Game Settings"));
+                  control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog1", "Game Set-up", "Game Settings"));
+                  panel(builders.hspacer("10px"));
+                  control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog2", "Customize Game", "Customize your ball, select a map, etc"));
                   panel(builders.hspacer("10px"));
 
                 }
@@ -1162,10 +1170,10 @@ public class Main extends SimpleApplication {
                 {
                   childLayoutOverlay();
                   width("100%");
-                  height("100%");
                   alignCenter();
                   valignCenter();
-                  control(new ControlBuilder("dialogDropDown", GameSettingControlDefinition.NAME));
+                  control(new ControlBuilder("dialog1", GameSettingControlDefinition.NAME));
+                  control(new ControlBuilder("dialog2", GameCustomizeControlDefinition.NAME));
                 }
               });
             }
@@ -1181,11 +1189,45 @@ public class Main extends SimpleApplication {
               panel(new PanelBuilder() {
                 {
                   childLayoutCenter();
-                  height("50px");
+                  height("15px");
                   width("100%");
                   backgroundColor("#5588");
                 }
               });
+                          panel(new PanelBuilder() {
+
+              {
+                childLayoutCenter();
+                height("50px");
+                width("100%");
+                backgroundColor("#5588");
+                panel(new PanelBuilder() {
+
+                  {
+                    paddingLeft("25px");
+                    paddingRight("25px");
+                    height("50%");
+                    width("100%");
+                    alignCenter();
+                    valignCenter();
+                    childLayoutHorizontal();
+
+                    panel(common.hspacer("7px"));
+                    control(new ButtonBuilder("quitGameButton", "Quit") {
+
+                      {
+                      }
+                    });
+                    panel(common.hspacer("*"));
+                    control(new ButtonBuilder("startGameButton", "Start Game!") {
+
+                      {
+                      }
+                    });
+                  }
+                });
+              }
+            });
             }
           });
                   layer(new LayerBuilder("whiteOverlay") {
@@ -1319,7 +1361,7 @@ public class Main extends SimpleApplication {
     }    
 
     public void getInputFromGUI(){       
-          if(GameSettingController.getExitStatus()){
+          if(JmeScreenController.getExitStatus()){
               app.stop();
           }
           numberPlayer = GameSettingController.getNumberPlayer();  

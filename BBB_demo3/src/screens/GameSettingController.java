@@ -3,14 +3,9 @@ package screens;
 import java.util.Properties;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.NiftyEventSubscriber;
-import de.lessvoid.nifty.controls.ButtonClickedEvent;
-import de.lessvoid.nifty.controls.CheckBoxStateChangedEvent;
 import de.lessvoid.nifty.controls.Controller;
 import de.lessvoid.nifty.controls.DropDown;
 import de.lessvoid.nifty.controls.DropDownSelectionChangedEvent;
-import de.lessvoid.nifty.controls.Label;
-import de.lessvoid.nifty.controls.RadioButtonGroup;
-import de.lessvoid.nifty.controls.RadioButtonGroupStateChangedEvent;
 import de.lessvoid.nifty.controls.RadioButtonStateChangedEvent;
 import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.input.NiftyInputEvent;
@@ -20,12 +15,8 @@ import niftyclass.JustAnExampleModelClass;
 
 
 public class GameSettingController implements Controller {
-  private Screen screen;
-  private RadioButtonGroup radioButtonGroup1;
   private DropDown [] dropDown;
-  private Nifty nifty2;
   public static int numberPlayer;
-  private static Boolean exit = false;
   private static int [] selection;
   private static int [] ability;
   
@@ -38,9 +29,6 @@ public class GameSettingController implements Controller {
       final Properties parameter,
       final Attributes controlDefinitionAttributes) {
         dropDown = new DropDown[4];
-        nifty2 = nifty;
-        this.screen = screen;
-        this.radioButtonGroup1 = screen.findNiftyControl("RadioGroup-1", RadioButtonGroup.class);
         for(int j = 0; j < 4; j++){
              this.dropDown[j] = screen.findNiftyControl("dropDown"+j, DropDown.class);            
         }
@@ -80,37 +68,18 @@ public class GameSettingController implements Controller {
   
   @NiftyEventSubscriber(id="option-1")
   public void onOption1Changed(final String id, final RadioButtonStateChangedEvent event) {
-    screen.findNiftyControl("option-1-changed", Label.class).setText(String.valueOf(event.isSelected()));
     numberPlayer = 2;
   }
 
   @NiftyEventSubscriber(id="option-2")
   public void onOption2Changed(final String id, final RadioButtonStateChangedEvent event) {
-    screen.findNiftyControl("option-2-changed", Label.class).setText(String.valueOf(event.isSelected()));
     numberPlayer = 3;
   }
 
   @NiftyEventSubscriber(id="option-3")
   public void onOption3Changed(final String id, final RadioButtonStateChangedEvent event) {
-    screen.findNiftyControl("option-3-changed", Label.class).setText(String.valueOf(event.isSelected()));
     numberPlayer = 4;
   }
-
-  @NiftyEventSubscriber(id="RadioGroup-1")
-  public void onRadioGroup1Changed(final String id, final RadioButtonGroupStateChangedEvent event) {
-    screen.findNiftyControl("RadioGroup-1-changed", Label.class).setText(event.getSelectedId() + " (" + event.getPreviousSelectedId() + ")");
-  }
-
-    @NiftyEventSubscriber(id="startButton")
-    public void onStartButtonClicked(final String id, final ButtonClickedEvent event) {
-          nifty2.exit();
-    }   
-    @NiftyEventSubscriber(id="quitButton")
-    public void onQuitButtonClicked(final String id, final ButtonClickedEvent event) {
-          exit = true;
-          nifty2.exit();
-    }  
-
     // Ability dropdown selection
     
     @NiftyEventSubscriber(id="dropDown0")
@@ -223,10 +192,6 @@ public class GameSettingController implements Controller {
         
         System.arraycopy(selection, 0, ability, 0, 4);     
         return ability;        
-    }
-    
-    public static Boolean getExitStatus(){
-        return exit;        
     }
 
 }

@@ -57,23 +57,17 @@ public class GameSettingControlDefinition {
             panel(new PanelBuilder() {{
               childLayoutHorizontal();
               control(builders.createLabel("2P", "25px"));
-              control(new RadioButtonBuilder("option-1") {{
-                group("RadioGroup-1");
-              }});
+              control(new RadioButtonBuilder("option-1"));
             }});
             panel(new PanelBuilder() {{
               childLayoutHorizontal();
               control(builders.createLabel("3P", "25px"));
-              control(new RadioButtonBuilder("option-2") {{
-                group("RadioGroup-1");
-              }});
+              control(new RadioButtonBuilder("option-2"));
             }});
             panel(new PanelBuilder() {{
               childLayoutHorizontal();
               control(builders.createLabel("4P", "25px"));
-              control(new RadioButtonBuilder("option-3") {{
-                group("RadioGroup-1");
-              }});
+              control(new RadioButtonBuilder("option-3"));
             }});
           }});
           panel(builders.hspacer("10px"));        
@@ -148,15 +142,7 @@ public class GameSettingControlDefinition {
             
         }});  
                 
-        panel(builders.vspacer());  
-        panel(builders.vspacer());     
-        panel(builders.vspacer());  
-        panel(new PanelBuilder() {{
-               childLayoutHorizontal();
-               control(new ButtonBuilder("startButton", "Start"));
-               panel(builders.hspacer("10px"));
-               control(new ButtonBuilder("quitButton", "Quit"));
-        }});       
+
       }});
     }}.registerControlDefintion(nifty);
   }
