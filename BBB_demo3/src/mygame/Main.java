@@ -55,6 +55,7 @@ import niftyclass.CommonBuilders;
 import niftyclass.DialogPanelControlDefinition;
 import niftyclass.MenuButtonControlDefinition;
 import screens.GameCustomizeControlDefinition;
+import screens.GameCustomizeController;
 import screens.GameSettingControlDefinition;
 import screens.GameSettingController;
 import screens.JmeScreenController;
@@ -90,7 +91,7 @@ public class Main extends SimpleApplication {
     //board parameter
     private int boardLength;
     private int boardWidth;
-    private int currentmap;
+    public int currentmap;
     private int[] maptexture;
     private int[] mapobjects;    
         
@@ -199,12 +200,9 @@ public class Main extends SimpleApplication {
         
        
         //Selected map
-        currentmap = 2;
         setCam();
         setUpLight();
-        //Load Map texture and object arraies
-        maptexture = selectedMapTexture(currentmap);
-        mapobjects = selectedMapObject(currentmap);    
+        //Load Map texture and object arraies 
         InitGUI();
    }   
    
@@ -212,6 +210,8 @@ public class Main extends SimpleApplication {
     private void InitObj(){ 
         getInputFromGUI();
         flyCam.setDragToRotate(false);
+        maptexture = selectedMapTexture(currentmap);
+        mapobjects = selectedMapObject(currentmap);   
         variableInit();
         initMaterials(); 
         createBallArray(numberPlayer); 
@@ -220,6 +220,8 @@ public class Main extends SimpleApplication {
         createPowerUp();  
         abilityMapping = new long [numberPlayer];
         initAbilities(abilityMapping);
+        rootNode.attachChild(SkyFactory.createSky(
+            assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
     }
     
     private void InitGUI(){                
@@ -261,9 +263,7 @@ public class Main extends SimpleApplication {
     }
     
     // set camera position and light
-    private void setCam(){
-        rootNode.attachChild(SkyFactory.createSky(
-            assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
+    private void setCam(){        
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
         flyCam.setEnabled(false);        
         if(currentmap == 0){
@@ -392,7 +392,7 @@ public class Main extends SimpleApplication {
         mat_road.setBoolean("UseMaterialColors",true);    
         mat_road.setColor("Specular",ColorRGBA.White);
         mat_road.setColor("Diffuse",ColorRGBA.White);
-        mat_road.setFloat("Shininess", 5f); // [1,128]
+        mat_road.setFloat("Shininess", 5f);
 
     }
 
@@ -617,17 +617,6 @@ public class Main extends SimpleApplication {
                 }
     }
     
-
-    /*
-     * 
-     *   Force Push is buggy: Happens when you use the ability when only two players are left
-     *  java.lang.NullPointerException
-     * 	at mygame.Main.forcePush(Main.java:639)
-     * 	at mygame.Main.actAbility(Main.java:546)
-     * 	at mygame.Main$2.onAction(Main.java:520)
-     *  
-     * 
-     */
     
     public void forcePush(int i) {
         Ray push = new Ray(ball_phy[i].getPhysicsLocation(), ball_phy[i].getLinearVelocity()); 
@@ -1160,9 +1149,8 @@ public class Main extends SimpleApplication {
                   padding("50px");
 
                   control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog1", "Game Set-up", "Game Settings"));
-                  panel(builders.hspacer("10px"));
+                  panel(builders.hspacer("20px"));
                   control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog2", "Customize Game", "Customize your ball, select a map, etc"));
-                  panel(builders.hspacer("10px"));
 
                 }
               });
@@ -1366,12 +1354,13 @@ public class Main extends SimpleApplication {
           }
           numberPlayer = GameSettingController.getNumberPlayer();  
           ballLeft = numberPlayer;
-          
+          currentmap = GameCustomizeController.getCurrentMap();
           abilityFromUI = GameSettingController.getPlayerAbility();
           System.out.println("p1: " + abilityFromUI[0]);
           System.out.println("p2: " + abilityFromUI[1]);
           System.out.println("p3: " + abilityFromUI[2]);
           System.out.println("p4: " + abilityFromUI[3]);
+          System.out.println("Map: " + currentmap);
     }
 
 }

@@ -46,13 +46,15 @@ public class GameCustomizeControlDefinition {
         
         panel(new PanelBuilder() {{
           childLayoutHorizontal();
-          
+          control(new RadioGroupBuilder("RadioGroup-2"));
           panel(new PanelBuilder() {{
             childLayoutVertical();
             image(new ImageBuilder("map0") {{
                   filename("Interface/map0.png");
                 }});
-            control(new RadioButtonBuilder("option-0"));
+            control(new RadioButtonBuilder("option-0"){{
+                group("RadioGroup-2");
+            }});
           }});          
           
           panel(builders.hspacer("10px"));
@@ -62,7 +64,9 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map1") {{
                   filename("Interface/map1.png");
                 }});
-            control(new RadioButtonBuilder("option-1"));
+            control(new RadioButtonBuilder("option-1"){{
+                group("RadioGroup-2");
+            }});
           }});          
           
           
@@ -73,7 +77,9 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map2") {{
                   filename("Interface/map2.png");
                 }});
-            control(new RadioButtonBuilder("option-2"));
+            control(new RadioButtonBuilder("option-2"){{
+                group("RadioGroup-2");
+            }});
           }});          
                     
           panel(builders.hspacer("10px"));
@@ -83,7 +89,9 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map3") {{
                   filename("Interface/map3.png");
                 }});
-            control(new RadioButtonBuilder("option-3"));
+            control(new RadioButtonBuilder("option-3"){{
+                group("RadioGroup-2");
+            }});
           }});          
           
           
@@ -94,10 +102,10 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map4") {{
                   filename("Interface/map4.png");
                 }});
-            control(new RadioButtonBuilder("option-4"));
-          }});       
-          
-          
+            control(new RadioButtonBuilder("option-4"){{
+                group("RadioGroup-2");
+            }});
+          }});                
         }});
         
         

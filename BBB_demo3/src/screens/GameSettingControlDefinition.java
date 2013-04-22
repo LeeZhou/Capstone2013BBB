@@ -42,6 +42,7 @@ public class GameSettingControlDefinition {
         panel(new PanelBuilder() {{
           control(builders.createLabel("# of Players"));
           childLayoutHorizontal();
+          control(new RadioGroupBuilder("RadioGroup-1"));
           panel(new PanelBuilder() {{
             childLayoutHorizontal();
             backgroundColor("#8001");
@@ -57,17 +58,23 @@ public class GameSettingControlDefinition {
             panel(new PanelBuilder() {{
               childLayoutHorizontal();
               control(builders.createLabel("2P", "25px"));
-              control(new RadioButtonBuilder("option-1"));
+              control(new RadioButtonBuilder("option-1"){{
+                  group("RadioGroup-1");
+              }});
             }});
             panel(new PanelBuilder() {{
               childLayoutHorizontal();
               control(builders.createLabel("3P", "25px"));
-              control(new RadioButtonBuilder("option-2"));
+              control(new RadioButtonBuilder("option-2"){{
+                  group("RadioGroup-1");
+              }});
             }});
             panel(new PanelBuilder() {{
               childLayoutHorizontal();
               control(builders.createLabel("4P", "25px"));
-              control(new RadioButtonBuilder("option-3"));
+              control(new RadioButtonBuilder("option-3"){{
+                  group("RadioGroup-1");
+              }});
             }});
           }});
           panel(builders.hspacer("10px"));        
