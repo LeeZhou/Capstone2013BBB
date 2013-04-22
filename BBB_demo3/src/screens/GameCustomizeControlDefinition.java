@@ -52,8 +52,10 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map0") {{
                   filename("Interface/map0.png");
                 }});
+            panel(builders.vspacer());
             control(new RadioButtonBuilder("option-0"){{
                 group("RadioGroup-2");
+                alignCenter();
             }});
           }});          
           
@@ -64,8 +66,10 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map1") {{
                   filename("Interface/map1.png");
                 }});
+            panel(builders.vspacer());
             control(new RadioButtonBuilder("option-1"){{
                 group("RadioGroup-2");
+                alignCenter();
             }});
           }});          
           
@@ -77,8 +81,10 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map2") {{
                   filename("Interface/map2.png");
                 }});
+            panel(builders.vspacer());
             control(new RadioButtonBuilder("option-2"){{
                 group("RadioGroup-2");
+                alignCenter();
             }});
           }});          
                     
@@ -89,8 +95,10 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map3") {{
                   filename("Interface/map3.png");
                 }});
+            panel(builders.vspacer());
             control(new RadioButtonBuilder("option-3"){{
                 group("RadioGroup-2");
+                alignCenter();
             }});
           }});          
           
@@ -102,8 +110,10 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map4") {{
                   filename("Interface/map4.png");
                 }});
+            panel(builders.vspacer());
             control(new RadioButtonBuilder("option-4"){{
                 group("RadioGroup-2");
+                alignCenter();
             }});
           }});                
         }});

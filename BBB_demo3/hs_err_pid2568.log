@@ -1,0 +1,81 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x0000000070c83305, pid=2568, tid=5840
+#
+# JRE version: 7.0_15-b03
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (23.7-b01 mixed mode windows-amd64 compressed oops)
+# Problematic frame:
+# V  [jvm.dll+0x73305]
+#
+# Failed to write core dump. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.sun.com/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x000000000e35c000):  JavaThread "LWJGL Renderer Thread" [_thread_in_vm, id=5840, stack(0x000000000fb50000,0x000000000fc50000)]
+
+siginfo: ExceptionCode=0xc0000005, reading address 0x0000000680000000
+
+Registers:
+RAX=0x000000077ffffff0, RBX=0x0000000000000008, RCX=0x000000000fc4e150, RDX=0xffffffff00000010
+RSP=0x000000000fc4e128, RBP=0x000000000fc4e160, RSI=0x0000000000000020, RDI=0x0000000000000000
+R8 =0x000000007ffffff0, R9 =0x000000007ffffff0, R10=0x0000000000000008, R11=0x000000077ffffff0
+R12=0x000000000ba1d7f0, R13=0x0000000000000006, R14=0x0000000780202690, R15=0x000000000ba1dbb8
+RIP=0x0000000070c83305, EFLAGS=0x0000000000010282
+
+Top of Stack: (sp=0x000000000fc4e128)
+0x000000000fc4e128:   0000000070cf5614 000000000242b8b0
+0x000000000fc4e138:   0000000070cb32c9 000000000e35c000
+0x000000000fc4e148:   0000000070cf4532 000000077ffffff0
+0x000000000fc4e158:   00000000000000aa 000000000ba1d7e0
+0x000000000fc4e168:   000000000fc4e210 000000000ba1d7d0
+0x000000000fc4e178:   000000000ba1d7f0 0000000780202690
+0x000000000fc4e188:   0000000780202718 000000000e3a6550
+0x000000000fc4e198:   0000000070cf4e3c 000000000e3a6550
+0x000000000fc4e1a8:   0000000001000000 000000000fc4e210
+0x000000000fc4e1b8:   0000000006000000 0000000000000002
+0x000000000fc4e1c8:   0000000000000138 0000000000000003
+0x000000000fc4e1d8:   000000000ba1d7d0 000000000e3a6550
+0x000000000fc4e1e8:   0000000070cf5083 0000000780202690
+0x000000000fc4e1f8:   0000000000000008 00000000000000b8
+0x000000000fc4e208:   00000000000000b0 000000000ba1dbf8
+0x000000000fc4e218:   0000003000000008 000000aa0000004a 
+
+Instructions: (pc=0x0000000070c83305)
+0x0000000070c832e5:   40 48 83 c4 20 5f e9 10 ff 03 00 4c 63 01 41 8d
+0x0000000070c832f5:   44 90 10 48 63 d0 48 8b 01 48 83 e2 fc 49 2b d0
+0x0000000070c83305:   8b 0c 02 0f b6 c1 89 4c 24 10 0f b6 4c 24 11 c1
+0x0000000070c83315:   e0 08 0b c1 0f b6 4c 24 12 c1 e0 08 0b c1 0f b6 
+
+
+Register to memory mapping:
+
+RAX=0x000000077ffffff0 is an oop
+{constMethod} 
+ - klass: {other class}
+ - method:       0x0000000780000060 {method} 'getJavaLevelFor' '(Lorg/bushe/swing/event/Logger$Level;)Ljava/util/logging/Level;' in 'org/bushe/swing/event/Logger'
+ - exceptions:   0x000000077ee01d50
+bci_from(000000077FFFFFF0) = 8; print_codes():
+RBX=0x0000000000000008 is an unknown value
+RCX=0x000000000fc4e150 is pointing into the stack for thread: 0x000000000e35c000
+RDX=0xffffffff00000010 is an unknown value
+RSP=0x000000000fc4e128 is pointing into the stack for thread: 0x000000000e35c000
+RBP=0x000000000fc4e160 is pointing into the stack for thread: 0x000000000e35c000
+RSI=0x0000000000000020 is an unknown value
+RDI=0x0000000000000000 is an unknown value
+R8 =0x000000007ffffff0 is an unknown value
+R9 =0x000000007ffffff0 is an unknown value
+R10=0x0000000000000008 is an unknown value
+R11=0x000000077ffffff0 is an oop
+{constMethod} 
+ - klass: {other class}
+ - method:       0x0000000780000060 {method} 'getJavaLevelFor' '(Lorg/bushe/swing/event/Logger$Level;)Ljava/util/logging/Level;' in 'org/bushe/swing/event/Logger'
+ - exceptions:   0x000000077ee01d50
+bci_from(000000077FFFFFF0) = 8; print_codes():
+R12=0x000000000ba1d7f0 is an unknown value
+R13=0x0000000000000006 is an unknown value
+R14=

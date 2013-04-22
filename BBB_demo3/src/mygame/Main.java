@@ -1157,7 +1157,7 @@ public class Main extends SimpleApplication {
               panel(new PanelBuilder("dialogParent") {
                 {
                   childLayoutOverlay();
-                  width("100%");
+                  width("140%");
                   alignCenter();
                   valignCenter();
                   control(new ControlBuilder("dialog1", GameSettingControlDefinition.NAME));
