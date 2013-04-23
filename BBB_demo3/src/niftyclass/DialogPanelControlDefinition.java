@@ -26,10 +26,10 @@ public class DialogPanelControlDefinition {
           alignCenter();
           valignCenter();
           width("50%");
-          height("60%");
+          height("70%");
           padding("14px,20px,26px,19px");
-          onShowEffect(builders.createMoveEffect("in", "left", 500));
-          onHideEffect(builders.createMoveEffect("out", "right", 500));
+          onShowEffect(builders.createMoveEffect("in", "bottom", 500));
+          onHideEffect(builders.createMoveEffect("out", "top", 500));
           onHideEffect(builders.createFadeEffect());
         }});
       }});

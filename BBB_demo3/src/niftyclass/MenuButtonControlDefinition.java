@@ -17,7 +17,7 @@ public class MenuButtonControlDefinition {
     new ControlDefinitionBuilder(NAME) {{
       controller(new MenuButtonController());
       panel(new PanelBuilder() {{
-        backgroundColor("#40f");
+        backgroundColor("#58f");
         width("150px");
         alignCenter();
         valignCenter();
@@ -25,7 +25,7 @@ public class MenuButtonControlDefinition {
         focusable(true);
         visibleToMouse();
         onActiveEffect(new EffectBuilder("border") {{
-          effectParameter("color", "#112f");
+          effectParameter("color", "#431");
         }});
         onHoverEffect(new HoverEffectBuilder("changeMouseCursor") {{
           effectParameter("id", "hand");

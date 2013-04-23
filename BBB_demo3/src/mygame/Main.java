@@ -39,26 +39,30 @@ import com.jme3.util.TangentBinormalGenerator;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.builder.ControlBuilder;
 import de.lessvoid.nifty.builder.EffectBuilder;
+import de.lessvoid.nifty.builder.ImageBuilder;
 import de.lessvoid.nifty.builder.LayerBuilder;
 import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.builder.PopupBuilder;
 import de.lessvoid.nifty.builder.ScreenBuilder;
 import de.lessvoid.nifty.builder.StyleBuilder;
+import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
 import de.lessvoid.nifty.controls.console.builder.ConsoleBuilder;
 import de.lessvoid.nifty.controls.dropdown.builder.DropDownBuilder;
 import de.lessvoid.nifty.controls.label.builder.LabelBuilder;
+import de.lessvoid.nifty.screen.DefaultScreenController;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.tools.Color;
 import java.util.List;
 import niftyclass.CommonBuilders;
 import niftyclass.DialogPanelControlDefinition;
 import niftyclass.MenuButtonControlDefinition;
-import screens.GameCustomizeControlDefinition;
-import screens.GameCustomizeController;
-import screens.GameSettingControlDefinition;
-import screens.GameSettingController;
+import screens.MapSelectionControlDefinition;
+import screens.MapSelectionController;
+import screens.PlayerSettingControlDefinition;
+import screens.PlayerSettingController;
 import screens.JmeScreenController;
+import screens.KeyBindingControlDefinition;
 
 public class Main extends SimpleApplication {
   
@@ -71,6 +75,7 @@ public class Main extends SimpleApplication {
     private Boolean isScreenEnd = false;
     private Boolean isghost=false;
     private int ballLeft;
+    private Boolean run = false;
     
     private BulletAppState bulletAppState;
 
@@ -195,9 +200,7 @@ public class Main extends SimpleApplication {
         
         /** Set up Physics Game */
         bulletAppState = new BulletAppState();
-        stateManager.attach(bulletAppState);
-        bulletAppState.getPhysicsSpace().addCollisionListener(physicsCollisionListener);
-        
+        stateManager.attach(bulletAppState);        
        
         //Selected map
         setCam();
@@ -247,10 +250,18 @@ public class Main extends SimpleApplication {
         MenuButtonControlDefinition.register(nifty);
         DialogPanelControlDefinition.register(nifty);
         // register the dialog controls
-        GameSettingControlDefinition.register(nifty);
-        GameCustomizeControlDefinition.register(nifty);
+        PlayerSettingControlDefinition.register(nifty);
+        MapSelectionControlDefinition.register(nifty);
+        KeyBindingControlDefinition.register(nifty);
+        createIntroScreen(nifty);
         openGameSettingScreen(nifty);
-        nifty.gotoScreen("settings");
+        if(!run){
+            nifty.gotoScreen("start");
+            run = true;
+        }
+        else{
+            nifty.gotoScreen("settings");
+        }
         
     }
     
@@ -268,7 +279,7 @@ public class Main extends SimpleApplication {
     
     // set camera position and light
     private void setCam(){        
-        viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
+        viewPort.setBackgroundColor(new ColorRGBA(0f, 0f, 0f, 1f));
         flyCam.setEnabled(false);        
         if(currentmap == 0){
             cam.setLocation(new Vector3f(11f,20f,25f)); 
@@ -637,28 +648,17 @@ public class Main extends SimpleApplication {
     }
     
     private void blink(int i) {
-        Vector3f temp = ball[i].getLocalTranslation();
-        //System.out.println(ball_phy[i].getLinearVelocity().x+ball_phy[i].getLinearVelocity().z);
-        temp.add(ball_phy[i].getLinearVelocity().mult(3));
-        //ball[i].setLocalTranslation(temp);
-        ball_phy[i].setPhysicsLocation(temp);
+        ball_phy[i].setPhysicsLocation(ball[i].getLocalTranslation().add(
+               ball_phy[i].getLinearVelocity().mult(2)));
     }
     
     private void glue(int i) {
         ball_phy[i].setLinearVelocity(new Vector3f(0,0,0));
-    }
-    
-    // Listens to collision between objects
-    private PhysicsCollisionListener physicsCollisionListener = new PhysicsCollisionListener(){        
-        public void collision(PhysicsCollisionEvent event) {
-            if (event.getNodeA().getName().equals("Ball 1") || event.getNodeB().getName().equals("Ball 1 ")) {                
-                if (event.getNodeA().getName().equals("Ball 2") || event.getNodeB().getName().equals("Ball 2")) {
-                    System.out.println("Ouch my balls!!!!!!!!"); 
-                }    
-            }          
-        }
-    };  
+    }   
 
+    private void createStatus(){
+        
+    }
     
     @Override
     public void simpleUpdate(float tpf) {
@@ -701,72 +701,26 @@ public class Main extends SimpleApplication {
         if(loc[0].y < 0 && isBall1Alive){          
             isBall1Alive = false;  
             ballLeft--;
-            if(!isBall2Alive || !isBall3Alive || !isBall4Alive){
-              ch.detachAllChildren();
-            }
-            ch = new BitmapText(guiFont, false);  
-            ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
-            ch.setText("Ball 1 DEAD");       
-            ch.setColor(ColorRGBA.Red);
-            ch.setLocalTranslation(
-            settings.getWidth() / 3f,
-            settings.getHeight() / 4f, 0);
-            guiNode.attachChild(ch);
             bulletAppState.getPhysicsSpace().remove(ball_phy[0]);
             rootNode.detachChild(ball[0]);
         } 
         else if(loc[1].y < 0 && isBall2Alive){
             isBall2Alive = false;            
-            ballLeft--;
-            if(!isBall1Alive || !isBall3Alive || !isBall4Alive){
-              ch.detachAllChildren();
-            }
-
-            ch = new BitmapText(guiFont, false); 
-            ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
-            ch.setText("Ball 2 DEAD");        
-            ch.setColor(ColorRGBA.Red);
-            ch.setLocalTranslation(
-            settings.getWidth() / 3f,
-            settings.getHeight() / 4f, 0);
-            guiNode.attachChild(ch);
+            ballLeft--;            
             bulletAppState.getPhysicsSpace().remove(ball_phy[1]);
             rootNode.detachChild(ball[1]);
         }
         else if(numberPlayer>=3){
             if(loc[2].y < 0 && isBall3Alive){
                 isBall3Alive = false;            
-                ballLeft--;
-                if(!isBall2Alive || !isBall1Alive || !isBall4Alive){
-                  ch.detachAllChildren();
-                }
-
-                ch = new BitmapText(guiFont, false); 
-                ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
-                ch.setText("Ball 3 DEAD");        
-                ch.setColor(ColorRGBA.Red);
-                ch.setLocalTranslation(
-                settings.getWidth() / 3f,
-                settings.getHeight() / 4f, 0);
-                guiNode.attachChild(ch);
+                ballLeft--;                
                 bulletAppState.getPhysicsSpace().remove(ball_phy[2]);
                 rootNode.detachChild(ball[2]);   
             }
             else if(numberPlayer==4){
                 if(loc[3].y < 0 && isBall4Alive){
                 isBall4Alive = false;      
-                ballLeft--;
-                if(!isBall2Alive || !isBall1Alive || !isBall3Alive){
-                    ch.detachAllChildren();
-                }
-                ch = new BitmapText(guiFont, false); 
-                ch.setSize(guiFont.getCharSet().getRenderedSize() * 5);
-                ch.setText("Ball 4 DEAD");        
-                ch.setColor(ColorRGBA.Red);
-                ch.setLocalTranslation(
-                settings.getWidth() / 3f,
-                settings.getHeight() / 4f, 0);
-                guiNode.attachChild(ch);
+                ballLeft--;                
                 bulletAppState.getPhysicsSpace().remove(ball_phy[3]);
                 rootNode.detachChild(ball[3]);
                 }    
@@ -802,7 +756,6 @@ public class Main extends SimpleApplication {
         }
         rootNode.detachAllChildren(); 
         counter = 0;        
-        ch.detachAllChildren();        
         if(mineCnt > 0){
             bulletAppState.getPhysicsSpace().remove(mine_phy);
         }
@@ -1119,6 +1072,179 @@ public class Main extends SimpleApplication {
     }
     
     // GUI
+    
+    private static Screen createIntroScreen(final Nifty nifty) {
+    Screen screen = new ScreenBuilder("start") {
+
+      {
+        controller(new DefaultScreenController() {
+
+          @Override
+          public void onStartScreen() {
+            nifty.gotoScreen("settings");
+          }
+        });
+        layer(new LayerBuilder("layer") {
+
+          {
+            childLayoutCenter();
+            onStartScreenEffect(new EffectBuilder("fade") {
+
+              {
+                length(3000);
+                effectParameter("start", "#0");
+                effectParameter("end", "#f");
+              }
+            });
+            panel(new PanelBuilder() {
+
+              {
+                alignCenter();
+                valignCenter();
+                childLayoutHorizontal();
+                width("856px");
+                panel(new PanelBuilder() {
+
+                  {
+                    width("300px");
+                    height("256px");
+                    childLayoutCenter();
+                    text(new TextBuilder() {
+
+                      {
+                        text("Battle Ball Battle");
+                        style("base-font");
+                        alignCenter();
+                        valignCenter();
+                        onStartScreenEffect(new EffectBuilder("fade") {
+
+                          {
+                            length(1000);
+                            effectValue("time", "1700", "value", "0.0");
+                            effectValue("time", "2000", "value", "1.0");
+                            effectValue("time", "2600", "value", "1.0");
+                            effectValue("time", "3200", "value", "0.0");
+                            post(false);
+                            neverStopRendering(true);
+                          }
+                        });
+                      }
+                    });
+                  }
+                });
+                panel(new PanelBuilder() {
+
+                  {
+                    alignCenter();
+                    valignCenter();
+                    childLayoutOverlay();
+                    width("256px");
+                    height("256px");
+                    onStartScreenEffect(new EffectBuilder("shake") {
+
+                      {
+                        length(250);
+                        startDelay(1300);
+                        inherit();
+                        effectParameter("global", "false");
+                        effectParameter("distance", "10.");
+                      }
+                    });
+                    onStartScreenEffect(new EffectBuilder("imageSize") {
+
+                      {
+                        length(600);
+                        startDelay(3000);
+                        effectParameter("startSize", "1.0");
+                        effectParameter("endSize", "2.0");
+                        inherit();
+                        neverStopRendering(true);
+                      }
+                    });
+                    onStartScreenEffect(new EffectBuilder("fade") {
+
+                      {
+                        length(600);
+                        startDelay(3000);
+                        effectParameter("start", "#f");
+                        effectParameter("end", "#0");
+                        inherit();
+                        neverStopRendering(true);
+                      }
+                    });
+
+                    image(new ImageBuilder() {
+
+                      {
+                        filename("Interface/header_icon.png");
+                        onStartScreenEffect(new EffectBuilder("move") {
+
+                          {
+                            length(1000);
+                            startDelay(100);
+                            timeType("exp");
+                            effectParameter("factor", "6.f");
+                            effectParameter("mode", "in");
+                            //effectParameter("direction", "bottom");
+                          }
+                        });
+                      }
+                    });
+                  }
+                });
+                panel(new PanelBuilder() {
+
+                  {
+                    width("300px");
+                    height("256px");
+                    childLayoutCenter();
+                    text(new TextBuilder() {
+
+                      {
+                        text("By Calvin Chiu, Klesti Muco and Lee Zhou");
+                        style("base-font");
+                        alignCenter();
+                        valignCenter();
+                        onStartScreenEffect(new EffectBuilder("fade") {
+
+                          {
+                            length(2000);
+                            effectValue("time", "1700", "value", "0.0");
+                            effectValue("time", "2000", "value", "1.0");
+                            effectValue("time", "2600", "value", "1.0");
+                            effectValue("time", "3200", "value", "0.0");
+                            post(false);
+                            neverStopRendering(true);
+                          }
+                        });
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+        layer(new LayerBuilder() {
+
+          {
+            backgroundColor("#0000");
+            onStartScreenEffect(new EffectBuilder("fade") {
+
+              {
+                length(1000);
+                startDelay(3000);
+                effectParameter("start", "#0");
+                effectParameter("end", "#f");
+              }
+            });
+          }
+        });
+      }
+    }.build(nifty);
+    return screen;
+  }
+    
     private static Screen openGameSettingScreen(final Nifty nifty) {
       final CommonBuilders common = new CommonBuilders();
       Screen screen = new ScreenBuilder("settings") {
@@ -1126,7 +1252,8 @@ public class Main extends SimpleApplication {
         {        
           controller(new JmeScreenController(
                   "menuButtonDialog1", "dialog1",
-                  "menuButtonDialog2", "dialog2"){
+                  "menuButtonDialog2", "dialog2",
+                  "menuButtonDialog3", "dialog3"){
               @Override
               public void onEndScreen(){
                   app.isScreenEnd = true;
@@ -1134,24 +1261,26 @@ public class Main extends SimpleApplication {
               }        
           });
 
-          inputMapping("de.lessvoid.nifty.input.mapping.DefaultInputMapping"); // this will enable Keyboard events for the screen controller
+          //inputMapping("de.lessvoid.nifty.input.mapping.DefaultInputMapping"); 
           layer(new LayerBuilder("layer") {
 
             {
-              backgroundImage("Interface/Penguins.jpg");
+              backgroundImage("Interface/background.png");
               childLayoutVertical();
               panel(new PanelBuilder("navigation") {
 
                 {
                   width("100%");
                   height("80px");
-                  backgroundColor("#5588");
+                  backgroundColor("#eee8");
                   childLayoutHorizontal();
                   padding("50px");
 
                   control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog1", "Player Set-up", "Number of players and their abilities"));
                   panel(builders.hspacer("20px"));
-                  control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog2", "Map & Key", "Select a map and choose key bindings"));
+                  control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog2", "Map Selection", "Select a map"));
+                  panel(builders.hspacer("20px"));
+                  control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog3", "Key Binding", "Choose key bindings"));
 
                 }
               });
@@ -1161,8 +1290,9 @@ public class Main extends SimpleApplication {
                   width("140%");
                   alignCenter();
                   valignCenter();
-                  control(new ControlBuilder("dialog1", GameSettingControlDefinition.NAME));
-                  control(new ControlBuilder("dialog2", GameCustomizeControlDefinition.NAME));
+                  control(new ControlBuilder("dialog1", PlayerSettingControlDefinition.NAME));
+                  control(new ControlBuilder("dialog2", MapSelectionControlDefinition.NAME));
+                  control(new ControlBuilder("dialog3", KeyBindingControlDefinition.NAME));
                 }
               });
             }
@@ -1180,16 +1310,16 @@ public class Main extends SimpleApplication {
                   childLayoutCenter();
                   height("15px");
                   width("100%");
-                  backgroundColor("#5588");
+                  backgroundColor("#eee8");
                 }
               });
-                          panel(new PanelBuilder() {
+              panel(new PanelBuilder() {
 
               {
                 childLayoutCenter();
                 height("50px");
                 width("100%");
-                backgroundColor("#5588");
+                backgroundColor("#eee8");
                 panel(new PanelBuilder() {
 
                   {
@@ -1353,10 +1483,10 @@ public class Main extends SimpleApplication {
           if(JmeScreenController.getExitStatus()){
               app.stop();
           }
-          numberPlayer = GameSettingController.getNumberPlayer();  
+          numberPlayer = PlayerSettingController.getNumberPlayer();  
           ballLeft = numberPlayer;
-          currentmap = GameCustomizeController.getCurrentMap();
-          abilityFromUI = GameSettingController.getPlayerAbility();
+          currentmap = MapSelectionController.getCurrentMap();
+          abilityFromUI = PlayerSettingController.getPlayerAbility();
           System.out.println("p1: " + abilityFromUI[0]);
           System.out.println("p2: " + abilityFromUI[1]);
           System.out.println("p3: " + abilityFromUI[2]);
