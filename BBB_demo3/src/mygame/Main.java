@@ -217,8 +217,8 @@ public class Main extends SimpleApplication {
         mapobjects = selectedMapObject(currentmap);   
         createFloor(currentmap);
         createPowerUp(); 
-        rootNode.attachChild(SkyFactory.createSky(
-            assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
+        //rootNode.attachChild(SkyFactory.createSky(
+          //  assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
         
         variableInit();
         initMaterials(); 
@@ -228,7 +228,7 @@ public class Main extends SimpleApplication {
         setUpKeys(); 
         abilityMapping = new long [numberPlayer];
         initAbilities(abilityMapping);
-        
+        createStatus();
     }
     
     private void InitGUI(){                
@@ -657,7 +657,12 @@ public class Main extends SimpleApplication {
     }   
 
     private void createStatus(){
-        
+        BitmapText hudText = new BitmapText(guiFont, false);          
+        hudText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+        hudText.setColor(ColorRGBA.White);                             // font color
+        hudText.setText("You can write any string here");             // the text
+        //hudText.setLocalTranslation(300, hudText.getLineHeight(), 0); // position
+        guiNode.attachChild(hudText);
     }
     
     @Override
@@ -674,7 +679,6 @@ public class Main extends SimpleApplication {
             for(int i = 0; i < numberPlayer; i++){
                 loc[i] = ball_phy[i].getPhysicsLocation();
         }
-
       
     
       //Update ghost node
