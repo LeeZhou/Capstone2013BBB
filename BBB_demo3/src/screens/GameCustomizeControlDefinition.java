@@ -35,7 +35,6 @@ public class GameCustomizeControlDefinition {
           control(builders.createLabel("Select Map"));
         }});
         panel(builders.vspacer());
-        panel(builders.vspacer());
         panel(new PanelBuilder() {{
           width("100%");
           height("1px");
@@ -52,8 +51,7 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map0") {{
                   filename("Interface/map0.png");
                 }});
-            panel(builders.vspacer());
-            control(new RadioButtonBuilder("option-0"){{
+            control(new RadioButtonBuilder("map-0"){{
                 group("RadioGroup-2");
                 alignCenter();
             }});
@@ -66,8 +64,7 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map1") {{
                   filename("Interface/map1.png");
                 }});
-            panel(builders.vspacer());
-            control(new RadioButtonBuilder("option-1"){{
+            control(new RadioButtonBuilder("map-1"){{
                 group("RadioGroup-2");
                 alignCenter();
             }});
@@ -81,8 +78,7 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map2") {{
                   filename("Interface/map2.png");
                 }});
-            panel(builders.vspacer());
-            control(new RadioButtonBuilder("option-2"){{
+            control(new RadioButtonBuilder("map-2"){{
                 group("RadioGroup-2");
                 alignCenter();
             }});
@@ -95,13 +91,11 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map3") {{
                   filename("Interface/map3.png");
                 }});
-            panel(builders.vspacer());
-            control(new RadioButtonBuilder("option-3"){{
+            control(new RadioButtonBuilder("map-3"){{
                 group("RadioGroup-2");
                 alignCenter();
             }});
-          }});          
-          
+          }});                    
           
           panel(builders.hspacer("10px"));
           
@@ -110,13 +104,68 @@ public class GameCustomizeControlDefinition {
             image(new ImageBuilder("map4") {{
                   filename("Interface/map4.png");
                 }});
-            panel(builders.vspacer());
-            control(new RadioButtonBuilder("option-4"){{
+            control(new RadioButtonBuilder("map-4"){{
                 group("RadioGroup-2");
                 alignCenter();
             }});
           }});                
+        }});      
+
+        panel(new PanelBuilder() {{
+          width("100%");
+          height("1px");
+          backgroundColor("#0008");
         }});
+        panel(builders.vspacer());
+        
+        // Key bindings
+        
+        panel(new PanelBuilder() {{
+          childLayoutVertical();
+          control(builders.createLabel("Key Bindings (Up Left Down Right + Ability)", "500px"));
+        }});        
+        panel(builders.vspacer());
+        panel(new PanelBuilder() {{
+          width("100%");
+          height("1px");
+          backgroundColor("#0008");
+        }});
+        panel(builders.vspacer());       
+
+        panel(new PanelBuilder() {{
+          childLayoutHorizontal();
+          control(builders.createLabel("Player 1"));
+          control(new DropDownBuilder("key0") {{
+               width("*");                    
+          }});            
+        }});
+        panel(builders.vspacer());
+        
+        panel(new PanelBuilder() {{
+          childLayoutHorizontal();
+          control(builders.createLabel("Player 2"));
+          control(new DropDownBuilder("key1") {{
+               width("*");                    
+          }});            
+        }});
+        panel(builders.vspacer());
+        
+        panel(new PanelBuilder() {{
+          childLayoutHorizontal();
+          control(builders.createLabel("Player 3"));
+          control(new DropDownBuilder("key2") {{
+               width("*");                    
+          }});            
+        }});
+        panel(builders.vspacer());
+        
+        panel(new PanelBuilder() {{
+          childLayoutHorizontal();
+          control(builders.createLabel("Player 4"));
+          control(new DropDownBuilder("key3") {{
+               width("*");                    
+          }});            
+        }});        
         
         
         

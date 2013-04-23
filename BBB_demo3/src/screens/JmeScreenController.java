@@ -80,13 +80,9 @@ public class JmeScreenController implements ScreenController, KeyInputHandler {
     this.nifty = nifty;
     this.screen = screen;
 
-    //this.creditsPopup = nifty.createPopup("creditsPopup");
     this.consolePopup = nifty.createPopup("consolePopup");
     this.console = this.consolePopup.findNiftyControl("console", Console.class);
-    //this.console.output("Humble Nifty Console Demonstration :)\nYou can toggle the console on/off with the F1 key\nEnter 'help' to show all available commands");
 
-    // this is not required when you only want to use the simple console
-    // but when you want some support for commands this is how
     consoleCommands = new ConsoleCommands(nifty, console);
 
     ConsoleCommand showCommand = new ShowCommand();
@@ -164,12 +160,13 @@ public class JmeScreenController implements ScreenController, KeyInputHandler {
 
   @NiftyEventSubscriber(id="startGameButton")
   public void onTestButton1Click(final String id, final ButtonClickedEvent clickedEvent) {
-    screen.findElementByName(buttonToDialogMap.get(currentMenuButtonId)).hide(new EndNotify() {
-      @Override
-      public void perform() {
-        nifty.exit();
-      }
-    });
+      Boolean isKeyBindingValid = GameCustomizeController.isKeyBindingValid();
+      if(isKeyBindingValid){
+               nifty.exit();
+          }
+          else{
+              
+          }
   }
   
   @NiftyEventSubscriber(id="quitGameButton")

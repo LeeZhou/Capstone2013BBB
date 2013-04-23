@@ -28,7 +28,6 @@ public class GameSettingControlDefinition {
         control(new ControlBuilder(DialogPanelControlDefinition.NAME) {{
         control(builders.createLabel("Game Settings"));
         panel(builders.vspacer());
-        panel(builders.vspacer());
 
         panel(new PanelBuilder() {{
           width("100%");
@@ -81,12 +80,24 @@ public class GameSettingControlDefinition {
         }});
         panel(builders.vspacer());
         panel(builders.vspacer());
-                
+        panel(new PanelBuilder() {{
+          width("100%");
+          height("1px");
+          backgroundColor("#0008");
+        }});
+        panel(builders.vspacer());   
         // P1 ability selection        
-
+        control(builders.createLabel("Select Ability"));
+        panel(builders.vspacer());
+        panel(new PanelBuilder() {{
+          width("100%");
+          height("1px");
+          backgroundColor("#0008");
+        }});
+        panel(builders.vspacer());
         panel(new PanelBuilder() {{
             childLayoutHorizontal();
-            control(builders.createLabel("P1 Ability"));                
+            control(builders.createLabel("Player 1"));                
             panel(builders.vspacer());
             panel(new PanelBuilder() {{
                 childLayoutHorizontal();
@@ -94,8 +105,7 @@ public class GameSettingControlDefinition {
                     width("*");                    
                 }
                 });
-            }});            
-            
+            }});               
         }});  
         
         panel(builders.vspacer());
@@ -103,7 +113,7 @@ public class GameSettingControlDefinition {
         // P2 ability
         panel(new PanelBuilder() {{
             childLayoutHorizontal();
-            control(builders.createLabel("P2 Ability"));                
+            control(builders.createLabel("Player 2"));                
             panel(builders.vspacer());
             panel(new PanelBuilder() {{
                 childLayoutHorizontal();
@@ -120,7 +130,7 @@ public class GameSettingControlDefinition {
         // P3 ability
         panel(new PanelBuilder() {{
             childLayoutHorizontal();
-            control(builders.createLabel("P3 Ability"));                
+            control(builders.createLabel("Player 3"));                
             panel(builders.vspacer());
             panel(new PanelBuilder() {{
                 childLayoutHorizontal();
@@ -137,7 +147,7 @@ public class GameSettingControlDefinition {
         // P4 ability 
         panel(new PanelBuilder() {{
             childLayoutHorizontal();
-            control(builders.createLabel("P4 Ability"));                
+            control(builders.createLabel("Player 4"));                
             panel(builders.vspacer());
             panel(new PanelBuilder() {{
                 childLayoutHorizontal();

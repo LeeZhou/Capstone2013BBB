@@ -39,8 +39,9 @@ public class GameSettingController implements Controller {
         selection = new int[4];
         ability = new int [4];
         for(int k = 0; k < 4; k++){
-            selection[k] = 1;        
-            ability[k] = 1;
+            selection[k] = 0;        
+            ability[k] = 0;
+            dropDown[k].addItem("No Ability");
             dropDown[k].addItem("Dash");
             dropDown[k].addItem("Jump");        
             dropDown[k].addItem("Glue");
@@ -49,10 +50,14 @@ public class GameSettingController implements Controller {
             dropDown[k].addItem("Blink");
             dropDown[k].addItem("Mine");
         }       
+        
+
   }
 
   @Override
-  public void onStartScreen() {        
+  public void onStartScreen() {
+        dropDown[2].disable();
+        dropDown[3].disable();
   }
 
   @Override
@@ -69,16 +74,22 @@ public class GameSettingController implements Controller {
   @NiftyEventSubscriber(id="option-1")
   public void onOption1Changed(final String id, final RadioButtonStateChangedEvent event) {
     numberPlayer = 2;
+    dropDown[3].disable();
+    dropDown[2].disable();
   }
 
   @NiftyEventSubscriber(id="option-2")
   public void onOption2Changed(final String id, final RadioButtonStateChangedEvent event) {
     numberPlayer = 3;
+    dropDown[2].enable();
+    dropDown[3].disable();
   }
 
   @NiftyEventSubscriber(id="option-3")
   public void onOption3Changed(final String id, final RadioButtonStateChangedEvent event) {
     numberPlayer = 4;
+    dropDown[2].enable();
+    dropDown[3].enable();
   }
     // Ability dropdown selection
     
@@ -105,6 +116,9 @@ public class GameSettingController implements Controller {
         else if(dropDown[0].getSelection() == "Mine"){
             selection[0] = 7;
         }
+        else if(dropDown[0].getSelection() == "No Ability"){
+            selection[0] = 0;
+        }
     }
 
     @NiftyEventSubscriber(id="dropDown1")
@@ -129,7 +143,10 @@ public class GameSettingController implements Controller {
         }
         else if(dropDown[1].getSelection() == "Mine"){
             selection[1] = 7;
-        }        
+        }       
+        else if(dropDown[1].getSelection() == "No Ability"){
+            selection[1] = 0;
+        }
     }
 
     @NiftyEventSubscriber(id="dropDown2")
@@ -154,6 +171,9 @@ public class GameSettingController implements Controller {
             }
             else if(dropDown[2].getSelection() == "Mine"){
                 selection[2] = 7;
+            }
+            else if(dropDown[2].getSelection() == "No Ability"){
+                selection[2] = 0;
             }
         
     }
@@ -180,6 +200,9 @@ public class GameSettingController implements Controller {
         }
         else if(dropDown[3].getSelection() == "Mine"){
             selection[3] = 7;
+        }
+        else if(dropDown[3].getSelection() == "No Ability"){
+            selection[3] = 0;
         }
         
     }    

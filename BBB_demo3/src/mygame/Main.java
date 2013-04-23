@@ -118,7 +118,7 @@ public class Main extends SimpleApplication {
     private int mineCnt = 0;
     
     // Hardcoded number of players for testing
-    public int numberPlayer;
+    private int numberPlayer;
     private static Main app;
     
     // GUI instance
@@ -128,8 +128,8 @@ public class Main extends SimpleApplication {
     
     // abilities variables
     private long [] abilityMapping;
-    public int [] assignAbility;
-    public int [] abilityFromUI;
+    private int [] assignAbility;
+    private int [] abilityFromUI;
     
     //Buff varaibles
     private long buffTimer = (System.nanoTime()/1000000000) + 5;
@@ -209,19 +209,23 @@ public class Main extends SimpleApplication {
     // initialize balls, obstacle and GUI
     private void InitObj(){ 
         getInputFromGUI();
-        flyCam.setDragToRotate(false);
+        flyCam.setDragToRotate(false);  
         maptexture = selectedMapTexture(currentmap);
         mapobjects = selectedMapObject(currentmap);   
-        variableInit();
-        initMaterials(); 
-        createBallArray(numberPlayer); 
-        setUpKeys();             
         createFloor(currentmap);
-        createPowerUp();  
-        abilityMapping = new long [numberPlayer];
-        initAbilities(abilityMapping);
+        createPowerUp(); 
         rootNode.attachChild(SkyFactory.createSky(
             assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
+        
+        variableInit();
+        initMaterials(); 
+        
+        
+        createBallArray(numberPlayer); 
+        setUpKeys(); 
+        abilityMapping = new long [numberPlayer];
+        initAbilities(abilityMapping);
+        
     }
     
     private void InitGUI(){                
@@ -330,12 +334,12 @@ public class Main extends SimpleApplication {
             else if(i==1)
             {
                 ball[1].setMaterial(mat_rock);
-                ball[i].setLocalTranslation(1.5f,gax,2*boardWidth-3.5f);
+                ball[i].setLocalTranslation(2*boardLength-3.5f,gax,2*boardWidth-3.5f);
             }
             else if(i==2)
             {
-                ball[i].setMaterial(mat_dirt);
-                ball[i].setLocalTranslation(2*boardLength-3.5f,gax,2*boardWidth-3.5f);
+                ball[i].setMaterial(mat_dirt);                
+                ball[i].setLocalTranslation(1.5f,gax,2*boardWidth-3.5f);
             }
             else if(i==3)
             {
@@ -356,7 +360,7 @@ public class Main extends SimpleApplication {
     }       
     
     //Initialize material and texture
-    public void initMaterials(){
+    private void initMaterials(){
 
         //Defining Ball 1 material
         mat_lit = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
@@ -409,23 +413,19 @@ public class Main extends SimpleApplication {
         rootNode.addLight(al);
     }    
 
-    private void setUpKeys() {
-        
-        //System Keys        
-        inputManager.addMapping("Reset",  new KeyTrigger(KeyInput.KEY_P));
-        inputManager.addListener(actionListener, "Reset");
+    private void setUpKeys() {         
         
         
         // Ability keybindings and listener
-        inputManager.addMapping("Ability1", new KeyTrigger(KeyInput.KEY_X));
+        inputManager.addMapping("Ability1", new KeyTrigger(KeyInput.KEY_Q));
         inputManager.addListener(actionListener, "Ability1");
-        inputManager.addMapping("Ability2", new KeyTrigger(KeyInput.KEY_B));
+        inputManager.addMapping("Ability2", new KeyTrigger(KeyInput.KEY_SPACE));
         inputManager.addListener(actionListener, "Ability2");
         if(numberPlayer >= 3){
-            inputManager.addMapping("Ability3", new KeyTrigger(KeyInput.KEY_COMMA));
+            inputManager.addMapping("Ability3", new KeyTrigger(KeyInput.KEY_RETURN));
             inputManager.addListener(actionListener, "Ability3");
             if(numberPlayer == 4){
-            inputManager.addMapping("Ability4", new KeyTrigger(KeyInput.KEY_NUMPAD2));        
+            inputManager.addMapping("Ability4", new KeyTrigger(KeyInput.KEY_NUMPAD0));        
             inputManager.addListener(actionListener, "Ability4");     
             }
         }
@@ -440,19 +440,19 @@ public class Main extends SimpleApplication {
         inputManager.addListener(analogListener,new String[]{ "Left","Right", "Up", "Down"});
       
         // Player 2 keybindings and listener
-        inputManager.addMapping("Left2", new KeyTrigger(KeyInput.KEY_F));
-        inputManager.addMapping("Right2", new KeyTrigger(KeyInput.KEY_H));
-        inputManager.addMapping("Up2", new KeyTrigger(KeyInput.KEY_T));
-        inputManager.addMapping("Down2", new KeyTrigger(KeyInput.KEY_G));
+        inputManager.addMapping("Left2", new KeyTrigger(KeyInput.KEY_J));
+        inputManager.addMapping("Right2", new KeyTrigger(KeyInput.KEY_L));
+        inputManager.addMapping("Up2", new KeyTrigger(KeyInput.KEY_I));
+        inputManager.addMapping("Down2", new KeyTrigger(KeyInput.KEY_K));
         
         inputManager.addListener(analogListener,new String[]{ "Left2","Right2", "Up2", "Down2"});        
         
         // Player 3 keybindings and listener
         if(numberPlayer >= 3){
-        inputManager.addMapping("Left3", new KeyTrigger(KeyInput.KEY_J));
-        inputManager.addMapping("Right3", new KeyTrigger(KeyInput.KEY_L));
-        inputManager.addMapping("Up3", new KeyTrigger(KeyInput.KEY_I));
-        inputManager.addMapping("Down3", new KeyTrigger(KeyInput.KEY_K));
+        inputManager.addMapping("Left3", new KeyTrigger(KeyInput.KEY_LEFT));
+        inputManager.addMapping("Right3", new KeyTrigger(KeyInput.KEY_RIGHT));
+        inputManager.addMapping("Up3", new KeyTrigger(KeyInput.KEY_UP));
+        inputManager.addMapping("Down3", new KeyTrigger(KeyInput.KEY_DOWN));
          
         inputManager.addListener(analogListener,new String[]{ "Left3","Right3", "Up3", "Down3"});        
         if(numberPlayer == 4){
@@ -536,7 +536,7 @@ public class Main extends SimpleApplication {
     }
   };    
     //looks for the player's ability
-    public void actAbility(int i) {
+    private void actAbility(int i) {
         if (abilityFromUI[i] == 1) {
             dash(i);
         }
@@ -559,19 +559,20 @@ public class Main extends SimpleApplication {
             mine(i);
         }
     }
+
     
-    public void dash(int i) {
+    private void dash(int i) {
         Vector3f v = ball_phy[i].getLinearVelocity();
             if(v.x != 0 && v.z!=0){
                 ball_phy[i].applyImpulse(new Vector3f(v.x*2,0,v.z*2), Vector3f.ZERO);
             }
     }
 
-    public void jump(int i) {
+    private void jump(int i) {
         ball_phy[i].applyImpulse(new Vector3f(0, 7f, 0), Vector3f.ZERO );
     }
     
-    public void mine(int i) {
+    private void mine(int i) {
         Sphere c = new Sphere(5, 5, 0.2f, true, false);
         c.setTextureMode(Sphere.TextureMode.Projected);
         TangentBinormalGenerator.generate(c);
@@ -597,7 +598,7 @@ public class Main extends SimpleApplication {
         mineCnt++;
     }
     
-    public void ghost(int i) {
+    private void ghost(int i) {
         if(isghost)
                 {
                     isghost=false;
@@ -618,7 +619,7 @@ public class Main extends SimpleApplication {
     }
     
     
-    public void forcePush(int i) {
+    private void forcePush(int i) {
         Ray push = new Ray(ball_phy[i].getPhysicsLocation(), ball_phy[i].getLinearVelocity()); 
         CollisionResult cr;
         CollisionResults results= new CollisionResults();
@@ -635,7 +636,7 @@ public class Main extends SimpleApplication {
          }
     }
     
-    public void blink(int i) {
+    private void blink(int i) {
         Vector3f temp = ball[i].getLocalTranslation();
         //System.out.println(ball_phy[i].getLinearVelocity().x+ball_phy[i].getLinearVelocity().z);
         temp.add(ball_phy[i].getLinearVelocity().mult(3));
@@ -643,7 +644,7 @@ public class Main extends SimpleApplication {
         ball_phy[i].setPhysicsLocation(temp);
     }
     
-    public void glue(int i) {
+    private void glue(int i) {
         ball_phy[i].setLinearVelocity(new Vector3f(0,0,0));
     }
     
@@ -807,14 +808,14 @@ public class Main extends SimpleApplication {
         }
     }    
     
-     public void initAbilities(long[] temp) {
+     private void initAbilities(long[] temp) {
         for (int i = 0; i < numberPlayer; i++) {
             temp[i] = System.nanoTime()/1000000000;
         }
     }
     
     // damage buff
-    public void buffDamage(int player, boolean on) {
+    private void buffDamage(int player, boolean on) {
         if (on) {
            ball_phy[player].setRestitution(1f);
            ball_phy[player].setMass(1.7f);
@@ -828,7 +829,7 @@ public class Main extends SimpleApplication {
     }
     
     //Speed buff
-     public void buffSpeed(int player, boolean on) {
+     private void buffSpeed(int player, boolean on) {
          if (on) {
             ballSpeed[player] = 2;
          }
@@ -838,7 +839,7 @@ public class Main extends SimpleApplication {
      }
 
      //Juggernaut buff
-     public void buffJugg(int player, boolean on) {//Juggarnaut ability
+     private void buffJugg(int player, boolean on) {//Juggarnaut ability
          if (on) {
             ball_phy[player].setRestitution(.5f);
             ball_phy[player].setMass(2f);
@@ -852,7 +853,7 @@ public class Main extends SimpleApplication {
      }
 
      //Size buff
-     public void buffSize(int player, boolean on) {
+     private void buffSize(int player, boolean on) {
          if (on) {
             ball[player].scale(2);
             ball_phy[player].setMass(2);
@@ -863,7 +864,7 @@ public class Main extends SimpleApplication {
          }
      }
     
-    public boolean onCooldown(long[] temp, int i) {
+    private boolean onCooldown(long[] temp, int i) {
         if (temp[i] < (System.nanoTime()/1000000000)) {
             temp[i] = (System.nanoTime()/1000000000) + 5;
             return false;
@@ -872,7 +873,7 @@ public class Main extends SimpleApplication {
             return true;
         }
     }
-      public void createFloor(int j) {
+      private void createFloor(int j) {
         int i = 0;
         int x = boardLength-1;
         int y = boardWidth-1;
@@ -939,7 +940,7 @@ public class Main extends SimpleApplication {
     }
     
     //create a Map tile with randomly generated terrain to attach to Map
-    public void makeMapTile(Vector3f loc, int i) {
+    private void makeMapTile(Vector3f loc, int i) {
         Box box2 = new Box( Vector3f.ZERO, 1f,.1f,1f);
         Geometry tile = new Geometry("Box", box2);
         Material mat2 = new Material(assetManager,
@@ -977,7 +978,7 @@ public class Main extends SimpleApplication {
     }
     
     //Load the map we want
-    public int[] selectedMapTexture(int i) {
+    private int[] selectedMapTexture(int i) {
         int[] temp;
         if (i == 0) {
             temp = map1;
@@ -1008,7 +1009,7 @@ public class Main extends SimpleApplication {
     }
     
     //Load the object map we want
-    public int[] selectedMapObject(int i) {
+    private int[] selectedMapObject(int i) {
         int[] temp;
         if (i == 0) {
             temp = obj1;
@@ -1029,7 +1030,7 @@ public class Main extends SimpleApplication {
     }
     
     //Return the texture for the map
-    public TextureKey loadTexture(int i) {
+    private TextureKey loadTexture(int i) {
         TextureKey key;
         if (i == 0) {
             key = new TextureKey("Textures/Terrain/BrickWall/BrickWall.jpg");
@@ -1047,7 +1048,7 @@ public class Main extends SimpleApplication {
     }
     
         //Attach an object to the if it exsist on the selected map
-    public void loadObject(Vector3f loc, int i, Geometry j) {
+    private void loadObject(Vector3f loc, int i, Geometry j) {
         Spatial temp;
         if (i == 4) {
             temp = assetManager.loadModel("Models/stone_felsite7.j3o");
@@ -1084,7 +1085,7 @@ public class Main extends SimpleApplication {
     }
     
     //Destory Object on the map when tile is destoryed
-    public void onDestroy(int i) {
+    private void onDestroy(int i) {
         if (mapobjects[i] > 0 && currentmap > 1) {
             mapObj[objNum].getControl(RigidBodyControl.class).setMass(10f);
             mapObj[objNum].getControl(RigidBodyControl.class).setGravity(
@@ -1096,7 +1097,7 @@ public class Main extends SimpleApplication {
     }
     
     //Destory a piece of the Map
-    public void destroyMap(int i) {
+    private void destroyMap(int i) {
         rootNode.getChild(i).getControl(RigidBodyControl.class).setMass(10f);
         rootNode.getChild(i).getControl(RigidBodyControl.class).setGravity(
                 new Vector3f(0f,-10f,0f));
@@ -1108,7 +1109,7 @@ public class Main extends SimpleApplication {
     }
     
     //Timer to destory the Map
-    public void deathTimer() {
+    private void deathTimer() {
         if (deathClk < (System.nanoTime()/1000000000) && counter < boardLength*boardWidth) {
             destroyMap(counter);
             deathClk = (System.nanoTime()/1000000000) + 5;
@@ -1148,9 +1149,9 @@ public class Main extends SimpleApplication {
                   childLayoutHorizontal();
                   padding("50px");
 
-                  control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog1", "Game Set-up", "Game Settings"));
+                  control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog1", "Player Set-up", "Number of players and their abilities"));
                   panel(builders.hspacer("20px"));
-                  control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog2", "Customize Game", "Customize your ball, select a map, etc"));
+                  control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog2", "Map & Key", "Select a map and choose key bindings"));
 
                 }
               });
@@ -1348,7 +1349,7 @@ public class Main extends SimpleApplication {
       }.registerPopup(nifty);
     }    
 
-    public void getInputFromGUI(){       
+    private void getInputFromGUI(){       
           if(JmeScreenController.getExitStatus()){
               app.stop();
           }
