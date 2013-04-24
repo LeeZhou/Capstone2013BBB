@@ -662,10 +662,7 @@ public class Main extends SimpleApplication {
         while(x<results.size())
         {
             cr = results.getCollision(x);
-            if(cr.getGeometry().equals(ball[0])||
-               cr.getGeometry().equals(ball[1])||
-               cr.getGeometry().equals(ball[2])||
-               cr.getGeometry().equals(ball[3])&&
+            if(isBall(cr.getGeometry())&&
              !(cr.getGeometry().equals(ball[i])))
                 {
                     cr.getGeometry().getControl(RigidBodyControl.class).applyImpulse(
@@ -713,6 +710,21 @@ public class Main extends SimpleApplication {
             }
         }
         
+    }
+    
+    private boolean isBall(Geometry geom)
+    {
+        boolean flag=false;
+        int x=0;
+        while(x<numberPlayer)
+        {
+            if(geom.equals(ball[x]))
+            {
+                flag=true;
+            }
+            x++;
+        }
+        return flag;
     }
     
     
