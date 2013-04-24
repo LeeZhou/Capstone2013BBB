@@ -662,8 +662,15 @@ public class Main extends SimpleApplication {
         while(x<results.size())
         {
             cr = results.getCollision(x);
-            cr.getGeometry().getControl(RigidBodyControl.class).applyImpulse(
+            if(cr.getGeometry().equals(ball[0])||
+               cr.getGeometry().equals(ball[1])||
+               cr.getGeometry().equals(ball[2])||
+               cr.getGeometry().equals(ball[3])&&
+             !(cr.getGeometry().equals(ball[i])))
+                {
+                    cr.getGeometry().getControl(RigidBodyControl.class).applyImpulse(
                     push.getDirection(), Vector3f.ZERO);
+                }
             x++;
          }
     }
