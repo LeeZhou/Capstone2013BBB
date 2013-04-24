@@ -27,6 +27,7 @@ import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -34,6 +35,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
+import com.jme3.ui.Picture;
 import com.jme3.util.SkyFactory;
 import com.jme3.util.TangentBinormalGenerator;
 import de.lessvoid.nifty.Nifty;
@@ -89,7 +91,10 @@ public class Main extends SimpleApplication {
     
     private Sphere c;   
     private ParticleEmitter fire;    
-    private BitmapText ch;
+    private BitmapText hudText;    
+    private BitmapText hudText1; 
+    private BitmapText hudText2;  
+    private BitmapText hudText3; 
     private DirectionalLight sun;
     private int counter = 0;
      
@@ -201,7 +206,7 @@ public class Main extends SimpleApplication {
         /** Set up Physics Game */
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);        
-       
+        
         //Selected map
         setCam();
         setUpLight();
@@ -213,22 +218,21 @@ public class Main extends SimpleApplication {
     private void InitObj(){ 
         getInputFromGUI();
         flyCam.setDragToRotate(false);  
+        setCam();
         maptexture = selectedMapTexture(currentmap);
         mapobjects = selectedMapObject(currentmap);   
         createFloor(currentmap);
         createPowerUp(); 
-        //rootNode.attachChild(SkyFactory.createSky(
-          //  assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
         
         variableInit();
         initMaterials(); 
-        
+        createStatus();
         
         createBallArray(numberPlayer); 
         setUpKeys(); 
         abilityMapping = new long [numberPlayer];
         initAbilities(abilityMapping);
-        createStatus();
+        
     }
     
     private void InitGUI(){                
@@ -266,6 +270,10 @@ public class Main extends SimpleApplication {
     }
     
     private void variableInit(){
+        hudText = new BitmapText(guiFont, false);
+        hudText1 = new BitmapText(guiFont, false);
+        hudText2 = new BitmapText(guiFont, false);
+        hudText3 = new BitmapText(guiFont, false);
         ballSpeed = new int [numberPlayer];
         isRunning = true;
         isBall1Alive = true;
@@ -279,7 +287,7 @@ public class Main extends SimpleApplication {
     
     // set camera position and light
     private void setCam(){        
-        viewPort.setBackgroundColor(new ColorRGBA(0f, 0f, 0f, 1f));
+        
         flyCam.setEnabled(false);        
         if(currentmap == 0){
             cam.setLocation(new Vector3f(11f,20f,25f)); 
@@ -292,10 +300,7 @@ public class Main extends SimpleApplication {
             cam.lookAt(new Vector3f(10f,-25f,-10f), cam.getUp());
             
         }
-        sun = new DirectionalLight();
-        sun.setDirection(new Vector3f(1,0,-2).normalizeLocal());
-        sun.setColor(ColorRGBA.White);
-        rootNode.addLight(sun);             
+           
     }
     
     //Initialize power-up objects
@@ -408,7 +413,18 @@ public class Main extends SimpleApplication {
         mat_road.setColor("Specular",ColorRGBA.White);
         mat_road.setColor("Diffuse",ColorRGBA.White);
         mat_road.setFloat("Shininess", 5f);
-
+        
+        //define background image
+        Picture p = new Picture("background");
+        p.setImage(assetManager, "Interface/grass.png", false);
+        p.setWidth(settings.getWidth());
+        p.setHeight(settings.getHeight());
+        p.setPosition(0, 0);        
+        ViewPort pv = renderManager.createPreView("background", cam);
+        pv.setClearFlags(true, true, true); 
+        pv.attachScene(p);
+        viewPort.setClearFlags(false, true, true);
+        p.updateGeometricState();
     }
 
     @Override
@@ -419,9 +435,14 @@ public class Main extends SimpleApplication {
     //Initialize lighting
     private void setUpLight() {
         // We add light so we see the scene and attach to map
+
         AmbientLight al = new AmbientLight();
         al.setColor(ColorRGBA.White.mult(1.3f));
         rootNode.addLight(al);
+        sun = new DirectionalLight();
+        sun.setDirection(new Vector3f(1,0,-2).normalizeLocal());
+        sun.setColor(ColorRGBA.White);
+        rootNode.addLight(sun);  
     }    
 
     private void setUpKeys() {         
@@ -657,13 +678,36 @@ public class Main extends SimpleApplication {
     }   
 
     private void createStatus(){
-        BitmapText hudText = new BitmapText(guiFont, false);          
+        
         hudText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
         hudText.setColor(ColorRGBA.White);                             // font color
-        hudText.setText("You can write any string here");             // the text
-        //hudText.setLocalTranslation(300, hudText.getLineHeight(), 0); // position
-        guiNode.attachChild(hudText);
+        hudText.setText("Player 1: Alive");             // the text
+        hudText.setLocalTranslation(settings.getWidth() / 2.5f, hudText.getLineHeight(), 0); // position
+        guiNode.attachChild(hudText);          
+             
+        hudText1.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+        hudText1.setColor(ColorRGBA.White);                             // font color
+        hudText1.setText("Player 2: Alive");             // the text
+        hudText1.setLocalTranslation(settings.getWidth() / 2.5f, hudText1.getLineHeight()*2, 0); // position
+        guiNode.attachChild(hudText1);  
+        
+        if(numberPlayer >= 3){
+            hudText2.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+            hudText2.setColor(ColorRGBA.White);                             // font color
+            hudText2.setText("Player 3: Alive");             // the text
+            hudText2.setLocalTranslation(settings.getWidth() / 2.5f, hudText2.getLineHeight()*3, 0); // position
+            guiNode.attachChild(hudText2);
+            if(numberPlayer == 4){                 
+                hudText3.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+                hudText3.setColor(ColorRGBA.White);                             // font color
+                hudText3.setText("Player 4: Alive");             // the text
+                hudText3.setLocalTranslation(settings.getWidth() / 2.5f, hudText3.getLineHeight()*4, 0); // position
+                guiNode.attachChild(hudText3); 
+            }
+        }
+        
     }
+    
     
     @Override
     public void simpleUpdate(float tpf) {
@@ -679,7 +723,19 @@ public class Main extends SimpleApplication {
             for(int i = 0; i < numberPlayer; i++){
                 loc[i] = ball_phy[i].getPhysicsLocation();
         }
-      
+            
+        if(!isBall1Alive){
+            hudText.setText("Player 1: DEAD");  
+        }
+        if(!isBall2Alive){
+            hudText1.setText("Player 2: DEAD"); 
+        }
+        if(!isBall3Alive && numberPlayer >=3){
+            hudText2.setText("Player 3: DEAD");  
+        }
+        if(!isBall4Alive && numberPlayer ==4){
+            hudText3.setText("Player 4: DEAD");  
+        }
     
       //Update ghost node
         int z=0;
@@ -759,6 +815,7 @@ public class Main extends SimpleApplication {
             destroyMap(i);
         }
         rootNode.detachAllChildren(); 
+        guiNode.detachAllChildren();
         counter = 0;        
         if(mineCnt > 0){
             bulletAppState.getPhysicsSpace().remove(mine_phy);
@@ -1291,7 +1348,7 @@ public class Main extends SimpleApplication {
               panel(new PanelBuilder("dialogParent") {
                 {
                   childLayoutOverlay();
-                  width("140%");
+                  width("1125px");
                   alignCenter();
                   valignCenter();
                   control(new ControlBuilder("dialog1", PlayerSettingControlDefinition.NAME));

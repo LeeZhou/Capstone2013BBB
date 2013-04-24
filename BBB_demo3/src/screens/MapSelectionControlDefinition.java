@@ -5,6 +5,7 @@ import de.lessvoid.nifty.builder.ControlBuilder;
 import de.lessvoid.nifty.builder.ControlDefinitionBuilder;
 import de.lessvoid.nifty.builder.ImageBuilder;
 import de.lessvoid.nifty.builder.PanelBuilder;
+import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
 import de.lessvoid.nifty.controls.radiobutton.builder.RadioButtonBuilder;
 import de.lessvoid.nifty.controls.radiobutton.builder.RadioGroupBuilder;
 import niftyclass.CommonBuilders;
@@ -30,6 +31,7 @@ public class MapSelectionControlDefinition {
             filename("Interface/title2.png");
          }});
         }});
+        
         panel(builders.vspacer());
         panel(new PanelBuilder() {{
           width("100%");
@@ -40,80 +42,30 @@ public class MapSelectionControlDefinition {
         panel(builders.vspacer());
         panel(builders.vspacer());
         
-        
-        panel(new PanelBuilder() {{
-          childLayoutHorizontal();
-          control(new RadioGroupBuilder("RadioGroup-2"));
-          panel(new PanelBuilder() {{
-            childLayoutVertical();
-            image(new ImageBuilder("map0") {{
+        image(new ImageBuilder("map0") {{
                   filename("Interface/map0.png");
-                }});
-            panel(builders.vspacer());
-            control(new RadioButtonBuilder("map-0"){{
-                group("RadioGroup-2");
-                alignCenter();
-            }});
-          }});          
-          
-          panel(builders.hspacer("10px"));
-          
-          panel(new PanelBuilder() {{
-            childLayoutVertical();
-            image(new ImageBuilder("map1") {{
-                  filename("Interface/map1.png");
-                }});
-            panel(builders.vspacer());
-            control(new RadioButtonBuilder("map-1"){{
-                group("RadioGroup-2");
-                alignCenter();
-            }});
-          }});          
-          
-          
-          panel(builders.hspacer("10px"));
-          
-          panel(new PanelBuilder() {{
-            childLayoutVertical();
-            image(new ImageBuilder("map2") {{
-                  filename("Interface/map2.png");
-                }});
-            panel(builders.vspacer());
-            control(new RadioButtonBuilder("map-2"){{
-                group("RadioGroup-2");
-                alignCenter();
-            }});
-          }});          
-                    
-          panel(builders.hspacer("10px"));
-          
-          panel(new PanelBuilder() {{
-            childLayoutVertical();
-            image(new ImageBuilder("map3") {{
-                  filename("Interface/map3.png");
-                }});
-            panel(builders.vspacer());
-            control(new RadioButtonBuilder("map-3"){{
-                group("RadioGroup-2");
-                alignCenter();
-            }});
-          }});                    
-          
-          panel(builders.hspacer("10px"));
-          
-          panel(new PanelBuilder() {{
-            childLayoutVertical();
-            image(new ImageBuilder("map4") {{
-                  filename("Interface/map4.png");
-                }});
-            panel(builders.vspacer());
-            control(new RadioButtonBuilder("map-4"){{
-                group("RadioGroup-2");
-                alignCenter();
-            }});
-          }});                
-        }});      
-        panel(builders.vspacer());    
+                  alignCenter();
+        }});
+        
+        panel(builders.vspacer());
+        panel(builders.vspacer());
+        panel(builders.vspacer());        
+
+        panel(new PanelBuilder(){{ 
+            childLayoutHorizontal();
+            control(new ButtonBuilder("mapbutton1", "Map 1"));
+            panel(builders.hspacer("5px"));
+            control(new ButtonBuilder("mapbutton2", "Map 2"));
+            panel(builders.hspacer("5px"));
+            control(new ButtonBuilder("mapbutton3", "Map 3"));
+            panel(builders.hspacer("5px"));
+            control(new ButtonBuilder("mapbutton4", "Map 4"));
+            panel(builders.hspacer("5px"));
+            control(new ButtonBuilder("mapbutton5", "Map 5"));
+            alignCenter();
+        }});
+
+
         
       }});
     }}.registerControlDefintion(nifty);

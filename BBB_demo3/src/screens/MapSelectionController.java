@@ -37,6 +37,8 @@ import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.InputManager;
 import com.jme3.input.controls.KeyTrigger;
+import de.lessvoid.nifty.elements.render.ImageRenderer;
+import de.lessvoid.nifty.render.NiftyImage;
 import niftyclass.JustAnExampleModelClass;
 
 /**
@@ -47,7 +49,7 @@ public class MapSelectionController implements Controller{
 
   private Screen screen;
   public static int currentMap;
-
+  private Nifty nifty;
 
   @Override
   public void bind(
@@ -56,7 +58,8 @@ public class MapSelectionController implements Controller{
       final Element element,
       final Properties parameter,
       final Attributes controlDefinitionAttributes) {
-        this.screen = screen;        
+        this.screen = screen;   
+        this.nifty = nifty;
   }
 
   @Override
@@ -78,30 +81,45 @@ public class MapSelectionController implements Controller{
     return false;
   }
   
-  @NiftyEventSubscriber(id="map-0")
-  public void onOption0Changed(final String id, final RadioButtonStateChangedEvent event) {
-    currentMap = 0;
-  }
-
-  @NiftyEventSubscriber(id="map-1")
-  public void onOption1Changed(final String id, final RadioButtonStateChangedEvent event) {
-    currentMap = 1;
+  @NiftyEventSubscriber(id="mapbutton1")
+  public void onMapButton1Clicked(final String id, final ButtonClickedEvent event) {
+      Element niftyElement = nifty.getCurrentScreen().findElementByName("map0");
+      NiftyImage img = nifty.getRenderEngine().createImage("Interface/map0.png", false);
+      niftyElement.getRenderer(ImageRenderer.class).setImage(img);
+      currentMap = 0;
   }
   
-  @NiftyEventSubscriber(id="map-2")
-  public void onOption2Changed(final String id, final RadioButtonStateChangedEvent event) {
-    currentMap = 2;
+  @NiftyEventSubscriber(id="mapbutton2")
+  public void onMapButton2Clicked(final String id, final ButtonClickedEvent event) {
+      Element niftyElement = nifty.getCurrentScreen().findElementByName("map0");
+      NiftyImage img = nifty.getRenderEngine().createImage("Interface/map1.png", false);
+      niftyElement.getRenderer(ImageRenderer.class).setImage(img);
+      currentMap = 1;
   }
   
-  @NiftyEventSubscriber(id="map-3")
-  public void onOption3Changed(final String id, final RadioButtonStateChangedEvent event) {
-    currentMap = 3;
+  @NiftyEventSubscriber(id="mapbutton3")
+  public void onMapButton3Clicked(final String id, final ButtonClickedEvent event) {
+      Element niftyElement = nifty.getCurrentScreen().findElementByName("map0");
+      NiftyImage img = nifty.getRenderEngine().createImage("Interface/map2.png", false);
+      niftyElement.getRenderer(ImageRenderer.class).setImage(img);
+      currentMap = 2;
   }
   
-  @NiftyEventSubscriber(id="map-4")
-  public void onOption4Changed(final String id, final RadioButtonStateChangedEvent event) {
-    currentMap = 4;
+  @NiftyEventSubscriber(id="mapbutton4")
+  public void onMapButton4Clicked(final String id, final ButtonClickedEvent event) {
+      Element niftyElement = nifty.getCurrentScreen().findElementByName("map0");
+      NiftyImage img = nifty.getRenderEngine().createImage("Interface/map3.png", false);
+      niftyElement.getRenderer(ImageRenderer.class).setImage(img);
+      currentMap = 3;
   }
+  
+  @NiftyEventSubscriber(id="mapbutton5")
+  public void onMapButton5Clicked(final String id, final ButtonClickedEvent event) {
+      Element niftyElement = nifty.getCurrentScreen().findElementByName("map0");
+      NiftyImage img = nifty.getRenderEngine().createImage("Interface/map4.png", false);
+      niftyElement.getRenderer(ImageRenderer.class).setImage(img);
+      currentMap = 4;
+  }  
   
   
   public static int getCurrentMap(){
