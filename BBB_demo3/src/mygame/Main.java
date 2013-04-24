@@ -128,7 +128,7 @@ public class Main extends SimpleApplication {
     private int mineCnt = 0;
     
     // Hardcoded number of players for testing
-    private int numberPlayer;
+    private int numPlayers;
     private static Main app;
     
     // GUI instance
@@ -228,9 +228,9 @@ public class Main extends SimpleApplication {
         initMaterials(); 
         createStatus();
         
-        createBallArray(numberPlayer); 
+        createBallArray(numPlayers); 
         setUpKeys(); 
-        abilityMapping = new long [numberPlayer];
+        abilityMapping = new long [numPlayers];
         initAbilities(abilityMapping);
         
     }
@@ -274,7 +274,7 @@ public class Main extends SimpleApplication {
         hudText1 = new BitmapText(guiFont, false);
         hudText2 = new BitmapText(guiFont, false);
         hudText3 = new BitmapText(guiFont, false);
-        ballSpeed = new int [numberPlayer];
+        ballSpeed = new int [numPlayers];
         isRunning = true;
         isBall1Alive = true;
         isBall2Alive = true;  
@@ -367,9 +367,17 @@ public class Main extends SimpleApplication {
             ball_phy[i] = new RigidBodyControl(ballShape[i],0.9f);
             ball[i].addControl(ball_phy[i]); 
             bulletAppState.getPhysicsSpace().add(ball_phy[i]);
-            ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
+            //ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
+            //ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
+            
             ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
-            ball_phy[i].setCollisionGroup(3);
+            
+            ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
+            ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
+            
+            //ball_phy[i]
+            //ball_phy[i].setCollideWithGroups(PhysicsCollisionObject.COLLISION_GROUP_02);
+            
             ball_phy[i].setRestitution(1f);            
             ball_phy[i].setDamping(.4f,.4f);
         }        
@@ -453,10 +461,10 @@ public class Main extends SimpleApplication {
         inputManager.addListener(actionListener, "Ability1");
         inputManager.addMapping("Ability2", new KeyTrigger(KeyInput.KEY_SPACE));
         inputManager.addListener(actionListener, "Ability2");
-        if(numberPlayer >= 3){
+        if(numPlayers >= 3){
             inputManager.addMapping("Ability3", new KeyTrigger(KeyInput.KEY_RETURN));
             inputManager.addListener(actionListener, "Ability3");
-            if(numberPlayer == 4){
+            if(numPlayers == 4){
             inputManager.addMapping("Ability4", new KeyTrigger(KeyInput.KEY_NUMPAD0));        
             inputManager.addListener(actionListener, "Ability4");     
             }
@@ -480,14 +488,14 @@ public class Main extends SimpleApplication {
         inputManager.addListener(analogListener,new String[]{ "Left2","Right2", "Up2", "Down2"});        
         
         // Player 3 keybindings and listener
-        if(numberPlayer >= 3){
+        if(numPlayers >= 3){
         inputManager.addMapping("Left3", new KeyTrigger(KeyInput.KEY_LEFT));
         inputManager.addMapping("Right3", new KeyTrigger(KeyInput.KEY_RIGHT));
         inputManager.addMapping("Up3", new KeyTrigger(KeyInput.KEY_UP));
         inputManager.addMapping("Down3", new KeyTrigger(KeyInput.KEY_DOWN));
          
         inputManager.addListener(analogListener,new String[]{ "Left3","Right3", "Up3", "Down3"});        
-        if(numberPlayer == 4){
+        if(numPlayers == 4){
             // Player 4 keybindings and listener
             inputManager.addMapping("Left4", new KeyTrigger(KeyInput.KEY_NUMPAD4));
             inputManager.addMapping("Right4", new KeyTrigger(KeyInput.KEY_NUMPAD6));
@@ -527,23 +535,23 @@ public class Main extends SimpleApplication {
                 }      
               
               //player 3 action listener
-              if (binding.equals("Left3") && numberPlayer >= 3) {                
+              if (binding.equals("Left3") && numPlayers >= 3) {                
                     ball_phy[2].applyForce(new Vector3f(-3f*ballSpeed[2], 0, 0),new Vector3f(-3f*ballSpeed[2], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right3")&& numberPlayer >= 3) {                    
+                } else if (binding.equals("Right3")&& numPlayers >= 3) {                    
                     ball_phy[2].applyForce(new Vector3f(3f*ballSpeed[2], 0, 0),new Vector3f(3f*ballSpeed[2], 0, 0));
-                } else if (binding.equals("Up3")&& numberPlayer >= 3) {                   
+                } else if (binding.equals("Up3")&& numPlayers >= 3) {                   
                     ball_phy[2].applyForce(new Vector3f(0, 0, -3f*ballSpeed[2]),new Vector3f(0, 0, -3f*ballSpeed[2]));
-                } else if (binding.equals("Down3")&& numberPlayer >= 3) {
+                } else if (binding.equals("Down3")&& numPlayers >= 3) {
                     ball_phy[2].applyForce(new Vector3f(0, 0, 3f*ballSpeed[2]),new Vector3f(0, 0, 3f*ballSpeed[2]));
                 } 
                //player 4 action listener
-              if (binding.equals("Left4") && numberPlayer == 4) {  
+              if (binding.equals("Left4") && numPlayers == 4) {  
                     ball_phy[3].applyForce(new Vector3f(-3f*ballSpeed[3], 0, 0),new Vector3f(-3f*ballSpeed[3], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right4") && numberPlayer == 4) {
+                } else if (binding.equals("Right4") && numPlayers == 4) {
                     ball_phy[3].applyForce(new Vector3f(3f*ballSpeed[3], 0, 0),new Vector3f(3f*ballSpeed[3], 0, 0));
-                } else if (binding.equals("Up4")&& numberPlayer == 4) {
+                } else if (binding.equals("Up4")&& numPlayers == 4) {
                     ball_phy[3].applyForce(new Vector3f(0, 0, -3f*ballSpeed[3]),new Vector3f(0, 0, -3f*ballSpeed[3]));
-                } else if (binding.equals("Down4")&& numberPlayer == 4) {
+                } else if (binding.equals("Down4")&& numPlayers == 4) {
                     ball_phy[3].applyForce(new Vector3f(0, 0, 3f*ballSpeed[3]),new Vector3f(0, 0, 3f*ballSpeed[3]));
                 }
 
@@ -557,11 +565,11 @@ public class Main extends SimpleApplication {
         } else if (name.equals("Ability2") && !keyPressed && !onCooldown(abilityMapping,1)) {
             actAbility(1);
         } else if (name.equals("Ability3") && !keyPressed && !onCooldown(abilityMapping,2)) {
-            if(numberPlayer >=3){
+            if(numPlayers >=3){
                 actAbility(2);
             }
         } else if (name.equals("Ability4") && !keyPressed && !onCooldown(abilityMapping,3)) {
-            if(numberPlayer==4){
+            if(numPlayers==4){
                 actAbility(3);
             }
         }     
@@ -635,6 +643,10 @@ public class Main extends SimpleApplication {
                 {
                     isghost=false;
                     ball[i].setMaterial(mat_road);
+                    ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
+                    ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
+                    //ball_phy[i].addCollideWithGroup(2);
+                    
                 }
                 else
                 {   
@@ -647,6 +659,9 @@ public class Main extends SimpleApplication {
                     ball[i].setMaterial(mat_ghost);
                     ball[i].setQueueBucket(Bucket.Transparent);
                     bulletAppState.getPhysicsSpace().add(ghosts);
+                    
+                    ball_phy[i].removeCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
+                    ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_03);
                 }
     }
     
@@ -695,13 +710,13 @@ public class Main extends SimpleApplication {
         hudText1.setLocalTranslation(settings.getWidth() / 2.5f, hudText1.getLineHeight()*2, 0); // position
         guiNode.attachChild(hudText1);  
         
-        if(numberPlayer >= 3){
+        if(numPlayers >= 3){
             hudText2.setSize(guiFont.getCharSet().getRenderedSize());      // font size
             hudText2.setColor(ColorRGBA.White);                             // font color
             hudText2.setText("Player 3: Alive");             // the text
             hudText2.setLocalTranslation(settings.getWidth() / 2.5f, hudText2.getLineHeight()*3, 0); // position
             guiNode.attachChild(hudText2);
-            if(numberPlayer == 4){                 
+            if(numPlayers == 4){                 
                 hudText3.setSize(guiFont.getCharSet().getRenderedSize());      // font size
                 hudText3.setColor(ColorRGBA.White);                             // font color
                 hudText3.setText("Player 4: Alive");             // the text
@@ -716,7 +731,7 @@ public class Main extends SimpleApplication {
     {
         boolean flag=false;
         int x=0;
-        while(x<numberPlayer)
+        while(x<numPlayers)
         {
             if(geom.equals(ball[x]))
             {
@@ -735,11 +750,11 @@ public class Main extends SimpleApplication {
               isScreenEnd = false;
               InitObj();
         }
-        loc = new Vector3f [numberPlayer];
+        loc = new Vector3f [numPlayers];
         //Check if ball is within the map; if not, destroy the ball
         if(isRunning == true){      
             deathTimer();
-            for(int i = 0; i < numberPlayer; i++){
+            for(int i = 0; i < numPlayers; i++){
                 loc[i] = ball_phy[i].getPhysicsLocation();
         }
             
@@ -749,33 +764,37 @@ public class Main extends SimpleApplication {
         if(!isBall2Alive){
             hudText1.setText("Player 2: DEAD"); 
         }
-        if(!isBall3Alive && numberPlayer >=3){
+        if(!isBall3Alive && numPlayers >=3){
             hudText2.setText("Player 3: DEAD");  
         }
-        if(!isBall4Alive && numberPlayer ==4){
+        if(!isBall4Alive && numPlayers ==4){
             hudText3.setText("Player 4: DEAD");  
         }
     
       //Update ghost node
-        int z=0;
-        if(isghost && numberPlayer == 4)
-        {
-           gnode.move(ball_phy[3].getPhysicsLocation());
-           while(z<ghosts.getOverlappingCount())
-           {
-              List k = ghosts.getOverlappingObjects();
+        /*
+            int z=0;
+            if(isghost)
+            {
+                gnode.move(ball_phy[z].getPhysicsLocation());
+                while(z<ghosts.getOverlappingCount())
+                {
+                    List k = ghosts.getOverlappingObjects();
 
-              if(k.get(z).equals(ball_phy[0])||k.get(z).equals(ball_phy[1])||k.get(z).equals(ball_phy[2]))
-              {
-                  ball_phy[3].removeCollideWithGroup(2);
-              }
-              z++;
-           }
-        }
-        else if(!isghost && numberPlayer==4)
-        {
-            ball_phy[3].addCollideWithGroup(2);
-        }
+                    if(k.get(z).equals(ball_phy[0])||k.get(z).equals(ball_phy[1])||k.get(z).equals(ball_phy[2]))
+                    {
+                        ball_phy[3].removeCollideWithGroup(2);
+                    }
+                    z++;
+                }
+            }
+            else if(!isghost && numPlayers==4)
+            {
+                ball_phy[3].addCollideWithGroup(2);
+            }
+        
+        */
+        
         
         if(loc[0].y < 0 && isBall1Alive){          
             isBall1Alive = false;  
@@ -789,14 +808,14 @@ public class Main extends SimpleApplication {
             bulletAppState.getPhysicsSpace().remove(ball_phy[1]);
             rootNode.detachChild(ball[1]);
         }
-        else if(numberPlayer>=3){
+        else if(numPlayers>=3){
             if(loc[2].y < 0 && isBall3Alive){
                 isBall3Alive = false;            
                 ballLeft--;                
                 bulletAppState.getPhysicsSpace().remove(ball_phy[2]);
                 rootNode.detachChild(ball[2]);   
             }
-            else if(numberPlayer==4){
+            else if(numPlayers==4){
                 if(loc[3].y < 0 && isBall4Alive){
                 isBall4Alive = false;      
                 ballLeft--;                
@@ -842,7 +861,7 @@ public class Main extends SimpleApplication {
     }    
     
      private void initAbilities(long[] temp) {
-        for (int i = 0; i < numberPlayer; i++) {
+        for (int i = 0; i < numPlayers; i++) {
             temp[i] = System.nanoTime()/1000000000;
         }
     }
@@ -1563,8 +1582,8 @@ public class Main extends SimpleApplication {
           if(JmeScreenController.getExitStatus()){
               app.stop();
           }
-          numberPlayer = PlayerSettingController.getNumberPlayer();  
-          ballLeft = numberPlayer;
+          numPlayers = PlayerSettingController.getNumberPlayer();  
+          ballLeft = numPlayers;
           currentmap = MapSelectionController.getCurrentMap();
           abilityFromUI = PlayerSettingController.getPlayerAbility();
           System.out.println("p1: " + abilityFromUI[0]);
