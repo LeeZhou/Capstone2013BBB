@@ -59,6 +59,8 @@ import java.util.List;
 import niftyclass.CommonBuilders;
 import niftyclass.DialogPanelControlDefinition;
 import niftyclass.MenuButtonControlDefinition;
+import screens.ColorPickerControlDefinition;
+import screens.ColorPickerController;
 import screens.MapSelectionControlDefinition;
 import screens.MapSelectionController;
 import screens.PlayerSettingControlDefinition;
@@ -95,6 +97,13 @@ public class Main extends SimpleApplication {
     private BitmapText hudText1; 
     private BitmapText hudText2;  
     private BitmapText hudText3; 
+    
+    private BitmapText cdText1;
+    private BitmapText cdText2;
+    private BitmapText cdText3;
+    private BitmapText cdText;
+    
+    private BitmapText timeleft;
     private DirectionalLight sun;
     private int counter = 0;
      
@@ -109,11 +118,14 @@ public class Main extends SimpleApplication {
     private long deathClk;
     private Spatial[] mapObj;
     private int objNum;
+    private long winClk;
     
     //Ghost Control
     GhostControl ghost=new GhostControl(new SphereCollisionShape(5));
     GhostControl ghosts=new GhostControl(new SphereCollisionShape(21));
     Node gnode = new Node("a ghost-controlled thing");
+    private Material[]  deGhostMat;
+    private boolean[] ghoststat;
     
     // array of ball instances
     private RigidBodyControl [] ball_phy;
@@ -121,6 +133,7 @@ public class Main extends SimpleApplication {
     private Geometry [] ball;
     private int [] ballSpeed;
     private Vector3f [] loc;
+    private float[][] colorMapping;
     
     // Mine instance
     private RigidBodyControl mine_phy;
@@ -225,10 +238,10 @@ public class Main extends SimpleApplication {
         createPowerUp(); 
         
         variableInit();
-        initMaterials(); 
+        initbg(); 
         createStatus();
         
-        createBallArray(numPlayers); 
+        createBallArray(numPlayers,colorMapping); 
         setUpKeys(); 
         abilityMapping = new long [numPlayers];
         initAbilities(abilityMapping);
@@ -237,7 +250,6 @@ public class Main extends SimpleApplication {
     
     private void InitGUI(){                
         // GUI init
-        
         flyCam.setDragToRotate(true);
         isScreenEnd = false;
         isRunning = false;
@@ -257,6 +269,7 @@ public class Main extends SimpleApplication {
         PlayerSettingControlDefinition.register(nifty);
         MapSelectionControlDefinition.register(nifty);
         KeyBindingControlDefinition.register(nifty);
+        ColorPickerControlDefinition.register(nifty);
         createIntroScreen(nifty);
         openGameSettingScreen(nifty);
         if(!run){
@@ -270,19 +283,30 @@ public class Main extends SimpleApplication {
     }
     
     private void variableInit(){
+
         hudText = new BitmapText(guiFont, false);
         hudText1 = new BitmapText(guiFont, false);
         hudText2 = new BitmapText(guiFont, false);
         hudText3 = new BitmapText(guiFont, false);
+        
+        cdText = new BitmapText(guiFont, false);
+        cdText1 = new BitmapText(guiFont, false);
+        cdText2 = new BitmapText(guiFont, false);
+        cdText3 = new BitmapText(guiFont, false);
+        
+        timeleft = new BitmapText(guiFont, false);
         ballSpeed = new int [numPlayers];
         isRunning = true;
         isBall1Alive = true;
         isBall2Alive = true;  
         isBall3Alive = true;
         isBall4Alive = true;
-        gameEnd = false;      
+        gameEnd = false;   
+        deGhostMat = new Material[numPlayers];
+        ghoststat = new boolean [numPlayers];
         mineCnt = 0;
-        deathClk = (System.nanoTime()/1000000000) + 5;        
+        deathClk = (System.nanoTime()/1000000000) + 50; 
+        
     }
     
     // set camera position and light
@@ -326,105 +350,16 @@ public class Main extends SimpleApplication {
         fire.getParticleInfluencer().setVelocityVariation(0.1f);
         fire.setLocalTranslation(new Vector3f(boardWidth+2f,0.1f,boardLength-3f));        
         //place on the map
-        rootNode.attachChild(fire);         
+        rootNode.attachChild(fire);          
     }
     
     
-    private void createBallArray(int number){
-        
-        c = new Sphere(20, 20, 0.5f, true, false);
-        c.setTextureMode(Sphere.TextureMode.Projected);
-        TangentBinormalGenerator.generate(c);  
-        ball = new Geometry [number];
-        ballShape = new SphereCollisionShape[number];
-        ball_phy = new RigidBodyControl[number];
-        
-        for(int i = 0; i < number; i++){
-            ball[i] = new Geometry("Ball "+i, c);
-            ballShape[i] = new SphereCollisionShape(0.5f);
-            if(i==0)
-            {
-            ball[i].setMaterial(mat_lit);
-            ball[i].setLocalTranslation(1.5f,gax,1.5f);
-            }
-            else if(i==1)
-            {
-                ball[1].setMaterial(mat_rock);
-                ball[i].setLocalTranslation(2*boardLength-3.5f,gax,2*boardWidth-3.5f);
-            }
-            else if(i==2)
-            {
-                ball[i].setMaterial(mat_dirt);                
-                ball[i].setLocalTranslation(1.5f,gax,2*boardWidth-3.5f);
-            }
-            else if(i==3)
-            {
-                ball[i].setMaterial(mat_road);
-                ball[i].setLocalTranslation(2*boardLength-3.5f,gax,1.5f);
-            }
-            ballSpeed[i] = 1;
-            rootNode.attachChild(ball[i]);
-            ball_phy[i] = new RigidBodyControl(ballShape[i],0.9f);
-            ball[i].addControl(ball_phy[i]); 
-            bulletAppState.getPhysicsSpace().add(ball_phy[i]);
-            //ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
-            //ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
-            
-            ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
-            
-            ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
-            ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
-            
-            //ball_phy[i]
-            //ball_phy[i].setCollideWithGroups(PhysicsCollisionObject.COLLISION_GROUP_02);
-            
-            ball_phy[i].setRestitution(1f);            
-            ball_phy[i].setDamping(.4f,.4f);
-        }        
-    }       
-    
     //Initialize material and texture
-    private void initMaterials(){
-
-        //Defining Ball 1 material
-        mat_lit = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat_lit.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Terrain/Pond/Pond.jpg"));
-        mat_lit.setTexture("NormalMap", assetManager.loadTexture("Textures/Terrain/Pond/Pond_normal.png"));
-        mat_lit.setBoolean("UseMaterialColors",true);    
-        mat_lit.setColor("Specular",ColorRGBA.White);
-        mat_lit.setColor("Diffuse",ColorRGBA.White);
-        mat_lit.setFloat("Shininess", 5f); // [1,128]   
-        
-        //Defining Ball 2 material
-        mat_rock = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat_rock.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Terrain/Rock/Rock.PNG"));
-        mat_rock.setTexture("NormalMap", assetManager.loadTexture("Textures/Terrain/Rock/Rock_normal.png"));
-        mat_rock.setBoolean("UseMaterialColors",true);    
-        mat_rock.setColor("Specular",ColorRGBA.White);
-        mat_rock.setColor("Diffuse",ColorRGBA.White);
-        mat_rock.setFloat("Shininess", 5f); // [1,128] 
-        
-         //Defining Ball 3 material
-        mat_dirt = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat_dirt.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Terrain/splat/dirt.jpg"));
-        mat_dirt.setTexture("NormalMap", assetManager.loadTexture("Textures/Terrain/splat/dirt.jpg"));
-        mat_dirt.setBoolean("UseMaterialColors",true);    
-        mat_dirt.setColor("Specular",ColorRGBA.White);
-        mat_dirt.setColor("Diffuse",ColorRGBA.White);
-        mat_dirt.setFloat("Shininess", 5f); // [1,128]
-        
-        //Defining Ball 4 material
-        mat_road = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat_road.setTexture("DiffuseMap", assetManager.loadTexture("Textures/Terrain/splat/road.jpg"));
-        mat_road.setTexture("NormalMap", assetManager.loadTexture("Textures/Terrain/splat/road.jpg"));
-        mat_road.setBoolean("UseMaterialColors",true);    
-        mat_road.setColor("Specular",ColorRGBA.White);
-        mat_road.setColor("Diffuse",ColorRGBA.White);
-        mat_road.setFloat("Shininess", 5f);
+    private void initbg(){
         
         //define background image
         Picture p = new Picture("background");
-        p.setImage(assetManager, "Interface/grass.png", false);
+        p.setImage(assetManager, "Interface/lava.jpg", false);
         p.setWidth(settings.getWidth());
         p.setHeight(settings.getHeight());
         p.setPosition(0, 0);        
@@ -434,7 +369,81 @@ public class Main extends SimpleApplication {
         viewPort.setClearFlags(false, true, true);
         p.updateGeometricState();
     }
+    
+    public void createBall(float[] color, int i) {
+        ball[i] = new Geometry("Ball "+i, c);
+        ballShape[i] = new SphereCollisionShape(0.5f);
+        ball[i].setMaterial(loadTexture(color));
+        deGhostMat[i] = ball[i].getMaterial();
+        ghoststat[i] = false;
+        ballSpeed[i] = 1;
+        placeBall(ball,i);
+        rootNode.attachChild(ball[i]);
+        ball_phy[i] = new RigidBodyControl(ballShape[i],0.9f);
+        ball[i].addControl(ball_phy[i]); 
+        bulletAppState.getPhysicsSpace().add(ball_phy[i]);
+        
+        ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
+        ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
+        ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
+       
+       
+        ball_phy[i].setRestitution(1f);            
+        ball_phy[i].setDamping(.4f,.4f);
+    }
+    
+    public void placeBall(Geometry[] ball, int i) {
+        if(i==0) {
+            ball[i].setLocalTranslation(1.5f,gax,1.5f);
+        } else if(i==1) {
+            ball[i].setLocalTranslation(2*boardLength-3.5f,gax,2*boardWidth-3.5f);
+        } else if(i==2) {          
+            ball[i].setLocalTranslation(1.5f,gax,2*boardWidth-3.5f);
+        } else if(i==3) {
+            ball[i].setLocalTranslation(2*boardLength-3.5f,gax,1.5f);
+        }
+    }
+    
+    private void createBallArray(int number, float[][] colorMap){
+        
+        c = new Sphere(20, 20, 0.5f, true, false);
+        c.setTextureMode(Sphere.TextureMode.Projected);
+        TangentBinormalGenerator.generate(c);  
+        ball = new Geometry [number];
+        ballShape = new SphereCollisionShape[number];
+        ball_phy = new RigidBodyControl[number];
+        
+        for(int i = 0; i < number; i++){
+            createBall(colorMap[i],i);
+        }        
+    }
 
+    public Material loadTexture(float[] color) {
+        Material temp = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+        Texture diff, norm;
+        long randTime = (System.nanoTime()/1000000)%4;
+        if (randTime == 0) {
+            diff = assetManager.loadTexture("Textures/Terrain/splat/road.jpg");
+            norm = diff;
+        } else if (randTime == 1) {
+            diff = assetManager.loadTexture("Textures/Terrain/splat/dirt.jpg");
+            norm = diff;
+        } else if (randTime == 2) {
+            diff = assetManager.loadTexture("Textures/Terrain/Rock/Rock.PNG");
+            norm = assetManager.loadTexture("Textures/Terrain/Rock/Rock_normal.png");
+        } else{
+            diff = assetManager.loadTexture("Textures/Terrain/Pond/Pond.jpg");
+            norm = assetManager.loadTexture("Textures/Terrain/Pond/Pond_normal.png");
+        }
+        temp.setTexture("DiffuseMap", diff);
+        temp.setTexture("NormalMap", norm);
+        temp.setBoolean("UseMaterialColors",true);    
+        temp.setColor("Specular",new ColorRGBA().set(color[0], color[1], color[2], color[3]));
+        temp.setColor("Diffuse",new ColorRGBA().set(color[0], color[1], color[2], color[3]));
+        temp.setFloat("Shininess", 5f);
+        return temp;
+    }
+    
     @Override
     public void simpleRender(RenderManager rm) {
         //TODO: add render code
@@ -639,29 +648,28 @@ public class Main extends SimpleApplication {
     }
     
     private void ghost(int i) {
-        if(isghost)
+        if(ghoststat[i])
                 {
-                    isghost=false;
-                    ball[i].setMaterial(mat_road);
+                    ghoststat[i]=false;
+                    ball[i].setMaterial(deGhostMat[i]);
                     ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
                     ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
-                    //ball_phy[i].addCollideWithGroup(2);
-                    
+
                 }
                 else
                 {   
-                    isghost=true;
-                    gnode.addControl(ghosts);
-                    rootNode.attachChild(gnode);            
+                    ghoststat[i]=true;
+                    //gnode.addControl(ghosts);
+                    //rootNode.attachChild(gnode);            
                     mat_ghost= new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
                     mat_ghost.setColor("Color", new ColorRGBA(0,0,0,0.5f));
                     mat_ghost.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
                     ball[i].setMaterial(mat_ghost);
                     ball[i].setQueueBucket(Bucket.Transparent);
                     bulletAppState.getPhysicsSpace().add(ghosts);
-                    
                     ball_phy[i].removeCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
                     ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_03);
+
                 }
     }
     
@@ -677,19 +685,18 @@ public class Main extends SimpleApplication {
         while(x<results.size())
         {
             cr = results.getCollision(x);
-            if(isBall(cr.getGeometry())&&
-             !(cr.getGeometry().equals(ball[i])))
-                {
-                    cr.getGeometry().getControl(RigidBodyControl.class).applyImpulse(
+            if(isBall(cr.getGeometry())&&!(cr.getGeometry().equals(ball[i])))
+            {
+                cr.getGeometry().getControl(RigidBodyControl.class).applyImpulse(
                     push.getDirection(), Vector3f.ZERO);
-                }
+            }
             x++;
          }
     }
     
     private void blink(int i) {
         ball_phy[i].setPhysicsLocation(ball[i].getLocalTranslation().add(
-               ball_phy[i].getLinearVelocity().mult(2)));
+               ball_phy[i].getLinearVelocity().normalize().mult(4)));
     }
     
     private void glue(int i) {
@@ -698,33 +705,47 @@ public class Main extends SimpleApplication {
 
     private void createStatus(){
         
+        Picture pic = new Picture("dash");
+        pic.setImage(assetManager, "Interface/dash.png", true);
+        pic.setWidth(290f);
+        pic.setHeight(100f);
+        pic.setPosition(settings.getWidth()/2 - 145f, 0);
+        guiNode.attachChild(pic);
+        
+        Picture timerdash = new Picture("timerdash");
+        timerdash.setImage(assetManager, "Interface/timerdash.png", true);
+        timerdash.setWidth(200f);
+        timerdash.setHeight(75f);
+        timerdash.setPosition(settings.getWidth()/2 - 100f, settings.getHeight() - 75f);
+        guiNode.attachChild(timerdash);
+        
         hudText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
         hudText.setColor(ColorRGBA.White);                             // font color
         hudText.setText("Player 1: Alive");             // the text
-        hudText.setLocalTranslation(settings.getWidth() / 2.5f, hudText.getLineHeight(), 0); // position
+        hudText.setLocalTranslation(settings.getWidth() / 2f-125f, hudText.getLineHeight()*4+5f, 0); // position
         guiNode.attachChild(hudText);          
              
         hudText1.setSize(guiFont.getCharSet().getRenderedSize());      // font size
         hudText1.setColor(ColorRGBA.White);                             // font color
         hudText1.setText("Player 2: Alive");             // the text
-        hudText1.setLocalTranslation(settings.getWidth() / 2.5f, hudText1.getLineHeight()*2, 0); // position
+        hudText1.setLocalTranslation(settings.getWidth() / 2f-125f, hudText1.getLineHeight()*3+5f, 0); // position
         guiNode.attachChild(hudText1);  
         
         if(numPlayers >= 3){
             hudText2.setSize(guiFont.getCharSet().getRenderedSize());      // font size
             hudText2.setColor(ColorRGBA.White);                             // font color
             hudText2.setText("Player 3: Alive");             // the text
-            hudText2.setLocalTranslation(settings.getWidth() / 2.5f, hudText2.getLineHeight()*3, 0); // position
+            hudText2.setLocalTranslation(settings.getWidth() / 2f-125f, hudText2.getLineHeight()*2+5f, 0); // position
             guiNode.attachChild(hudText2);
-            if(numPlayers == 4){                 
+          
+            if(numPlayers == 4){
                 hudText3.setSize(guiFont.getCharSet().getRenderedSize());      // font size
                 hudText3.setColor(ColorRGBA.White);                             // font color
                 hudText3.setText("Player 4: Alive");             // the text
-                hudText3.setLocalTranslation(settings.getWidth() / 2.5f, hudText3.getLineHeight()*4, 0); // position
+                hudText3.setLocalTranslation(settings.getWidth() / 2f-125f, hudText3.getLineHeight()+5f, 0); // position
                 guiNode.attachChild(hudText3); 
-            }
+                }
         }
-        
     }
     
     private boolean isBall(Geometry geom)
@@ -741,10 +762,11 @@ public class Main extends SimpleApplication {
         }
         return flag;
     }
-    
+
     
     @Override
     public void simpleUpdate(float tpf) {
+        
         
         if(isScreenEnd){
               isScreenEnd = false;
@@ -773,13 +795,14 @@ public class Main extends SimpleApplication {
     
       //Update ghost node
         /*
-            int z=0;
-            if(isghost)
-            {
-                gnode.move(ball_phy[z].getPhysicsLocation());
-                while(z<ghosts.getOverlappingCount())
-                {
-                    List k = ghosts.getOverlappingObjects();
+        int z=0;
+        if(isghost)
+        {
+             gnode.move(ball_phy[z].getPhysicsLocation());
+             while(z<ghosts.getOverlappingCount())
+             {
+                List k = ghosts.getOverlappingObjects();
+        
 
                     if(k.get(z).equals(ball_phy[0])||k.get(z).equals(ball_phy[1])||k.get(z).equals(ball_phy[2]))
                     {
@@ -793,9 +816,13 @@ public class Main extends SimpleApplication {
                 ball_phy[3].addCollideWithGroup(2);
             }
         
+        
+        
+        else if(!isghost && numPlayers==4)
+        {
+            ball_phy[3].addCollideWithGroup(2);
+        }
         */
-        
-        
         if(loc[0].y < 0 && isBall1Alive){          
             isBall1Alive = false;  
             ballLeft--;
@@ -826,7 +853,7 @@ public class Main extends SimpleApplication {
         }
       
       }
-      if(ballLeft==1 && !gameEnd){
+      if(ballLeft==1 && !gameEnd && (winClk < System.nanoTime()/1000000000)){
             if(isBall1Alive){
                 bulletAppState.getPhysicsSpace().remove(ball_phy[0]);         
             }
@@ -844,14 +871,88 @@ public class Main extends SimpleApplication {
             isScreenEnd = false;
             destroyObj();
             InitGUI();
-      }      
+      }
+      
+      if (ballLeft!=1) {
+          winClk = System.nanoTime()/1000000000 + 5;
+      } else if (ballLeft == 1) {
+          System.out.println("Winner");
+      }
+      
+      if (isRunning) {
+        if ((abilityMapping[0] - System.nanoTime()/1000000000) > 0) {
+              float cd = abilityMapping[0] - System.nanoTime()/1000000000;
+              cdText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+              cdText.setColor(ColorRGBA.White);                             // font color
+              cdText.setText("CoolDown: " + cd +"s");             // the text
+              cdText.setLocalTranslation(settings.getWidth() / 2f, cdText.getLineHeight()*4+5f, 0); // position
+              guiNode.attachChild(cdText);     
+          } else if ((abilityMapping[0] - System.nanoTime()/1000000000) <= 0) {
+              System.out.println("Ready to Use 1");
+              cdText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+              cdText.setColor(ColorRGBA.White);                             // font color
+              cdText.setText("CoolDown: Ready");             // the text
+              cdText.setLocalTranslation(settings.getWidth() / 2f, cdText.getLineHeight()*4+5f, 0); // position
+              guiNode.attachChild(cdText);   
+          }
+          if ((abilityMapping[1] - System.nanoTime()/1000000000) > 0) {
+              System.out.println("Player 2: " + (abilityMapping[1] - System.nanoTime()/1000000000));
+              float cd = abilityMapping[1] - System.nanoTime()/1000000000;
+              cdText1.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+              cdText1.setColor(ColorRGBA.White);                             // font color
+              cdText1.setText("CoolDown: " + cd +"s");             // the text
+              cdText1.setLocalTranslation(settings.getWidth() / 2f, cdText1.getLineHeight()*3+5f, 0); // position
+              guiNode.attachChild(cdText1);   
+          } else if ((abilityMapping[1] - System.nanoTime()/1000000000) <= 0) {
+              System.out.println("Ready to Use 2");
+              cdText1.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+              cdText1.setColor(ColorRGBA.White);                             // font color
+              cdText1.setText("CoolDown: Ready");             // the text
+              cdText1.setLocalTranslation(settings.getWidth() / 2f, cdText1.getLineHeight()*3+5f, 0); // position
+              guiNode.attachChild(cdText1);
+          }
+          if (numPlayers > 3) {
+              if ((abilityMapping[2] - System.nanoTime()/1000000000) > 0) {
+                  float cd = abilityMapping[2] - System.nanoTime()/1000000000;
+                  cdText2.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+                  cdText2.setColor(ColorRGBA.White);                             // font color
+                  cdText2.setText("CoolDown: " + cd +"s");             // the text
+                  cdText2.setLocalTranslation(settings.getWidth() / 2f, cdText2.getLineHeight()*2+5f, 0); // position
+                  guiNode.attachChild(cdText2);
+              } else if ((abilityMapping[2] - System.nanoTime()) <= 0) {
+                  System.out.println("Ready to Use 3");
+                  cdText2.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+                  cdText2.setColor(ColorRGBA.White);                             // font color
+                  cdText2.setText("CoolDown: Ready");             // the text
+                  cdText2.setLocalTranslation(settings.getWidth() / 2f, cdText2.getLineHeight()*2+5f, 0); // position
+                  guiNode.attachChild(cdText2);
+              }
+              if (numPlayers == 4) {
+                  if ((abilityMapping[3] - System.nanoTime()/1000000000) > 0) {
+                      float cd = abilityMapping[3] - System.nanoTime()/1000000000;
+                      cdText3.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+                      cdText3.setColor(ColorRGBA.White);                             // font color
+                      cdText3.setText("CoolDown: " + cd +"s");             // the text
+                      cdText3.setLocalTranslation(settings.getWidth() / 2f, cdText3.getLineHeight()+5f, 0); // position
+                      guiNode.attachChild(cdText3); 
+                  } else if ((abilityMapping [3] - System.nanoTime()) <= 0) {
+                      cdText3.setSize(guiFont.getCharSet().getRenderedSize());      // font size
+                      cdText3.setColor(ColorRGBA.White);                             // font color
+                      cdText3.setText("CoolDown: Ready");             // the text
+                      cdText3.setLocalTranslation(settings.getWidth() / 2f, cdText3.getLineHeight()+5f, 0); // position
+                      guiNode.attachChild(cdText3);
+                  }
+              }
+          }
+          
+      }
   }
     
     // destroy objects
     private void destroyObj(){
-        for (int i = counter; i < boardLength*boardWidth; i++) {
-            destroyMap(i);
-        }
+        //for (int i = counter; i < boardLength*boardWidth; i++) {
+        //    destroyMap(i);
+        //}
         rootNode.detachAllChildren(); 
         guiNode.detachAllChildren();
         counter = 0;        
@@ -1164,9 +1265,21 @@ public class Main extends SimpleApplication {
     private void deathTimer() {
         if (deathClk < (System.nanoTime()/1000000000) && counter < boardLength*boardWidth) {
             destroyMap(counter);
-            deathClk = (System.nanoTime()/1000000000) + 5;
-            counter++;
-            
+            deathClk = (System.nanoTime()/1000000000) + 1;
+            counter++;   
+            timeleft.setSize(guiFont.getCharSet().getRenderedSize()*2);      // font size
+            timeleft.setColor(ColorRGBA.White);                           // font color           
+            timeleft.setText("Hurry!");             // the text
+            timeleft.setLocalTranslation(settings.getWidth() / 2f - 50f, settings.getHeight() -10, 0); // position
+            guiNode.attachChild(timeleft);
+        } else if (((deathClk - System.nanoTime()/1000000000) > 0) && counter == 0){
+            System.out.println(deathClk - System.nanoTime()/1000000000);            
+            timeleft.setSize(guiFont.getCharSet().getRenderedSize()*2);      // font size
+            timeleft.setColor(ColorRGBA.White);                            // font color
+           
+            timeleft.setText(String.valueOf(deathClk - System.nanoTime()/1000000000));             // the text
+            timeleft.setLocalTranslation(settings.getWidth() / 2f - 10, settings.getHeight() -10, 0); // position
+            guiNode.attachChild(timeleft);          
         }
     }
     
@@ -1352,7 +1465,8 @@ public class Main extends SimpleApplication {
           controller(new JmeScreenController(
                   "menuButtonDialog1", "dialog1",
                   "menuButtonDialog2", "dialog2",
-                  "menuButtonDialog3", "dialog3"){
+                  "menuButtonDialog3", "dialog3",
+                  "menuButtonDialog4", "dialog4"){
               @Override
               public void onEndScreen(){
                   app.isScreenEnd = true;
@@ -1380,6 +1494,8 @@ public class Main extends SimpleApplication {
                   control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog2", "Map Selection", "Select a map"));
                   panel(builders.hspacer("20px"));
                   control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog3", "Key Binding", "Choose key bindings"));
+                  panel(builders.hspacer("20px"));
+                  control(MenuButtonControlDefinition.getControlBuilder("menuButtonDialog4", "Color Picker", "Choose ball color"));
 
                 }
               });
@@ -1392,6 +1508,7 @@ public class Main extends SimpleApplication {
                   control(new ControlBuilder("dialog1", PlayerSettingControlDefinition.NAME));
                   control(new ControlBuilder("dialog2", MapSelectionControlDefinition.NAME));
                   control(new ControlBuilder("dialog3", KeyBindingControlDefinition.NAME));
+                  control(new ControlBuilder("dialog4", ColorPickerControlDefinition.NAME));
                 }
               });
             }
@@ -1582,6 +1699,7 @@ public class Main extends SimpleApplication {
           if(JmeScreenController.getExitStatus()){
               app.stop();
           }
+          colorMapping = ColorPickerController.getColorMapping();
           numPlayers = PlayerSettingController.getNumberPlayer();  
           ballLeft = numPlayers;
           currentmap = MapSelectionController.getCurrentMap();

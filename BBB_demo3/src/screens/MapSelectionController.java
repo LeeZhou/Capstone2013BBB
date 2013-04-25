@@ -1,45 +1,16 @@
 package screens;
 
-import com.jme3.app.SimpleApplication;
-import com.jme3.input.InputManager;
-import com.jme3.input.RawInputListener;
-import com.jme3.input.event.JoyAxisEvent;
-import com.jme3.input.event.JoyButtonEvent;
-import com.jme3.input.event.KeyInputEvent;
-import com.jme3.input.event.MouseButtonEvent;
-import com.jme3.input.event.MouseMotionEvent;
-import com.jme3.input.event.TouchEvent;
-import de.lessvoid.nifty.EndNotify;
-import java.util.Properties;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.NiftyEventSubscriber;
-import de.lessvoid.nifty.controls.Button;
 import de.lessvoid.nifty.controls.ButtonClickedEvent;
-import de.lessvoid.nifty.controls.CheckBox;
-import de.lessvoid.nifty.controls.CheckBoxStateChangedEvent;
 import de.lessvoid.nifty.controls.Controller;
-import de.lessvoid.nifty.controls.DropDown;
-import de.lessvoid.nifty.controls.DropDownSelectionChangedEvent;
-import de.lessvoid.nifty.controls.Label;
-import de.lessvoid.nifty.controls.ListBox;
-import de.lessvoid.nifty.controls.ListBoxSelectionChangedEvent;
-import de.lessvoid.nifty.controls.RadioButtonGroup;
-import de.lessvoid.nifty.controls.RadioButtonGroupStateChangedEvent;
-import de.lessvoid.nifty.controls.RadioButtonStateChangedEvent;
-import de.lessvoid.nifty.controls.TextField;
-import de.lessvoid.nifty.controls.TextFieldChangedEvent;
 import de.lessvoid.nifty.elements.Element;
+import de.lessvoid.nifty.elements.render.ImageRenderer;
 import de.lessvoid.nifty.input.NiftyInputEvent;
+import de.lessvoid.nifty.render.NiftyImage;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.xml.xpp3.Attributes;
-import java.util.List;
-import com.jme3.input.KeyInput;
-import com.jme3.input.controls.ActionListener;
-import com.jme3.input.InputManager;
-import com.jme3.input.controls.KeyTrigger;
-import de.lessvoid.nifty.elements.render.ImageRenderer;
-import de.lessvoid.nifty.render.NiftyImage;
-import niftyclass.JustAnExampleModelClass;
+import java.util.Properties;
 
 /**
  *

@@ -42,8 +42,9 @@ public class KeyBindingControlDefinition {
           height("1px");
           backgroundColor("#0008");
         }});
-        panel(builders.vspacer());       
-
+        panel(builders.vspacer());          
+      
+         
         panel(new PanelBuilder() {{
           childLayoutHorizontal();
           control(builders.createLabel("Player 1"));
@@ -77,9 +78,10 @@ public class KeyBindingControlDefinition {
           control(new DropDownBuilder("key3") {{
                width("*");                    
           }});            
-        }});            
+        }});          
         
       }});
     }}.registerControlDefintion(nifty);
   }
+
 }
