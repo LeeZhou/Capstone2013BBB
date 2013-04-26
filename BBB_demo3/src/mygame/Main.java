@@ -101,6 +101,7 @@ public class Main extends SimpleApplication {
     
     private BitmapText timeleft;
     private DirectionalLight sun;
+    private DirectionalLight sun2;
     private int counter = 0;
      
     //board parameter
@@ -476,7 +477,6 @@ public class Main extends SimpleApplication {
         temp.setColor("Diffuse",ColorRGBA.White);
         temp.setColor("Ambient",new ColorRGBA(color[0],color[1],color[2],color[3]));
         temp.setFloat("Shininess", 5f);
- 
         return temp;
     }
     
@@ -494,8 +494,13 @@ public class Main extends SimpleApplication {
         rootNode.addLight(al);
         
         sun = new DirectionalLight();
-        sun.setColor(ColorRGBA.DarkGray.mult(0.05f));
+        sun.setColor(ColorRGBA.DarkGray.mult(0.1f));
         sun.setDirection(new Vector3f(-.5f,-.5f,-.5f).normalizeLocal());
+        
+        sun2 = new DirectionalLight();
+        sun2.setColor(ColorRGBA.White.mult(.9f));
+        sun2.setDirection(new Vector3f(-.5f,-.5f,-2.5f).normalizeLocal());
+        
         rootNode.addLight(sun);
     }    
 
@@ -1344,6 +1349,7 @@ public class Main extends SimpleApplication {
         }
         loc.y = 0;
         temp.setLocalTranslation(loc.mult(2));
+        temp.addLight(sun2);
         mapObj[objNum++] = temp;
         rootNode.attachChild(temp);
         temp.addControl(new RigidBodyControl(0f));

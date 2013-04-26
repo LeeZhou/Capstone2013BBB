@@ -43,7 +43,7 @@ public class KeyBindingController implements Controller {
             keybinding[i].addItem(" ");
             keybinding[i].addItem("WASD + Q");
             keybinding[i].addItem("IJKL + SPACE");
-            keybinding[i].addItem("ARROW + ENTER");        
+            keybinding[i].addItem("ARROW + RIGHTSHIFT");        
             keybinding[i].addItem("8456 + 0");
             key[i] = 4;
       }        
@@ -70,7 +70,7 @@ public class KeyBindingController implements Controller {
       else if(keybinding[0].getSelection() == "IJKL + SPACE"){
           key[0] = 1;
       }
-      else if(keybinding[0].getSelection() == "ARROW + ENTER"){
+      else if(keybinding[0].getSelection() == "ARROW + RIGHTSHIFT"){
           key[0] = 2;
       }
       else if(keybinding[0].getSelection() == "8456 + 0"){
@@ -89,7 +89,7 @@ public class KeyBindingController implements Controller {
       else if(keybinding[1].getSelection() == "IJKL + SPACE"){
           key[1] = 1;
       }
-      else if(keybinding[1].getSelection() == "ARROW + ENTER"){
+      else if(keybinding[1].getSelection() == "ARROW + RIGHTSHIFT"){
           key[1] = 2;
       }
       else if(keybinding[1].getSelection() == "8456 + 0"){
@@ -108,7 +108,7 @@ public class KeyBindingController implements Controller {
       else if(keybinding[2].getSelection() == "IJKL + SPACE"){
           key[2] = 1;
       }
-      else if(keybinding[2].getSelection() == "ARROW + ENTER"){
+      else if(keybinding[2].getSelection() == "ARROW + RIGHTSHIFT"){
           key[2] = 2;
       }
       else if(keybinding[2].getSelection() == "8456 + 0"){
@@ -127,7 +127,7 @@ public class KeyBindingController implements Controller {
       else if(keybinding[3].getSelection() == "IJKL + SPACE"){
           key[3] = 1;
       }
-      else if(keybinding[3].getSelection() == "ARROW + ENTER"){
+      else if(keybinding[3].getSelection() == "ARROW + RIGHTSHIFT"){
           key[3] = 2;
       }
       else if(keybinding[3].getSelection() == "8456 + 0"){
