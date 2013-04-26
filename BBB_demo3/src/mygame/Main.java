@@ -27,6 +27,8 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.BloomFilter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
@@ -78,8 +80,9 @@ public class Main extends SimpleApplication {
     private Boolean isBall4Alive = true;
     private Boolean gameEnd = false;    
     private Boolean isScreenEnd = false;
-    private Boolean isghost=false;
+    private Boolean buffOn=false;
     private int ballLeft;
+    private int hasbuf;
     private Boolean run = false;
     
     private BulletAppState bulletAppState;
@@ -121,7 +124,7 @@ public class Main extends SimpleApplication {
     
     //Ghost Control
     GhostControl ghost=new GhostControl(new SphereCollisionShape(5));
-    GhostControl ghosts=new GhostControl(new SphereCollisionShape(20));
+    GhostControl ghosts=new GhostControl(new SphereCollisionShape(0.2f));
     Node gnode = new Node("a ghost-controlled thing");
     private Material[]  deGhostMat;
     private boolean[] ghoststat;
@@ -155,7 +158,8 @@ public class Main extends SimpleApplication {
     private int [] abilityFromUI;
     
     //Buff varaibles
-    private long buffTimer = (System.nanoTime()/1000000000) + 5;
+    private long buffTimer = (System.nanoTime()/1000000000);
+    private long buffTimer2 = (System.nanoTime()/1000000000);
     
     //Map data
     private int[] map1 = {0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -373,10 +377,14 @@ public class Main extends SimpleApplication {
         //place on the map
         rootNode.attachChild(fire);
         rootNode.attachChild(pwrup);
+        gnode.setLocalTranslation(new Vector3f(boardWidth+2f,0.1f,boardLength-3f));
         gnode.addControl(ghosts);
         rootNode.attachChild(gnode);
         bulletAppState.getPhysicsSpace().add(ghosts);
-        gnode.move(new Vector3f(boardWidth+2f,0.1f,boardLength-3f));
+        //ghosts.debugShape();
+        //ghosts.setPhysicsLocation(new Vector3f(boardWidth+2f,0.1f,boardLength-3f));
+        ghosts.addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
+        ghosts.setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
     }
     
     
@@ -845,57 +853,39 @@ public class Main extends SimpleApplication {
             hudText3.setText("Player 4: DEAD");  
         }
     
-      //Update ghost node
-        /*
-        int z=0;
-        if(isghost)
-        {
-             gnode.move(ball_phy[z].getPhysicsLocation());
-             while(z<ghosts.getOverlappingCount())
-             {
-                List k = ghosts.getOverlappingObjects();
-        
-
-                    if(k.get(z).equals(ball_phy[0])||k.get(z).equals(ball_phy[1])||k.get(z).equals(ball_phy[2]))
-                    {
-                        ball_phy[3].removeCollideWithGroup(2);
-                    }
-                    z++;
-                }
-            }
-            else if(!isghost && numPlayers==4)
-            {
-                ball_phy[3].addCollideWithGroup(2);
-            }
-   
-           */
         
         //Ghost Listener for Powerup
-        int z=1;
-        
-        while(z<ghosts.getOverlappingCount())
-        {  
-            if(ghosts.getOverlapping(z).equals(ball_phy[0]))
+        int z=0;
+        int d;
+        if (buffOn && buffTimer < System.nanoTime()/1000000000) {
+            buffOn = false;
+            pwrup.emitAllParticles();
+            pwrup.setEnabled(true);
+        }
+        if (buffTimer2 < System.nanoTime()/1000000000 && buffOn) {
+                buffRestore(hasbuf);
+        }
+        while(z<ghosts.getOverlappingCount()&&!buffOn)
+        {
+            d=0;
+            List k = ghosts.getOverlappingObjects();
+            while(d<numPlayers)
             {
-                buffDamage(0,true);
-            }
-            else if(ghosts.getOverlapping(z).equals(ball_phy[1]))
-            {
-                buffDamage(1,true);        
-            }
-            else if(ghosts.getOverlapping(z).equals(ball_phy[2]))
-            {
-                buffDamage(2,true);        
-            }
-            else if(ghosts.getOverlapping(z).equals(ball_phy[3]))
-            {
-                buffDamage(3,true);        
+                if(k.get(z).equals(ball_phy[d]))
+                {
+                    pwrup.killAllParticles();
+                    pwrup.setEnabled(false);
+                    buffOn=true;
+                    buffRand(d);
+                    buffTimer = System.nanoTime()/1000000000 + 20;
+                    buffTimer2 = System.nanoTime()/1000000000 + 10;
+                }
+                d++;
             }
             z++;
         }   
         
-        
-        
+   
         if(loc[0].y < 0 && isBall1Alive){          
             isBall1Alive = false;  
             ballLeft--;
@@ -1040,56 +1030,57 @@ public class Main extends SimpleApplication {
         }
     }
     
-    // damage buff
-    private void buffDamage(int player, boolean on) {
-        if (on) {
-           ball_phy[player].setRestitution(1f);
-           ball_phy[player].setMass(1.7f);
-           ballSpeed[player] = 2;
-        }
-        else {
-            ball_phy[player].setRestitution(1);
-            ball_phy[player].setMass(1);
-            ballSpeed[player] = 1;
-        }
-    }
-    
-    //Speed buff
-     private void buffSpeed(int player, boolean on) {
-         if (on) {
-            ballSpeed[player] = 2;
+        
+    private void buffRand(int player) {
+         hasbuf=player;
+         long randTime = (System.nanoTime()/1000000)%3;
+         
+         if(randTime==0)
+         {
+            //buffSpeed
+            ballSpeed[player] = 3;
          }
-         else {
-            ballSpeed[player] = 1;
-         }
-     }
-
-     //Juggernaut buff
-     private void buffJugg(int player, boolean on) {//Juggarnaut ability
-         if (on) {
+         else if(randTime==1)
+         {
+            //buffJugg
             ball_phy[player].setRestitution(.5f);
             ball_phy[player].setMass(2f);
             ballSpeed[player] = 2;
+            //Make it Glow
+            /*
+            FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
+            BloomFilter bloom = new BloomFilter(BloomFilter.GlowMode.Objects);
+            fpp.addFilter(bloom);
+            viewPort.addProcessor(fpp);
+            Material mat_glow=ball[player].getMaterial();
+            mat_glow.setColor("GlowColor",ColorRGBA.White);
+            mat_glow.setTexture("GlowMap", assetManager.loadTexture("Textures/alien_glow.png"));
+            ball[player].setMaterial(mat_glow);
+            */
          }
-         else {
-            ball_phy[player].setRestitution(1);
-            ball_phy[player].setMass(1);
-            ballSpeed[player] = 1;   
-         }
-     }
-
-     //Size buff
-     private void buffSize(int player, boolean on) {
-         if (on) {
+         else
+         {
+           //buffSize
             ball[player].scale(2);
             ball_phy[player].setMass(2);
+            ball_phy[player].setPhysicsLocation(new Vector3f(ball_phy[player].getPhysicsLocation().x,ball_phy[player].getPhysicsLocation().y*2,ball_phy[player].getPhysicsLocation().z));
+            ball_phy[player].getCollisionShape().setScale(new Vector3f(2f,2f,2f));
          }
-         else {
-            ball[player].scale(1f);
-            ball_phy[player].setMass(1);
-         }
-     }
-    
+    }
+
+    private void buffRestore(int player)
+    {
+        ball_phy[player].setMass(1);
+        ball_phy[player].setCollisionShape(new SphereCollisionShape(0.5f));
+        ball[player].setLocalScale(1f,1f,1f);
+        ball_phy[player].activate();
+        ball_phy[player].setRestitution(1);
+        ballSpeed[player] = 1;
+        Material mat_glow=ball[player].getMaterial();
+        mat_glow.setColor("GlowColor", ColorRGBA.Black);
+        ball[player].setMaterial(mat_glow);
+    }
+     
     private boolean onCooldown(long[] temp, int i) {
         if (temp[i] < (System.nanoTime()/1000000000)) {
             temp[i] = (System.nanoTime()/1000000000) + 5;
@@ -1165,7 +1156,7 @@ public class Main extends SimpleApplication {
         objNum = 0;
     }
     
-    //create a Map tile with randomly generated terrain to attach to Map
+    //create a Map tile with previously generated terrain to attach to Map
     private void makeMapTile(Vector3f loc, int i) {
         Box box2 = new Box( Vector3f.ZERO, 1f,.1f,1f);
         Geometry tile = new Geometry("Box", box2);
