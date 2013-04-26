@@ -33,6 +33,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.system.AppSettings;
 import com.jme3.texture.Texture;
 import com.jme3.ui.Picture;
 import com.jme3.util.TangentBinormalGenerator;
@@ -51,6 +52,7 @@ import de.lessvoid.nifty.controls.console.builder.ConsoleBuilder;
 import de.lessvoid.nifty.screen.DefaultScreenController;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.tools.Color;
+import java.util.List;
 import niftyclass.CommonBuilders;
 import niftyclass.DialogPanelControlDefinition;
 import niftyclass.MenuButtonControlDefinition;
@@ -63,11 +65,6 @@ import screens.MapSelectionControlDefinition;
 import screens.MapSelectionController;
 import screens.PlayerSettingControlDefinition;
 import screens.PlayerSettingController;
-import com.jme3.system.AppSettings;
-import com.jme3.post.FilterPostProcessor;
-import com.jme3.post.filters.BloomFilter;
-import java.util.List;
-
 
 public class Main extends SimpleApplication {
   
@@ -151,6 +148,7 @@ public class Main extends SimpleApplication {
     // abilities variables
     private long [] abilityMapping;
     private int [] abilityFromUI;
+    private boolean newEsc;
     
     //Buff varaibles
     private long buffTimer = (System.nanoTime()/1000000000);
@@ -500,7 +498,12 @@ public class Main extends SimpleApplication {
         rootNode.addLight(sun);
     }    
 
-    private void setUpKeys() {         
+    private void setUpKeys() {
+        if (!inputManager.hasMapping(INPUT_MAPPING_EXIT)) {
+            inputManager.addMapping("newESC", new KeyTrigger(KeyInput.KEY_ESCAPE));
+            newEsc = true;
+            inputManager.addListener(analogListener, new String[]{"newESC"});
+        }
         for(int i = 0; i < numPlayers; i++){
             if(key[i] == 0){
                 inputManager.addMapping("Ability"+i, new KeyTrigger(KeyInput.KEY_Q));
@@ -519,7 +522,7 @@ public class Main extends SimpleApplication {
                 inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});  
                 inputManager.addListener(actionListener, "Ability"+i);
             }else if(key[i] == 2){
-                inputManager.addMapping("Ability"+i, new KeyTrigger(KeyInput.KEY_RETURN));
+                inputManager.addMapping("Ability"+i, new KeyTrigger(KeyInput.KEY_RSHIFT));
                 inputManager.addMapping("Left"+i, new KeyTrigger(KeyInput.KEY_LEFT));
                 inputManager.addMapping("Right"+i, new KeyTrigger(KeyInput.KEY_RIGHT));
                 inputManager.addMapping("Up"+i, new KeyTrigger(KeyInput.KEY_UP));
@@ -541,7 +544,9 @@ public class Main extends SimpleApplication {
     
     private AnalogListener analogListener = new AnalogListener() {
         public void onAnalog(String binding, float value, float tpf) {
-           
+            if (binding.equals("newESC") && newEsc) {
+                app.stop();
+            }
             // New code: maps ball array
             // player 1 action listener
             if (binding.equals("Left0")) {                     
@@ -566,26 +571,29 @@ public class Main extends SimpleApplication {
                 }      
               
               //player 3 action listener
-              if (binding.equals("Left2") && numPlayers >= 3) {                
-                    ball_phy[2].applyForce(new Vector3f(-3f*ballSpeed[2], 0, 0),new Vector3f(-3f*ballSpeed[2], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right2")&& numPlayers >= 3) {                    
-                    ball_phy[2].applyForce(new Vector3f(3f*ballSpeed[2], 0, 0),new Vector3f(3f*ballSpeed[2], 0, 0));
-                } else if (binding.equals("Up2")&& numPlayers >= 3) {                   
-                    ball_phy[2].applyForce(new Vector3f(0, 0, -3f*ballSpeed[2]),new Vector3f(0, 0, -3f*ballSpeed[2]));
-                } else if (binding.equals("Down2")&& numPlayers >= 3) {
-                    ball_phy[2].applyForce(new Vector3f(0, 0, 3f*ballSpeed[2]),new Vector3f(0, 0, 3f*ballSpeed[2]));
-                } 
-               //player 4 action listener
-              if (binding.equals("Left3") && numPlayers == 4) {  
-                    ball_phy[3].applyForce(new Vector3f(-3f*ballSpeed[3], 0, 0),new Vector3f(-3f*ballSpeed[3], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right3") && numPlayers == 4) {
-                    ball_phy[3].applyForce(new Vector3f(3f*ballSpeed[3], 0, 0),new Vector3f(3f*ballSpeed[3], 0, 0));
-                } else if (binding.equals("Up3")&& numPlayers == 4) {
-                    ball_phy[3].applyForce(new Vector3f(0, 0, -3f*ballSpeed[3]),new Vector3f(0, 0, -3f*ballSpeed[3]));
-                } else if (binding.equals("Down3")&& numPlayers == 4) {
-                    ball_phy[3].applyForce(new Vector3f(0, 0, 3f*ballSpeed[3]),new Vector3f(0, 0, 3f*ballSpeed[3]));
+              if (numPlayers >= 3) {
+                if (binding.equals("Left2")) {                
+                      ball_phy[2].applyForce(new Vector3f(-3f*ballSpeed[2], 0, 0),new Vector3f(-3f*ballSpeed[2], 0, 0)); // push the ball foward
+                  } else if (binding.equals("Right2")) {                    
+                      ball_phy[2].applyForce(new Vector3f(3f*ballSpeed[2], 0, 0),new Vector3f(3f*ballSpeed[2], 0, 0));
+                  } else if (binding.equals("Up2")) {                   
+                      ball_phy[2].applyForce(new Vector3f(0, 0, -3f*ballSpeed[2]),new Vector3f(0, 0, -3f*ballSpeed[2]));
+                  } else if (binding.equals("Down2")) {
+                      ball_phy[2].applyForce(new Vector3f(0, 0, 3f*ballSpeed[2]),new Vector3f(0, 0, 3f*ballSpeed[2]));
+                  }
+                if (numPlayers == 4) {
+                 //player 4 action listener
+                    if (binding.equals("Left3")) {  
+                          ball_phy[3].applyForce(new Vector3f(-3f*ballSpeed[3], 0, 0),new Vector3f(-3f*ballSpeed[3], 0, 0)); // push the ball foward
+                      } else if (binding.equals("Right3")) {
+                          ball_phy[3].applyForce(new Vector3f(3f*ballSpeed[3], 0, 0),new Vector3f(3f*ballSpeed[3], 0, 0));
+                      } else if (binding.equals("Up3")) {
+                          ball_phy[3].applyForce(new Vector3f(0, 0, -3f*ballSpeed[3]),new Vector3f(0, 0, -3f*ballSpeed[3]));
+                      } else if (binding.equals("Down3")) {
+                          ball_phy[3].applyForce(new Vector3f(0, 0, 3f*ballSpeed[3]),new Vector3f(0, 0, 3f*ballSpeed[3]));
+                      }
                 }
-
+              }
         }
     };     
     
@@ -593,15 +601,15 @@ public class Main extends SimpleApplication {
     public void onAction(String name, boolean keyPressed, float tpf) {
         if (name.equals("Ability0") && !keyPressed && !onCooldown(abilityMapping,0)) {
             actAbility(0);               
-        } else if (name.equals("Ability1") && !keyPressed && !onCooldown(abilityMapping,1)) {
+        } if (name.equals("Ability1") && !keyPressed && !onCooldown(abilityMapping,1)) {
             actAbility(1);
-        } else if (name.equals("Ability2") && !keyPressed && !onCooldown(abilityMapping,2) && numPlayers >= 3) {
-            if(numPlayers ==3){
+        } if (numPlayers >= 3) {
+            if (name.equals("Ability2") && !keyPressed && !onCooldown(abilityMapping,2)) {
                 actAbility(2);
-            }
-        } else if (name.equals("Ability3") && !keyPressed && !onCooldown(abilityMapping,3) && numPlayers >= 3) {
-            if(numPlayers==4){
-                actAbility(3);
+            } if(numPlayers == 4) {
+                if (name.equals("Ability3") && !keyPressed && !onCooldown(abilityMapping,3)) {
+                    actAbility(3);
+                }
             }
         }     
     }
@@ -633,10 +641,8 @@ public class Main extends SimpleApplication {
 
     
     private void dash(int i) {
-        Vector3f v = ball_phy[i].getLinearVelocity();
-            if(v.x != 0 && v.z!=0){
-                ball_phy[i].applyImpulse(new Vector3f(v.x*2,0,v.z*2), Vector3f.ZERO);
-            }
+        ball_phy[i].applyImpulse(new Vector3f(ball_phy[i].getLinearVelocity().x*2,
+                0,ball_phy[i].getLinearVelocity().z*2), Vector3f.ZERO);
     }
 
     private void jump(int i) {
@@ -644,8 +650,6 @@ public class Main extends SimpleApplication {
     }
     
     private void mine(int i) {
-        
-        
         
         c = new Sphere(5, 5, 0.2f, true, false);
         c.setTextureMode(Sphere.TextureMode.Projected);
@@ -668,7 +672,6 @@ public class Main extends SimpleApplication {
         mine_phy.setGravity(new Vector3f(0f,-10f,0f));
         mine_phy.setRestitution(3f);        
         
-        
         mineCnt++;
     }
     
@@ -684,7 +687,6 @@ public class Main extends SimpleApplication {
                 else
                 {   
                     ghoststat[i]=true;
-
                     mat_ghost= new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
                     mat_ghost.setColor("Color", new ColorRGBA(0,0,0,0.5f));
                     mat_ghost.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
@@ -867,8 +869,6 @@ public class Main extends SimpleApplication {
             z++;
         }   
         
-        
-        
         if(loc[0].y < 0 && isBall1Alive){          
             isBall1Alive = false;  
             ballLeft--;
@@ -940,7 +940,7 @@ public class Main extends SimpleApplication {
       
       
       if (isRunning) {
-        if ((abilityMapping[0] - System.nanoTime()/1000000000) >= 0) {
+        if ((abilityMapping[0] - System.nanoTime()/1000000000) >= 0 &&isBall1Alive) {
               float cd1 = abilityMapping[0] - System.nanoTime()/1000000000;
               if (cd1 == 3 && abilityFromUI[0] == 5) { 
                  ghost(0);
@@ -960,7 +960,7 @@ public class Main extends SimpleApplication {
               cdText.setLocalTranslation(settings.getWidth() / 2f, cdText.getLineHeight()*4+5f, 0); // position
               guiNode.attachChild(cdText);   
           }
-          if ((abilityMapping[1] - System.nanoTime()/1000000000) >= 0) {
+          if ((abilityMapping[1] - System.nanoTime()/1000000000) >= 0 && isBall2Alive) {
               float cd2 = abilityMapping[1] - System.nanoTime()/1000000000;
               if (cd2 == 3 && abilityFromUI[1] == 5) { 
                   ghost(1);
@@ -981,7 +981,7 @@ public class Main extends SimpleApplication {
               guiNode.attachChild(cdText1);
           }
           if (numPlayers >= 3) {
-              if ((abilityMapping[2] - System.nanoTime()/1000000000) >= 0) {
+              if ((abilityMapping[2] - System.nanoTime()/1000000000) >= 0 && isBall3Alive) {
                   float cd3 = abilityMapping[2] - System.nanoTime()/1000000000;
                   if (cd3 == 3 && abilityFromUI[2] == 5) { 
                       ghost(2);
@@ -1002,7 +1002,7 @@ public class Main extends SimpleApplication {
                   guiNode.attachChild(cdText2);
               }
               if (numPlayers == 4) {
-                  if ((abilityMapping[3] - System.nanoTime()/1000000000) >= 0) {
+                  if ((abilityMapping[3] - System.nanoTime()/1000000000) >= 0 &&isBall4Alive) {
                       float cd4 = abilityMapping[3] - System.nanoTime()/1000000000;
                       if (cd4 == 3 && abilityFromUI[3] == 5) { 
                           ghost(3);
@@ -1053,14 +1053,16 @@ public class Main extends SimpleApplication {
     
     // destroy objects
     private void destroyObj(){
-        for (int i = 0; i < 4; i++) {
-            key[i] = i;
-        }
         while(counter < boardLength*boardWidth) {
             destroyMap(counter++);
         }
         rootNode.detachAllChildren(); 
         guiNode.detachAllChildren();
+        inputManager.clearMappings();
+        
+        key = null;
+        abilityMapping = null;
+        abilityFromUI = null;
         objNum = 0;
         counter = 0;        
         if(mineCnt > 0){
