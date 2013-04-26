@@ -476,6 +476,7 @@ public class Main extends SimpleApplication {
         temp.setColor("Diffuse",ColorRGBA.White);
         temp.setColor("Ambient",new ColorRGBA(color[0],color[1],color[2],color[3]));
         temp.setFloat("Shininess", 5f);
+ 
         return temp;
     }
     
@@ -489,11 +490,11 @@ public class Main extends SimpleApplication {
         // We add light so we see the scene and attach to map
         
         AmbientLight al = new AmbientLight();
-        al.setColor(ColorRGBA.White.mult(0.5f));
+        al.setColor(ColorRGBA.DarkGray.mult(0.05f));
         rootNode.addLight(al);
         
         sun = new DirectionalLight();
-        sun.setColor(ColorRGBA.White);
+        sun.setColor(ColorRGBA.DarkGray.mult(0.05f));
         sun.setDirection(new Vector3f(-.5f,-.5f,-.5f).normalizeLocal());
         rootNode.addLight(sun);
     }    
