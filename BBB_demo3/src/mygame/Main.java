@@ -13,6 +13,7 @@ import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
+import com.jme3.effect.shapes.EmitterSphereShape;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
@@ -83,16 +84,14 @@ public class Main extends SimpleApplication {
     
     private BulletAppState bulletAppState;
 
-    private Material mat_lit;
-    private Material mat_rock;
-    private Material mat_dirt;
-    private Material mat_road;
     private Material mat_red;
+    private Material mat_blue;
     private Material mat_ghost;
     private final float gax = (float) 0.5;   
     
     private Sphere c;   
-    private ParticleEmitter fire;    
+    private ParticleEmitter fire;
+    private ParticleEmitter pwrup; 
     private BitmapText hudText;    
     private BitmapText hudText1; 
     private BitmapText hudText2;  
@@ -122,7 +121,7 @@ public class Main extends SimpleApplication {
     
     //Ghost Control
     GhostControl ghost=new GhostControl(new SphereCollisionShape(5));
-    GhostControl ghosts=new GhostControl(new SphereCollisionShape(21));
+    GhostControl ghosts=new GhostControl(new SphereCollisionShape(20));
     Node gnode = new Node("a ghost-controlled thing");
     private Material[]  deGhostMat;
     private boolean[] ghoststat;
@@ -139,6 +138,7 @@ public class Main extends SimpleApplication {
     private RigidBodyControl mine_phy;
     private Geometry mine;
     private int mineCnt = 0;
+    private int[] availcoll={0,0,0,0,0,0,0,0};  
     
     // Hardcoded number of players for testing
     private int numPlayers;
@@ -303,7 +303,7 @@ public class Main extends SimpleApplication {
         isBall4Alive = true;
         gameEnd = false;   
         deGhostMat = new Material[numPlayers];
-        ghoststat = new boolean [numPlayers];
+        ghoststat = new boolean[numPlayers];
         mineCnt = 0;
         deathClk = (System.nanoTime()/1000000000) + 50; 
         
@@ -330,27 +330,53 @@ public class Main extends SimpleApplication {
     //Initialize power-up objects
     private void createPowerUp(){        
         //create and edit properties
+        
         fire = 
            new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 30);
+        pwrup = new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle,1);
+        pwrup.setShape(new EmitterSphereShape(Vector3f.ZERO,0.01f));
+           
         mat_red = new Material(assetManager, 
            "Common/MatDefs/Misc/Particle.j3md");
         mat_red.setTexture("Texture", assetManager.loadTexture(
            "Effects/Explosion/flame.png"));
+        
+        mat_blue = new Material(assetManager, 
+           "Common/MatDefs/Misc/Particle.j3md");
+        mat_blue.setTexture("Texture", assetManager.loadTexture(
+           "Effects/Explosion/shockwave.png"));
         fire.setMaterial(mat_red);
+        pwrup.setMaterial(mat_blue);
         fire.setImagesX(2); 
         fire.setImagesY(2); // 2x2 texture animation
+        pwrup.setImagesX(1); 
+        pwrup.setImagesY(1);
         fire.setEndColor(new ColorRGBA(1f, 0f, 1f, 1f));   // red
         fire.setStartColor(new ColorRGBA(1f, 0f, 2f, 0.5f)); // yellow
+        pwrup.setEndColor(ColorRGBA.Cyan);
+        pwrup.setStartColor(ColorRGBA.Blue); // yellow
         fire.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 2, 0));
+        pwrup.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 1, 0));
         fire.setStartSize(2f);
+        pwrup.setStartSize(1f);
         fire.setEndSize(0.1f);
+        pwrup.setEndSize(0.1f);
         fire.setGravity(0, 0, 0);
         fire.setLowLife(1f);
+        pwrup.setLowLife(0.5f);
         fire.setHighLife(2f);
+        pwrup.setHighLife(1f);
         fire.getParticleInfluencer().setVelocityVariation(0.1f);
-        fire.setLocalTranslation(new Vector3f(boardWidth+2f,0.1f,boardLength-3f));        
+        pwrup.getParticleInfluencer().setVelocityVariation(0);
+        fire.setLocalTranslation(new Vector3f(boardWidth+2f,0.1f,boardLength-3f));
+        pwrup.setLocalTranslation(new Vector3f(boardWidth+2f,0.1f,boardLength-3f));
         //place on the map
-        rootNode.attachChild(fire);          
+        rootNode.attachChild(fire);
+        rootNode.attachChild(pwrup);
+        gnode.addControl(ghosts);
+        rootNode.attachChild(gnode);
+        bulletAppState.getPhysicsSpace().add(ghosts);
+        gnode.move(new Vector3f(boardWidth+2f,0.1f,boardLength-3f));
     }
     
     
@@ -375,7 +401,6 @@ public class Main extends SimpleApplication {
         ballShape[i] = new SphereCollisionShape(0.5f);
         ball[i].setMaterial(loadTexture(color));
         deGhostMat[i] = ball[i].getMaterial();
-        ghoststat[i] = false;
         ballSpeed[i] = 1;
         placeBall(ball,i);
         rootNode.attachChild(ball[i]);
@@ -437,9 +462,14 @@ public class Main extends SimpleApplication {
         }
         temp.setTexture("DiffuseMap", diff);
         temp.setTexture("NormalMap", norm);
-        temp.setBoolean("UseMaterialColors",true);    
-        temp.setColor("Specular",new ColorRGBA().set(color[0], color[1], color[2], color[3]));
-        temp.setColor("Diffuse",new ColorRGBA().set(color[0], color[1], color[2], color[3]));
+        temp.setBoolean("UseMaterialColors",true);
+        temp.setColor("Specular",ColorRGBA.White);
+        temp.setColor("Diffuse",ColorRGBA.White);
+        //temp.setBoolean("UseAlpha",true);
+        //temp.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+        temp.setColor("Ambient",new ColorRGBA(color[0],color[1],color[2],color[3]));
+        
+        
         temp.setFloat("Shininess", 5f);
         return temp;
     }
@@ -452,14 +482,15 @@ public class Main extends SimpleApplication {
     //Initialize lighting
     private void setUpLight() {
         // We add light so we see the scene and attach to map
-
+        
         AmbientLight al = new AmbientLight();
-        al.setColor(ColorRGBA.White.mult(1.3f));
+        al.setColor(ColorRGBA.White.mult(0.5f));
         rootNode.addLight(al);
+        
         sun = new DirectionalLight();
-        sun.setDirection(new Vector3f(1,0,-2).normalizeLocal());
         sun.setColor(ColorRGBA.White);
-        rootNode.addLight(sun);  
+        sun.setDirection(new Vector3f(-.5f,-.5f,-.5f).normalizeLocal());
+        rootNode.addLight(sun);
     }    
 
     private void setUpKeys() {         
@@ -569,15 +600,15 @@ public class Main extends SimpleApplication {
     
     private ActionListener actionListener = new ActionListener() {
     public void onAction(String name, boolean keyPressed, float tpf) {
-        if (name.equals("Ability1") && !keyPressed && !onCooldown(abilityMapping,0)) {
+        if (name.equals("Ability1") && !keyPressed && !onCooldown(abilityMapping,0) && isBall1Alive) {
             actAbility(0);               
-        } else if (name.equals("Ability2") && !keyPressed && !onCooldown(abilityMapping,1)) {
+        } else if (name.equals("Ability2") && !keyPressed && !onCooldown(abilityMapping,1) && isBall2Alive) {
             actAbility(1);
-        } else if (name.equals("Ability3") && !keyPressed && !onCooldown(abilityMapping,2)) {
+        } else if (name.equals("Ability3") && !keyPressed && !onCooldown(abilityMapping,2) && isBall3Alive) {
             if(numPlayers >=3){
                 actAbility(2);
             }
-        } else if (name.equals("Ability4") && !keyPressed && !onCooldown(abilityMapping,3)) {
+        } else if (name.equals("Ability4") && !keyPressed && !onCooldown(abilityMapping,3) && isBall4Alive) {
             if(numPlayers==4){
                 actAbility(3);
             }
@@ -622,7 +653,17 @@ public class Main extends SimpleApplication {
     }
     
     private void mine(int i) {
-        Sphere c = new Sphere(5, 5, 0.2f, true, false);
+        int x=0;
+        while(availcoll[x]==1)
+        {
+            x++;
+        }
+        availcoll[x]=1;
+        
+        ball_phy[i].removeCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
+        ball_phy[i].setCollisionGroup(x+4);
+        
+        c = new Sphere(5, 5, 0.2f, true, false);
         c.setTextureMode(Sphere.TextureMode.Projected);
         TangentBinormalGenerator.generate(c);
         mine = new Geometry("Mine",c);
@@ -634,16 +675,29 @@ public class Main extends SimpleApplication {
         min_mat.setColor("Diffuse",ColorRGBA.Blue);
         mine.setMaterial(min_mat);
         rootNode.attachChild(mine);
-        mine.setLocalTranslation(ball_phy[i].getPhysicsLocation());
+        mine.setLocalTranslation(ball_phy[i].getPhysicsLocation().setX(ball_phy[i].getPhysicsLocation().x+2));
         mine_phy = new RigidBodyControl(1f);
         mine.addControl(mine_phy);
-        mine.addControl(ghost);
-        bulletAppState.getPhysicsSpace().add(ghost);
+        //mine.addControl(ghost);
+        //bulletAppState.getPhysicsSpace().add(ghost);
         bulletAppState.getPhysicsSpace().add(mine);
         mine_phy.setMass(1000f);
         mine_phy.setDamping(0f, 1f); 
         mine_phy.setGravity(new Vector3f(0f,-10f,0f));
         mine_phy.setRestitution(3f);
+        
+        
+        int y=0;
+        while(y<numPlayers)
+        {
+            if(y!=i)
+            {
+                mine_phy.addCollideWithGroup(ball_phy[y].getCollisionGroup());
+                ball_phy[y].addCollideWithGroup(x+4);
+            }
+            y++;
+        }
+        
         mineCnt++;
     }
     
@@ -659,14 +713,12 @@ public class Main extends SimpleApplication {
                 else
                 {   
                     ghoststat[i]=true;
-                    //gnode.addControl(ghosts);
-                    //rootNode.attachChild(gnode);            
+                                
                     mat_ghost= new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
                     mat_ghost.setColor("Color", new ColorRGBA(0,0,0,0.5f));
                     mat_ghost.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
                     ball[i].setMaterial(mat_ghost);
                     ball[i].setQueueBucket(Bucket.Transparent);
-                    bulletAppState.getPhysicsSpace().add(ghosts);
                     ball_phy[i].removeCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
                     ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_03);
 
@@ -815,14 +867,35 @@ public class Main extends SimpleApplication {
             {
                 ball_phy[3].addCollideWithGroup(2);
             }
+   
+           */
+        
+        //Ghost Listener for Powerup
+        int z=1;
+        
+        while(z<ghosts.getOverlappingCount())
+        {  
+            if(ghosts.getOverlapping(z).equals(ball_phy[0]))
+            {
+                buffDamage(0,true);
+            }
+            else if(ghosts.getOverlapping(z).equals(ball_phy[1]))
+            {
+                buffDamage(1,true);        
+            }
+            else if(ghosts.getOverlapping(z).equals(ball_phy[2]))
+            {
+                buffDamage(2,true);        
+            }
+            else if(ghosts.getOverlapping(z).equals(ball_phy[3]))
+            {
+                buffDamage(3,true);        
+            }
+            z++;
+        }   
         
         
         
-        else if(!isghost && numPlayers==4)
-        {
-            ball_phy[3].addCollideWithGroup(2);
-        }
-        */
         if(loc[0].y < 0 && isBall1Alive){          
             isBall1Alive = false;  
             ballLeft--;
@@ -880,14 +953,14 @@ public class Main extends SimpleApplication {
       }
       
       if (isRunning) {
-        if ((abilityMapping[0] - System.nanoTime()/1000000000) > 0) {
+        if ((abilityMapping[0] - System.nanoTime()/1000000000) >= 0) {
               float cd = abilityMapping[0] - System.nanoTime()/1000000000;
               cdText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
               cdText.setColor(ColorRGBA.White);                             // font color
               cdText.setText("CoolDown: " + cd +"s");             // the text
               cdText.setLocalTranslation(settings.getWidth() / 2f, cdText.getLineHeight()*4+5f, 0); // position
               guiNode.attachChild(cdText);     
-          } else if ((abilityMapping[0] - System.nanoTime()/1000000000) <= 0) {
+          } else if ((abilityMapping[0] - System.nanoTime()/1000000000) < 0) {
               System.out.println("Ready to Use 1");
               cdText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
               cdText.setColor(ColorRGBA.White);                             // font color
@@ -895,7 +968,7 @@ public class Main extends SimpleApplication {
               cdText.setLocalTranslation(settings.getWidth() / 2f, cdText.getLineHeight()*4+5f, 0); // position
               guiNode.attachChild(cdText);   
           }
-          if ((abilityMapping[1] - System.nanoTime()/1000000000) > 0) {
+          if ((abilityMapping[1] - System.nanoTime()/1000000000) >= 0) {
               System.out.println("Player 2: " + (abilityMapping[1] - System.nanoTime()/1000000000));
               float cd = abilityMapping[1] - System.nanoTime()/1000000000;
               cdText1.setSize(guiFont.getCharSet().getRenderedSize());      // font size
@@ -903,7 +976,7 @@ public class Main extends SimpleApplication {
               cdText1.setText("CoolDown: " + cd +"s");             // the text
               cdText1.setLocalTranslation(settings.getWidth() / 2f, cdText1.getLineHeight()*3+5f, 0); // position
               guiNode.attachChild(cdText1);   
-          } else if ((abilityMapping[1] - System.nanoTime()/1000000000) <= 0) {
+          } else if ((abilityMapping[1] - System.nanoTime()/1000000000) < 0) {
               System.out.println("Ready to Use 2");
               cdText1.setSize(guiFont.getCharSet().getRenderedSize());      // font size
               cdText1.setColor(ColorRGBA.White);                             // font color
@@ -911,15 +984,15 @@ public class Main extends SimpleApplication {
               cdText1.setLocalTranslation(settings.getWidth() / 2f, cdText1.getLineHeight()*3+5f, 0); // position
               guiNode.attachChild(cdText1);
           }
-          if (numPlayers > 3) {
-              if ((abilityMapping[2] - System.nanoTime()/1000000000) > 0) {
+          if (numPlayers >= 3) {
+              if ((abilityMapping[2] - System.nanoTime()/1000000000) >= 0) {
                   float cd = abilityMapping[2] - System.nanoTime()/1000000000;
                   cdText2.setSize(guiFont.getCharSet().getRenderedSize());      // font size
                   cdText2.setColor(ColorRGBA.White);                             // font color
                   cdText2.setText("CoolDown: " + cd +"s");             // the text
                   cdText2.setLocalTranslation(settings.getWidth() / 2f, cdText2.getLineHeight()*2+5f, 0); // position
                   guiNode.attachChild(cdText2);
-              } else if ((abilityMapping[2] - System.nanoTime()) <= 0) {
+              } else if ((abilityMapping[2] - System.nanoTime()) < 0) {
                   System.out.println("Ready to Use 3");
                   cdText2.setSize(guiFont.getCharSet().getRenderedSize());      // font size
                   cdText2.setColor(ColorRGBA.White);                             // font color
@@ -928,14 +1001,14 @@ public class Main extends SimpleApplication {
                   guiNode.attachChild(cdText2);
               }
               if (numPlayers == 4) {
-                  if ((abilityMapping[3] - System.nanoTime()/1000000000) > 0) {
+                  if ((abilityMapping[3] - System.nanoTime()/1000000000) >= 0) {
                       float cd = abilityMapping[3] - System.nanoTime()/1000000000;
                       cdText3.setSize(guiFont.getCharSet().getRenderedSize());      // font size
                       cdText3.setColor(ColorRGBA.White);                             // font color
                       cdText3.setText("CoolDown: " + cd +"s");             // the text
                       cdText3.setLocalTranslation(settings.getWidth() / 2f, cdText3.getLineHeight()+5f, 0); // position
                       guiNode.attachChild(cdText3); 
-                  } else if ((abilityMapping [3] - System.nanoTime()) <= 0) {
+                  } else if ((abilityMapping [3] - System.nanoTime()) < 0) {
                       cdText3.setSize(guiFont.getCharSet().getRenderedSize());      // font size
                       cdText3.setColor(ColorRGBA.White);                             // font color
                       cdText3.setText("CoolDown: Ready");             // the text
