@@ -49,6 +49,7 @@ public class ColorPickerController implements Controller{
             this.red[i] = 0.f;
             this.green[i] = 0.f;
             this.blue[i] = 0.f;
+            this.alpha[i] = 0.f;
       }      
 
     }
@@ -59,25 +60,24 @@ public class ColorPickerController implements Controller{
 
     @Override
     public void onStartScreen() {
+      for(int i = 0; i < 4; i++){
+       alpha[i] = 255.f ;
+      }
       getSlider("sliderR0").setup(0.f, 255.f,   0.f, 1.f, 10.f);
       getSlider("sliderG0").setup(0.f, 255.f,   0.f, 1.f, 10.f);
       getSlider("sliderB0").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderA0").setup(0.f, 255.f, 255.f, 1.f, 10.f);
         
       getSlider("sliderR1").setup(0.f, 255.f,   0.f, 1.f, 10.f);
       getSlider("sliderG1").setup(0.f, 255.f,   0.f, 1.f, 10.f);
       getSlider("sliderB1").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderA1").setup(0.f, 255.f, 255.f, 1.f, 10.f);
       
       getSlider("sliderR2").setup(0.f, 255.f,   0.f, 1.f, 10.f);
       getSlider("sliderG2").setup(0.f, 255.f,   0.f, 1.f, 10.f);
       getSlider("sliderB2").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderA2").setup(0.f, 255.f, 255.f, 1.f, 10.f);
 
       getSlider("sliderR3").setup(0.f, 255.f,   0.f, 1.f, 10.f);
       getSlider("sliderG3").setup(0.f, 255.f,   0.f, 1.f, 10.f);
       getSlider("sliderB3").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderA3").setup(0.f, 255.f, 255.f, 1.f, 10.f);
 
     }
 
@@ -95,25 +95,19 @@ public class ColorPickerController implements Controller{
     @NiftyEventSubscriber(id="sliderR0")
     public void onRedSlider0Change(final String id, final SliderChangedEvent event) {
       red[0] = event.getValue();
-      changeColor();
+      changeColor0();
     }
 
     @NiftyEventSubscriber(id="sliderG0")
     public void onGreenSlider0Change(final String id, final SliderChangedEvent event) {
       green[0] = event.getValue();
-      changeColor();
+      changeColor0();
     }
 
     @NiftyEventSubscriber(id="sliderB0")
     public void onBlueSlider0Change(final String id, final SliderChangedEvent event) {
       blue[0] = event.getValue();
-      changeColor();
-    }
-
-    @NiftyEventSubscriber(id="sliderA0")
-    public void onAlphaSlider0Change(final String id, final SliderChangedEvent event) {
-      alpha[0] = event.getValue();
-      changeColor();    
+      changeColor0();
     }
     
     // Color 2
@@ -121,25 +115,19 @@ public class ColorPickerController implements Controller{
     @NiftyEventSubscriber(id="sliderR1")
     public void onRedSlider1Change(final String id, final SliderChangedEvent event) {
       red[1] = event.getValue();
-      changeColor();
+      changeColor1();
     }
 
     @NiftyEventSubscriber(id="sliderG1")
     public void onGreenSlider1Change(final String id, final SliderChangedEvent event) {
       green[1] = event.getValue();
-      changeColor();
+      changeColor1();
     }
 
     @NiftyEventSubscriber(id="sliderB1")
     public void onBlueSlider1Change(final String id, final SliderChangedEvent event) {
       blue[1] = event.getValue();
-      changeColor();
-    }
-
-    @NiftyEventSubscriber(id="sliderA1")
-    public void onAlphaSlider1Change(final String id, final SliderChangedEvent event) {
-      alpha[1] = event.getValue();
-      changeColor();    
+      changeColor1();
     }
     
     // Color 3
@@ -147,58 +135,55 @@ public class ColorPickerController implements Controller{
     @NiftyEventSubscriber(id="sliderR2")
     public void onRedSlider2Change(final String id, final SliderChangedEvent event) {
       red[2] = event.getValue();
-      changeColor();
+      changeColor2();
     }
 
     @NiftyEventSubscriber(id="sliderG2")
     public void onGreenSlider2Change(final String id, final SliderChangedEvent event) {
       green[2] = event.getValue();
-      changeColor();
+      changeColor2();
     }
 
     @NiftyEventSubscriber(id="sliderB2")
     public void onBlueSlider2Change(final String id, final SliderChangedEvent event) {
       blue[2] = event.getValue();
-      changeColor();
+      changeColor2();
     }
-
-    @NiftyEventSubscriber(id="sliderA2")
-    public void onAlphaSlider2Change(final String id, final SliderChangedEvent event) {
-      alpha[2] = event.getValue();
-      changeColor();    
-    }
+    
+    // Color 4
     
     @NiftyEventSubscriber(id="sliderR3")
     public void onRedSlider3Change(final String id, final SliderChangedEvent event) {
       red[3] = event.getValue();
-      changeColor();
+      changeColor3();
     }
 
     @NiftyEventSubscriber(id="sliderG3")
     public void onGreenSlider3Change(final String id, final SliderChangedEvent event) {
       green[3] = event.getValue();
-      changeColor();
+      changeColor3();
     }
 
     @NiftyEventSubscriber(id="sliderB3")
     public void onBlueSlider3Change(final String id, final SliderChangedEvent event) {
       blue[3] = event.getValue();
-      changeColor();
-    }
+      changeColor3();
+    }   
 
-    @NiftyEventSubscriber(id="sliderA3")
-    public void onAlphaSlider3Change(final String id, final SliderChangedEvent event) {
-      alpha[3] = event.getValue();
-      changeColor();    
-    }
-   
-
-    private void changeColor() {
+    private void changeColor0() {
       color[0].getRenderer(PanelRenderer.class).setBackgroundColor(new Color(red[0] / 255.f, green[0] / 255.f, blue[0] / 255.f, alpha[0] / 255.f));
-      color[1].getRenderer(PanelRenderer.class).setBackgroundColor(new Color(red[1] / 255.f, green[1] / 255.f, blue[1] / 255.f, alpha[1] / 255.f));
-      color[2].getRenderer(PanelRenderer.class).setBackgroundColor(new Color(red[2] / 255.f, green[2] / 255.f, blue[2] / 255.f, alpha[2] / 255.f));
-      color[3].getRenderer(PanelRenderer.class).setBackgroundColor(new Color(red[3] / 255.f, green[3] / 255.f, blue[3] / 255.f, alpha[3] / 255.f));
-
+    }
+    
+    private void changeColor1(){
+      color[1].getRenderer(PanelRenderer.class).setBackgroundColor(new Color(red[1] / 255.f, green[1] / 255.f, blue[1] / 255.f, alpha[1] / 255.f));        
+    }
+    
+    private void changeColor2(){
+      color[2].getRenderer(PanelRenderer.class).setBackgroundColor(new Color(red[2] / 255.f, green[2] / 255.f, blue[2] / 255.f, alpha[2] / 255.f));        
+    }
+    
+    private void changeColor3(){
+      color[3].getRenderer(PanelRenderer.class).setBackgroundColor(new Color(red[3] / 255.f, green[3] / 255.f, blue[3] / 255.f, alpha[3] / 255.f));        
     }
 
     private Slider getSlider(final String id) {

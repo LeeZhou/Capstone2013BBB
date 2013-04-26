@@ -3,8 +3,6 @@ package mygame;
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.TextureKey;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.collision.PhysicsCollisionEvent;
-import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.control.GhostControl;
@@ -27,8 +25,6 @@ import com.jme3.math.ColorRGBA;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
-import com.jme3.post.FilterPostProcessor;
-import com.jme3.post.filters.BloomFilter;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
@@ -39,7 +35,6 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 import com.jme3.ui.Picture;
-import com.jme3.util.SkyFactory;
 import com.jme3.util.TangentBinormalGenerator;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.builder.ControlBuilder;
@@ -53,23 +48,26 @@ import de.lessvoid.nifty.builder.StyleBuilder;
 import de.lessvoid.nifty.builder.TextBuilder;
 import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
 import de.lessvoid.nifty.controls.console.builder.ConsoleBuilder;
-import de.lessvoid.nifty.controls.dropdown.builder.DropDownBuilder;
-import de.lessvoid.nifty.controls.label.builder.LabelBuilder;
 import de.lessvoid.nifty.screen.DefaultScreenController;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.tools.Color;
-import java.util.List;
 import niftyclass.CommonBuilders;
 import niftyclass.DialogPanelControlDefinition;
 import niftyclass.MenuButtonControlDefinition;
 import screens.ColorPickerControlDefinition;
 import screens.ColorPickerController;
+import screens.JmeScreenController;
+import screens.KeyBindingControlDefinition;
+import screens.KeyBindingController;
 import screens.MapSelectionControlDefinition;
 import screens.MapSelectionController;
 import screens.PlayerSettingControlDefinition;
 import screens.PlayerSettingController;
-import screens.JmeScreenController;
-import screens.KeyBindingControlDefinition;
+import com.jme3.system.AppSettings;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.post.filters.BloomFilter;
+import java.util.List;
+
 
 public class Main extends SimpleApplication {
   
@@ -80,13 +78,11 @@ public class Main extends SimpleApplication {
     private Boolean isBall4Alive = true;
     private Boolean gameEnd = false;    
     private Boolean isScreenEnd = false;
-    private Boolean buffOn=false;
-    private int ballLeft;
-    private int hasbuf;
+    private int ballLeft = -1;
     private Boolean run = false;
-    
+    private Boolean buffOn = false;
+    private int hasbuf;
     private BulletAppState bulletAppState;
-
     private Material mat_red;
     private Material mat_blue;
     private Material mat_ghost;
@@ -94,7 +90,8 @@ public class Main extends SimpleApplication {
     
     private Sphere c;   
     private ParticleEmitter fire;
-    private ParticleEmitter pwrup; 
+    private ParticleEmitter pwrup;
+    
     private BitmapText hudText;    
     private BitmapText hudText1; 
     private BitmapText hudText2;  
@@ -115,6 +112,7 @@ public class Main extends SimpleApplication {
     public int currentmap;
     private int[] maptexture;
     private int[] mapobjects;    
+    private int mapObjNum;
         
     //Destory Map stuff
     private long deathClk;
@@ -141,11 +139,9 @@ public class Main extends SimpleApplication {
     private RigidBodyControl mine_phy;
     private Geometry mine;
     private int mineCnt = 0;
-    private int[] availcoll={0,0,0,0,0,0,0,0};  
-    
-    // Hardcoded number of players for testing
     private int numPlayers;
     private static Main app;
+    private static int [] key;
     
     // GUI instance
     private static CommonBuilders builders = new CommonBuilders();
@@ -154,7 +150,6 @@ public class Main extends SimpleApplication {
     
     // abilities variables
     private long [] abilityMapping;
-    private int [] assignAbility;
     private int [] abilityFromUI;
     
     //Buff varaibles
@@ -211,15 +206,21 @@ public class Main extends SimpleApplication {
 
     
     public static void main(String[] args) {
+        AppSettings settings = new AppSettings(true);
+        settings.setTitle("Bumper Ball Battle");
+        settings.setSettingsDialogImage("Interface/header_icon.png");
         app = new Main();
+        app.setSettings(settings);
         app.start();
     } 
+   
     
     @Override
-    public void simpleInitApp() {        
+    public void simpleInitApp() {  
+
         app.setDisplayFps(false);
         app.setDisplayStatView(false);
-        
+
         /** Set up Physics Game */
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);        
@@ -243,8 +244,7 @@ public class Main extends SimpleApplication {
         
         variableInit();
         initbg(); 
-        createStatus();
-        
+        createStatus();        
         createBallArray(numPlayers,colorMapping); 
         setUpKeys(); 
         abilityMapping = new long [numPlayers];
@@ -300,6 +300,7 @@ public class Main extends SimpleApplication {
         
         timeleft = new BitmapText(guiFont, false);
         ballSpeed = new int [numPlayers];
+        
         isRunning = true;
         isBall1Alive = true;
         isBall2Alive = true;  
@@ -307,9 +308,9 @@ public class Main extends SimpleApplication {
         isBall4Alive = true;
         gameEnd = false;   
         deGhostMat = new Material[numPlayers];
-        ghoststat = new boolean[numPlayers];
+        ghoststat = new boolean [numPlayers];
         mineCnt = 0;
-        deathClk = (System.nanoTime()/1000000000) + 50; 
+        deathClk = (System.nanoTime()/1000000000) + 10; 
         
     }
     
@@ -385,6 +386,7 @@ public class Main extends SimpleApplication {
         //ghosts.setPhysicsLocation(new Vector3f(boardWidth+2f,0.1f,boardLength-3f));
         ghosts.addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_01);
         ghosts.setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
+
     }
     
     
@@ -398,7 +400,7 @@ public class Main extends SimpleApplication {
         p.setHeight(settings.getHeight());
         p.setPosition(0, 0);        
         ViewPort pv = renderManager.createPreView("background", cam);
-        pv.setClearFlags(true, true, true); 
+        pv.setClearFlags(true, true, true);     
         pv.attachScene(p);
         viewPort.setClearFlags(false, true, true);
         p.updateGeometricState();
@@ -409,6 +411,7 @@ public class Main extends SimpleApplication {
         ballShape[i] = new SphereCollisionShape(0.5f);
         ball[i].setMaterial(loadTexture(color));
         deGhostMat[i] = ball[i].getMaterial();
+        ghoststat[i] = false;
         ballSpeed[i] = 1;
         placeBall(ball,i);
         rootNode.attachChild(ball[i]);
@@ -470,14 +473,10 @@ public class Main extends SimpleApplication {
         }
         temp.setTexture("DiffuseMap", diff);
         temp.setTexture("NormalMap", norm);
-        temp.setBoolean("UseMaterialColors",true);
+        temp.setBoolean("UseMaterialColors",true);    
         temp.setColor("Specular",ColorRGBA.White);
         temp.setColor("Diffuse",ColorRGBA.White);
-        //temp.setBoolean("UseAlpha",true);
-        //temp.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
         temp.setColor("Ambient",new ColorRGBA(color[0],color[1],color[2],color[3]));
-        
-        
         temp.setFloat("Shininess", 5f);
         return temp;
     }
@@ -502,58 +501,42 @@ public class Main extends SimpleApplication {
     }    
 
     private void setUpKeys() {         
-        
-        
-        // Ability keybindings and listener
-        inputManager.addMapping("Ability1", new KeyTrigger(KeyInput.KEY_Q));
-        inputManager.addListener(actionListener, "Ability1");
-        inputManager.addMapping("Ability2", new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addListener(actionListener, "Ability2");
-        if(numPlayers >= 3){
-            inputManager.addMapping("Ability3", new KeyTrigger(KeyInput.KEY_RETURN));
-            inputManager.addListener(actionListener, "Ability3");
-            if(numPlayers == 4){
-            inputManager.addMapping("Ability4", new KeyTrigger(KeyInput.KEY_NUMPAD0));        
-            inputManager.addListener(actionListener, "Ability4");     
+        for(int i = 0; i < numPlayers; i++){
+            if(key[i] == 0){
+                inputManager.addMapping("Ability"+i, new KeyTrigger(KeyInput.KEY_Q));
+                inputManager.addMapping("Left"+i, new KeyTrigger(KeyInput.KEY_A));
+                inputManager.addMapping("Right"+i, new KeyTrigger(KeyInput.KEY_D));
+                inputManager.addMapping("Up"+i, new KeyTrigger(KeyInput.KEY_W));
+                inputManager.addMapping("Down"+i, new KeyTrigger(KeyInput.KEY_S));                
+                inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});
+                inputManager.addListener(actionListener, "Ability"+i);
+            }else if(key[i] == 1){
+                inputManager.addMapping("Ability"+i, new KeyTrigger(KeyInput.KEY_SPACE));
+                inputManager.addMapping("Left"+i, new KeyTrigger(KeyInput.KEY_J));
+                inputManager.addMapping("Right"+i, new KeyTrigger(KeyInput.KEY_L));
+                inputManager.addMapping("Up"+i, new KeyTrigger(KeyInput.KEY_I));
+                inputManager.addMapping("Down"+i, new KeyTrigger(KeyInput.KEY_K));
+                inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});  
+                inputManager.addListener(actionListener, "Ability"+i);
+            }else if(key[i] == 2){
+                inputManager.addMapping("Ability"+i, new KeyTrigger(KeyInput.KEY_RETURN));
+                inputManager.addMapping("Left"+i, new KeyTrigger(KeyInput.KEY_LEFT));
+                inputManager.addMapping("Right"+i, new KeyTrigger(KeyInput.KEY_RIGHT));
+                inputManager.addMapping("Up"+i, new KeyTrigger(KeyInput.KEY_UP));
+                inputManager.addMapping("Down"+i, new KeyTrigger(KeyInput.KEY_DOWN));
+                inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});   
+                inputManager.addListener(actionListener, "Ability"+i);
+            }else if(key[i] == 3){
+                inputManager.addMapping("Ability"+i, new KeyTrigger(KeyInput.KEY_NUMPAD0));
+                inputManager.addMapping("Left"+i, new KeyTrigger(KeyInput.KEY_NUMPAD4));
+                inputManager.addMapping("Right"+i, new KeyTrigger(KeyInput.KEY_NUMPAD6));
+                inputManager.addMapping("Up"+i, new KeyTrigger(KeyInput.KEY_NUMPAD8));
+                inputManager.addMapping("Down"+i, new KeyTrigger(KeyInput.KEY_NUMPAD5));
+                inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});
+                inputManager.addListener(actionListener, "Ability"+i);
             }
-        }
-        
-        // Player 1 keybindings and listener
-        
-        inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
-        inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
-        inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_W));
-        inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_S));        
-        
-        inputManager.addListener(analogListener,new String[]{ "Left","Right", "Up", "Down"});
-      
-        // Player 2 keybindings and listener
-        inputManager.addMapping("Left2", new KeyTrigger(KeyInput.KEY_J));
-        inputManager.addMapping("Right2", new KeyTrigger(KeyInput.KEY_L));
-        inputManager.addMapping("Up2", new KeyTrigger(KeyInput.KEY_I));
-        inputManager.addMapping("Down2", new KeyTrigger(KeyInput.KEY_K));
-        
-        inputManager.addListener(analogListener,new String[]{ "Left2","Right2", "Up2", "Down2"});        
-        
-        // Player 3 keybindings and listener
-        if(numPlayers >= 3){
-        inputManager.addMapping("Left3", new KeyTrigger(KeyInput.KEY_LEFT));
-        inputManager.addMapping("Right3", new KeyTrigger(KeyInput.KEY_RIGHT));
-        inputManager.addMapping("Up3", new KeyTrigger(KeyInput.KEY_UP));
-        inputManager.addMapping("Down3", new KeyTrigger(KeyInput.KEY_DOWN));
-         
-        inputManager.addListener(analogListener,new String[]{ "Left3","Right3", "Up3", "Down3"});        
-        if(numPlayers == 4){
-            // Player 4 keybindings and listener
-            inputManager.addMapping("Left4", new KeyTrigger(KeyInput.KEY_NUMPAD4));
-            inputManager.addMapping("Right4", new KeyTrigger(KeyInput.KEY_NUMPAD6));
-            inputManager.addMapping("Up4", new KeyTrigger(KeyInput.KEY_NUMPAD8));
-            inputManager.addMapping("Down4", new KeyTrigger(KeyInput.KEY_NUMPAD5));
-
-            inputManager.addListener(analogListener,new String[]{ "Left4","Right4", "Up4", "Down4"});
-            }
-        
-        }
+        }        
+     
     }
     
     private AnalogListener analogListener = new AnalogListener() {
@@ -561,45 +544,45 @@ public class Main extends SimpleApplication {
            
             // New code: maps ball array
             // player 1 action listener
-            if (binding.equals("Left")) {                     
+            if (binding.equals("Left0")) {                     
                     ball_phy[0].applyForce(new Vector3f(-3f*ballSpeed[0], 0, 0),new Vector3f(-3f*ballSpeed[0], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right")) {                   
+                } else if (binding.equals("Right0")) {                   
                     ball_phy[0].applyForce(new Vector3f(3f*ballSpeed[0], 0, 0),new Vector3f(3f*ballSpeed[0], 0, 0));
-                } else if (binding.equals("Up")) {                    
+                } else if (binding.equals("Up0")) {                    
                     ball_phy[0].applyForce(new Vector3f(0, 0, -3f*ballSpeed[0]),new Vector3f(0, 0, -3f*ballSpeed[0]));
-                } else if (binding.equals("Down")) {
+                } else if (binding.equals("Down0")) {
                     ball_phy[0].applyForce(new Vector3f(0, 0, 3f*ballSpeed[0]),new Vector3f(0, 0, 3f*ballSpeed[0]));
                 }                       
                 //player 2 action listener
            
-              if (binding.equals("Left2")) {                   
+              if (binding.equals("Left1")) {                   
                     ball_phy[1].applyForce(new Vector3f(-3f*ballSpeed[1], 0, 0),new Vector3f(-3f*ballSpeed[1], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right2")) {                    
+                } else if (binding.equals("Right1")) {                    
                     ball_phy[1].applyForce(new Vector3f(3f*ballSpeed[1], 0, 0),new Vector3f(3f*ballSpeed[1], 0, 0));
-                } else if (binding.equals("Up2")) {                    
+                } else if (binding.equals("Up1")) {                    
                     ball_phy[1].applyForce(new Vector3f(0, 0, -3f*ballSpeed[1]),new Vector3f(0, 0, -3f*ballSpeed[1]));
-                } else if (binding.equals("Down2")) {                  
+                } else if (binding.equals("Down1")) {                  
                     ball_phy[1].applyForce(new Vector3f(0, 0, 3f*ballSpeed[1]),new Vector3f(0, 0, 3f*ballSpeed[1]));
                 }      
               
               //player 3 action listener
-              if (binding.equals("Left3") && numPlayers >= 3) {                
+              if (binding.equals("Left2") && numPlayers >= 3) {                
                     ball_phy[2].applyForce(new Vector3f(-3f*ballSpeed[2], 0, 0),new Vector3f(-3f*ballSpeed[2], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right3")&& numPlayers >= 3) {                    
+                } else if (binding.equals("Right2")&& numPlayers >= 3) {                    
                     ball_phy[2].applyForce(new Vector3f(3f*ballSpeed[2], 0, 0),new Vector3f(3f*ballSpeed[2], 0, 0));
-                } else if (binding.equals("Up3")&& numPlayers >= 3) {                   
+                } else if (binding.equals("Up2")&& numPlayers >= 3) {                   
                     ball_phy[2].applyForce(new Vector3f(0, 0, -3f*ballSpeed[2]),new Vector3f(0, 0, -3f*ballSpeed[2]));
-                } else if (binding.equals("Down3")&& numPlayers >= 3) {
+                } else if (binding.equals("Down2")&& numPlayers >= 3) {
                     ball_phy[2].applyForce(new Vector3f(0, 0, 3f*ballSpeed[2]),new Vector3f(0, 0, 3f*ballSpeed[2]));
                 } 
                //player 4 action listener
-              if (binding.equals("Left4") && numPlayers == 4) {  
+              if (binding.equals("Left3") && numPlayers == 4) {  
                     ball_phy[3].applyForce(new Vector3f(-3f*ballSpeed[3], 0, 0),new Vector3f(-3f*ballSpeed[3], 0, 0)); // push the ball foward
-                } else if (binding.equals("Right4") && numPlayers == 4) {
+                } else if (binding.equals("Right3") && numPlayers == 4) {
                     ball_phy[3].applyForce(new Vector3f(3f*ballSpeed[3], 0, 0),new Vector3f(3f*ballSpeed[3], 0, 0));
-                } else if (binding.equals("Up4")&& numPlayers == 4) {
+                } else if (binding.equals("Up3")&& numPlayers == 4) {
                     ball_phy[3].applyForce(new Vector3f(0, 0, -3f*ballSpeed[3]),new Vector3f(0, 0, -3f*ballSpeed[3]));
-                } else if (binding.equals("Down4")&& numPlayers == 4) {
+                } else if (binding.equals("Down3")&& numPlayers == 4) {
                     ball_phy[3].applyForce(new Vector3f(0, 0, 3f*ballSpeed[3]),new Vector3f(0, 0, 3f*ballSpeed[3]));
                 }
 
@@ -608,15 +591,15 @@ public class Main extends SimpleApplication {
     
     private ActionListener actionListener = new ActionListener() {
     public void onAction(String name, boolean keyPressed, float tpf) {
-        if (name.equals("Ability1") && !keyPressed && !onCooldown(abilityMapping,0) && isBall1Alive) {
+        if (name.equals("Ability0") && !keyPressed && !onCooldown(abilityMapping,0)) {
             actAbility(0);               
-        } else if (name.equals("Ability2") && !keyPressed && !onCooldown(abilityMapping,1) && isBall2Alive) {
+        } else if (name.equals("Ability1") && !keyPressed && !onCooldown(abilityMapping,1)) {
             actAbility(1);
-        } else if (name.equals("Ability3") && !keyPressed && !onCooldown(abilityMapping,2) && isBall3Alive) {
-            if(numPlayers >=3){
+        } else if (name.equals("Ability2") && !keyPressed && !onCooldown(abilityMapping,2) && numPlayers >= 3) {
+            if(numPlayers ==3){
                 actAbility(2);
             }
-        } else if (name.equals("Ability4") && !keyPressed && !onCooldown(abilityMapping,3) && isBall4Alive) {
+        } else if (name.equals("Ability3") && !keyPressed && !onCooldown(abilityMapping,3) && numPlayers >= 3) {
             if(numPlayers==4){
                 actAbility(3);
             }
@@ -661,15 +644,8 @@ public class Main extends SimpleApplication {
     }
     
     private void mine(int i) {
-        int x=0;
-        while(availcoll[x]==1)
-        {
-            x++;
-        }
-        availcoll[x]=1;
         
-        ball_phy[i].removeCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
-        ball_phy[i].setCollisionGroup(x+4);
+        
         
         c = new Sphere(5, 5, 0.2f, true, false);
         c.setTextureMode(Sphere.TextureMode.Projected);
@@ -683,28 +659,15 @@ public class Main extends SimpleApplication {
         min_mat.setColor("Diffuse",ColorRGBA.Blue);
         mine.setMaterial(min_mat);
         rootNode.attachChild(mine);
-        mine.setLocalTranslation(ball_phy[i].getPhysicsLocation().setX(ball_phy[i].getPhysicsLocation().x+2));
+        mine.setLocalTranslation(ball_phy[i].getPhysicsLocation().setX(ball_phy[i].getPhysicsLocation().x+1.5f));
         mine_phy = new RigidBodyControl(1f);
         mine.addControl(mine_phy);
-        //mine.addControl(ghost);
-        //bulletAppState.getPhysicsSpace().add(ghost);
         bulletAppState.getPhysicsSpace().add(mine);
         mine_phy.setMass(1000f);
         mine_phy.setDamping(0f, 1f); 
         mine_phy.setGravity(new Vector3f(0f,-10f,0f));
-        mine_phy.setRestitution(3f);
+        mine_phy.setRestitution(3f);        
         
-        
-        int y=0;
-        while(y<numPlayers)
-        {
-            if(y!=i)
-            {
-                mine_phy.addCollideWithGroup(ball_phy[y].getCollisionGroup());
-                ball_phy[y].addCollideWithGroup(x+4);
-            }
-            y++;
-        }
         
         mineCnt++;
     }
@@ -721,7 +684,7 @@ public class Main extends SimpleApplication {
                 else
                 {   
                     ghoststat[i]=true;
-                                
+
                     mat_ghost= new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
                     mat_ghost.setColor("Color", new ColorRGBA(0,0,0,0.5f));
                     mat_ghost.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
@@ -755,8 +718,30 @@ public class Main extends SimpleApplication {
     }
     
     private void blink(int i) {
-        ball_phy[i].setPhysicsLocation(ball[i].getLocalTranslation().add(
-               ball_phy[i].getLinearVelocity().normalize().mult(4)));
+        Vector3f temp = ball[i].getLocalTranslation().add(ball_phy[i].getLinearVelocity().normalize().mult(4));
+        Vector3f norm = ball_phy[i].getLinearVelocity().normalize();
+        float newx = 0,newz = 0;
+        int cnt = 0;
+        while(cnt<4) {
+            for (int j = objNum; j < mapObjNum; j++) {
+                if ((temp.x >= (mapObj[j].getLocalTranslation().x-1.5f)) && 
+                        (temp.x <= (mapObj[j].getLocalTranslation().x+1.5f)) &&
+                        (temp.z >= (mapObj[j].getLocalTranslation().z-1.5f)) && 
+                        (temp.z <= (mapObj[j].getLocalTranslation().z+1.5f))) {
+                    if (temp.x != 0) {
+                        newx = norm.x*1.5f;
+                    }
+                    if (temp.z != 0) {
+                        newz = norm.z*1.5f;
+                    }
+                    temp = temp.add(newx, 0, newz);
+                    break;
+                }
+            }
+            cnt++;
+        }
+        ball_phy[i].setPhysicsLocation(temp);
+        
     }
     
     private void glue(int i) {
@@ -825,8 +810,7 @@ public class Main extends SimpleApplication {
 
     
     @Override
-    public void simpleUpdate(float tpf) {
-        
+    public void simpleUpdate(float tpf) {        
         
         if(isScreenEnd){
               isScreenEnd = false;
@@ -853,9 +837,7 @@ public class Main extends SimpleApplication {
             hudText3.setText("Player 4: DEAD");  
         }
     
-        
-        //Ghost Listener for Powerup
-        int z=0;
+        int z = 0;
         int d;
         if (buffOn && buffTimer < System.nanoTime()/1000000000) {
             buffOn = false;
@@ -885,7 +867,8 @@ public class Main extends SimpleApplication {
             z++;
         }   
         
-   
+        
+        
         if(loc[0].y < 0 && isBall1Alive){          
             isBall1Alive = false;  
             ballLeft--;
@@ -913,45 +896,64 @@ public class Main extends SimpleApplication {
                 rootNode.detachChild(ball[3]);
                 }    
             }
-        }
+        }      
       
       }
-      if(ballLeft==1 && !gameEnd && (winClk < System.nanoTime()/1000000000)){
-            if(isBall1Alive){
-                bulletAppState.getPhysicsSpace().remove(ball_phy[0]);         
-            }
-            else if(isBall2Alive){
-                bulletAppState.getPhysicsSpace().remove(ball_phy[1]);         
-            }
-            else if(isBall3Alive){
-                bulletAppState.getPhysicsSpace().remove(ball_phy[2]);         
-            }
-            else if(isBall4Alive){
-                bulletAppState.getPhysicsSpace().remove(ball_phy[3]);         
-            }
-            gameEnd = true;
+
+      if (ballLeft>1) {
+          winClk = System.nanoTime()/1000000000 + 2;
+      }
+      else if (ballLeft == 1 &&!gameEnd && winClk >= System.nanoTime()/1000000000) 
+      {
+          if(isBall1Alive){
+              printWinner(1);
+              bulletAppState.getPhysicsSpace().remove(ball_phy[0]);  
+              gameEnd = true;
+          }
+          else if(isBall2Alive){
+              printWinner(2);
+              bulletAppState.getPhysicsSpace().remove(ball_phy[1]); 
+              gameEnd = true;
+          }
+          else if((isBall3Alive || isBall4Alive) && numPlayers >=3){
+              if(isBall3Alive){
+                  printWinner(3);
+                  bulletAppState.getPhysicsSpace().remove(ball_phy[2]);  
+                  gameEnd = true;
+              }
+              else if(isBall4Alive && numPlayers ==4){
+                  printWinner(4);
+                  bulletAppState.getPhysicsSpace().remove(ball_phy[3]);  
+                  gameEnd = true;
+              }
+          }              
+          
+      }  
+      else if(gameEnd && (winClk < System.nanoTime()/1000000000))
+        {           
+            gameEnd = false;
             isRunning = false;
             isScreenEnd = false;
             destroyObj();
             InitGUI();
       }
       
-      if (ballLeft!=1) {
-          winClk = System.nanoTime()/1000000000 + 5;
-      } else if (ballLeft == 1) {
-          System.out.println("Winner");
-      }
       
       if (isRunning) {
         if ((abilityMapping[0] - System.nanoTime()/1000000000) >= 0) {
-              float cd = abilityMapping[0] - System.nanoTime()/1000000000;
+              float cd1 = abilityMapping[0] - System.nanoTime()/1000000000;
+              if (cd1 == 3 && abilityFromUI[0] == 5) { 
+                 ghost(0);
+              }
+              if (cd1 == 2 && abilityFromUI[0] == 5 && ghoststat[0] == true) {
+                  ghost(0);
+              }
               cdText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
               cdText.setColor(ColorRGBA.White);                             // font color
-              cdText.setText("CoolDown: " + cd +"s");             // the text
+              cdText.setText("CoolDown: " + cd1 +"s");             // the text
               cdText.setLocalTranslation(settings.getWidth() / 2f, cdText.getLineHeight()*4+5f, 0); // position
               guiNode.attachChild(cdText);     
           } else if ((abilityMapping[0] - System.nanoTime()/1000000000) < 0) {
-              System.out.println("Ready to Use 1");
               cdText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
               cdText.setColor(ColorRGBA.White);                             // font color
               cdText.setText("CoolDown: Ready");             // the text
@@ -959,15 +961,19 @@ public class Main extends SimpleApplication {
               guiNode.attachChild(cdText);   
           }
           if ((abilityMapping[1] - System.nanoTime()/1000000000) >= 0) {
-              System.out.println("Player 2: " + (abilityMapping[1] - System.nanoTime()/1000000000));
-              float cd = abilityMapping[1] - System.nanoTime()/1000000000;
+              float cd2 = abilityMapping[1] - System.nanoTime()/1000000000;
+              if (cd2 == 3 && abilityFromUI[1] == 5) { 
+                  ghost(1);
+              }
+              if (cd2 == 2 && abilityFromUI[1] == 5 && ghoststat[1] == true) {
+                  ghost(1);
+              }
               cdText1.setSize(guiFont.getCharSet().getRenderedSize());      // font size
               cdText1.setColor(ColorRGBA.White);                             // font color
-              cdText1.setText("CoolDown: " + cd +"s");             // the text
+              cdText1.setText("CoolDown: " + cd2 +"s");             // the text
               cdText1.setLocalTranslation(settings.getWidth() / 2f, cdText1.getLineHeight()*3+5f, 0); // position
               guiNode.attachChild(cdText1);   
           } else if ((abilityMapping[1] - System.nanoTime()/1000000000) < 0) {
-              System.out.println("Ready to Use 2");
               cdText1.setSize(guiFont.getCharSet().getRenderedSize());      // font size
               cdText1.setColor(ColorRGBA.White);                             // font color
               cdText1.setText("CoolDown: Ready");             // the text
@@ -976,14 +982,19 @@ public class Main extends SimpleApplication {
           }
           if (numPlayers >= 3) {
               if ((abilityMapping[2] - System.nanoTime()/1000000000) >= 0) {
-                  float cd = abilityMapping[2] - System.nanoTime()/1000000000;
+                  float cd3 = abilityMapping[2] - System.nanoTime()/1000000000;
+                  if (cd3 == 3 && abilityFromUI[2] == 5) { 
+                      ghost(2);
+                  }
+                  if (cd3 == 2 && abilityFromUI[2] == 5 && ghoststat[2] == true) {
+                      ghost(2);
+                  }
                   cdText2.setSize(guiFont.getCharSet().getRenderedSize());      // font size
                   cdText2.setColor(ColorRGBA.White);                             // font color
-                  cdText2.setText("CoolDown: " + cd +"s");             // the text
+                  cdText2.setText("CoolDown: " + cd3 +"s");             // the text
                   cdText2.setLocalTranslation(settings.getWidth() / 2f, cdText2.getLineHeight()*2+5f, 0); // position
                   guiNode.attachChild(cdText2);
               } else if ((abilityMapping[2] - System.nanoTime()) < 0) {
-                  System.out.println("Ready to Use 3");
                   cdText2.setSize(guiFont.getCharSet().getRenderedSize());      // font size
                   cdText2.setColor(ColorRGBA.White);                             // font color
                   cdText2.setText("CoolDown: Ready");             // the text
@@ -992,10 +1003,16 @@ public class Main extends SimpleApplication {
               }
               if (numPlayers == 4) {
                   if ((abilityMapping[3] - System.nanoTime()/1000000000) >= 0) {
-                      float cd = abilityMapping[3] - System.nanoTime()/1000000000;
+                      float cd4 = abilityMapping[3] - System.nanoTime()/1000000000;
+                      if (cd4 == 3 && abilityFromUI[3] == 5) { 
+                          ghost(3);
+                      }
+                      if (cd4 == 2 && abilityFromUI[3] == 5 && ghoststat[3] == true) {
+                          ghost(3);
+                      }
                       cdText3.setSize(guiFont.getCharSet().getRenderedSize());      // font size
                       cdText3.setColor(ColorRGBA.White);                             // font color
-                      cdText3.setText("CoolDown: " + cd +"s");             // the text
+                      cdText3.setText("CoolDown: " + cd4 +"s");             // the text
                       cdText3.setLocalTranslation(settings.getWidth() / 2f, cdText3.getLineHeight()+5f, 0); // position
                       guiNode.attachChild(cdText3); 
                   } else if ((abilityMapping [3] - System.nanoTime()) < 0) {
@@ -1006,18 +1023,45 @@ public class Main extends SimpleApplication {
                       guiNode.attachChild(cdText3);
                   }
               }
+              
           }
           
       }
   }
+    private void printWinner(int i){
+        Picture win = new Picture("winner");
+        if(i == 1){
+            win.setImage(assetManager, "Interface/player1.png", true);
+        }
+        else if(i == 2){
+            win.setImage(assetManager, "Interface/player2.png", true);
+        }
+        else if(i == 3){
+            win.setImage(assetManager, "Interface/player3.png", true);
+        }
+        else if(i == 4)
+        {
+            win.setImage(assetManager, "Interface/player4.png", true);        
+        }
+
+        win.setWidth(600f);
+        win.setHeight(100f);
+        win.setPosition(settings.getWidth()/2 - 300f, settings.getHeight()/2);
+        guiNode.attachChild(win);
+        
+    }
     
     // destroy objects
     private void destroyObj(){
-        //for (int i = counter; i < boardLength*boardWidth; i++) {
-        //    destroyMap(i);
-        //}
+        for (int i = 0; i < 4; i++) {
+            key[i] = i;
+        }
+        while(counter < boardLength*boardWidth) {
+            destroyMap(counter++);
+        }
         rootNode.detachAllChildren(); 
         guiNode.detachAllChildren();
+        objNum = 0;
         counter = 0;        
         if(mineCnt > 0){
             bulletAppState.getPhysicsSpace().remove(mine_phy);
@@ -1029,9 +1073,8 @@ public class Main extends SimpleApplication {
             temp[i] = System.nanoTime()/1000000000;
         }
     }
-    
-        
-    private void buffRand(int player) {
+     
+     private void buffRand(int player) {
          hasbuf=player;
          long randTime = (System.nanoTime()/1000000)%3;
          
@@ -1080,7 +1123,8 @@ public class Main extends SimpleApplication {
         mat_glow.setColor("GlowColor", ColorRGBA.Black);
         ball[player].setMaterial(mat_glow);
     }
-     
+    
+    
     private boolean onCooldown(long[] temp, int i) {
         if (temp[i] < (System.nanoTime()/1000000000)) {
             temp[i] = (System.nanoTime()/1000000000) + 5;
@@ -1103,7 +1147,7 @@ public class Main extends SimpleApplication {
         
         //Create Obj array if current map has objects to load    
         if (currentmap > 1) {
-            mapObj = new Spatial[20];
+            mapObj = new Spatial[mapObjNum];
             objNum = 0;
         }
         
@@ -1230,18 +1274,23 @@ public class Main extends SimpleApplication {
         int[] temp;
         if (i == 0) {
             temp = obj1;
+            mapObjNum = 0;
         }
         else if (i == 1) {
             temp = obj2;
+            mapObjNum = 0;
         }
         else if (i == 2) {
             temp = obj3;
+            mapObjNum = 12;
         }
         else if (i == 3) {
             temp = obj4;
+            mapObjNum = 8;
         }
         else {
             temp = obj5;
+            mapObjNum = 12;
         }
         return temp;
     }
@@ -1323,21 +1372,23 @@ public class Main extends SimpleApplication {
         rootNode.getChild(i).getControl(
                 RigidBodyControl.class).setLinearVelocity(new Vector3f(0,4,0));        
         onDestroy(i);
+        
     }
+    
+   
     
     //Timer to destory the Map
     private void deathTimer() {
         if (deathClk < (System.nanoTime()/1000000000) && counter < boardLength*boardWidth) {
             destroyMap(counter);
-            deathClk = (System.nanoTime()/1000000000) + 1;
+            deathClk = (System.nanoTime()/1000000000);
             counter++;   
             timeleft.setSize(guiFont.getCharSet().getRenderedSize()*2);      // font size
             timeleft.setColor(ColorRGBA.White);                           // font color           
             timeleft.setText("Hurry!");             // the text
             timeleft.setLocalTranslation(settings.getWidth() / 2f - 50f, settings.getHeight() -10, 0); // position
             guiNode.attachChild(timeleft);
-        } else if (((deathClk - System.nanoTime()/1000000000) > 0) && counter == 0){
-            System.out.println(deathClk - System.nanoTime()/1000000000);            
+        } else if (((deathClk - System.nanoTime()/1000000000) > 0) && counter == 0){          
             timeleft.setSize(guiFont.getCharSet().getRenderedSize()*2);      // font size
             timeleft.setColor(ColorRGBA.White);                            // font color
            
@@ -1763,15 +1814,21 @@ public class Main extends SimpleApplication {
           if(JmeScreenController.getExitStatus()){
               app.stop();
           }
+
+          key = new int [4];
+          
           colorMapping = ColorPickerController.getColorMapping();
           numPlayers = PlayerSettingController.getNumberPlayer();  
           ballLeft = numPlayers;
           currentmap = MapSelectionController.getCurrentMap();
           abilityFromUI = PlayerSettingController.getPlayerAbility();
-          System.out.println("p1: " + abilityFromUI[0]);
-          System.out.println("p2: " + abilityFromUI[1]);
-          System.out.println("p3: " + abilityFromUI[2]);
-          System.out.println("p4: " + abilityFromUI[3]);
+              
+          key = KeyBindingController.getKeyBinding();
+          
+          System.out.println("p1: " + abilityFromUI[0] + " key: " + key[0]);
+          System.out.println("p2: " + abilityFromUI[1] + " key: " + key[1]);
+          System.out.println("p3: " + abilityFromUI[2] + " key: " + key[2]);
+          System.out.println("p4: " + abilityFromUI[3] + " key: " + key[3]);
           System.out.println("Map: " + currentmap);
     }
 

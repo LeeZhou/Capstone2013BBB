@@ -24,29 +24,30 @@ public class KeyBindingController implements Controller {
     
     private Screen screen;
     private DropDown[] keybinding;
-    private static int [] key;
+    public static int [] key;
+
     
     public void bind(Nifty nifty, Screen screen, Element element, Properties parameter, Attributes controlDefinitionAttributes) {
         this.screen = screen;
         keybinding = new DropDown[4];
-        key = new int[4];
+
         for(int j = 0; j < 4; j++){
              this.keybinding[j] = screen.findNiftyControl("key"+j, DropDown.class);            
         }
-
         
     }
 
     public void init(Properties parameter, Attributes controlDefinitionAttributes) {
+         key = new int[4];
          for(int i = 0; i < 4; i++){
-            keybinding[i].addItem("Default");
+            keybinding[i].addItem(" ");
             keybinding[i].addItem("WASD + Q");
             keybinding[i].addItem("IJKL + SPACE");
             keybinding[i].addItem("ARROW + ENTER");        
             keybinding[i].addItem("8456 + 0");
-            key[i] = i;
-      }
-       
+            key[i] = 4;
+      }        
+
     }
 
     public void onStartScreen() {
@@ -75,8 +76,8 @@ public class KeyBindingController implements Controller {
       else if(keybinding[0].getSelection() == "8456 + 0"){
           key[0] = 3;
       }
-      else if(keybinding[0].getSelection() == "Default"){
-          key[0] = 0;
+      else if(keybinding[0].getSelection() == " "){
+          key[0] = 4;
       }
   }
   
@@ -94,8 +95,8 @@ public class KeyBindingController implements Controller {
       else if(keybinding[1].getSelection() == "8456 + 0"){
           key[1] = 3;
       }
-      else if(keybinding[1].getSelection() == "Default"){
-          key[1] = 1;
+      else if(keybinding[1].getSelection() == " "){
+          key[1] = 4;
       }
   }
   
@@ -113,8 +114,8 @@ public class KeyBindingController implements Controller {
       else if(keybinding[2].getSelection() == "8456 + 0"){
           key[2] = 3;
       }
-      else if(keybinding[2].getSelection() == "Default"){
-          key[2] = 2;
+      else if(keybinding[2].getSelection() == " "){
+          key[2] = 4;
       }
   }
   
@@ -132,12 +133,12 @@ public class KeyBindingController implements Controller {
       else if(keybinding[3].getSelection() == "8456 + 0"){
           key[3] = 3;
       }
-      else if(keybinding[3].getSelection() == "Default"){
-          key[3] = 3;
+      else if(keybinding[3].getSelection() == " "){
+          key[3] = 4;
       }
   }
   
-  public static int [] getKeyBinding(){
+  public static int []getKeyBinding(){
       return key;
   }
 
@@ -172,7 +173,37 @@ public class KeyBindingController implements Controller {
       }
   
     }
-
+  
+  public static Boolean isKeyBindingSelected(){
+      int numberPlayer = PlayerSettingController.getNumberPlayer();
+      if(numberPlayer ==2){
+          if(key[0] == 4 || key[1] == 4){
+              return false;
+          }
+          else{
+              return true;
+          }
+      }      
+      else if(numberPlayer ==3){
+          if(key[1] == 4 || key[2] == 4 || key[0] == 4){
+              return false;
+          }
+          else{
+              return true;
+          }
+      }
+        else if(numberPlayer == 4){
+            if(key[1] == 4 || key[2] == 4 || key[0] == 4 || key[3] == 4){
+                return false;
+            }
+            else{
+                return true;
+            }              
+        }
+        else{
+            return false;
+        }
+  }
   
     
 }

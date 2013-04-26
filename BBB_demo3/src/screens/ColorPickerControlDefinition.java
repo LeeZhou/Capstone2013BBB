@@ -7,6 +7,7 @@ package screens;
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.builder.ControlBuilder;
 import de.lessvoid.nifty.builder.ControlDefinitionBuilder;
+import de.lessvoid.nifty.builder.ImageBuilder;
 import de.lessvoid.nifty.builder.PanelBuilder;
 import de.lessvoid.nifty.controls.label.builder.LabelBuilder;
 import de.lessvoid.nifty.controls.slider.builder.SliderBuilder;
@@ -27,6 +28,18 @@ public static final String NAME = "sliderAndScrollbarDialogControl";
       controller(new ColorPickerController());
       control(new ControlBuilder(DialogPanelControlDefinition.NAME) {{
 
+        panel(new PanelBuilder() {{
+          childLayoutVertical();
+          image(new ImageBuilder("title4") {{
+            filename("Interface/title4.png");
+         }});
+        }});        
+        panel(builders.vspacer());
+                panel(new PanelBuilder() {{
+          width("100%");
+          height("1px");
+          backgroundColor("#0008");
+        }});
         panel(builders.vspacer());
         panel(new PanelBuilder(){{
             childLayoutHorizontal();
@@ -42,17 +55,7 @@ public static final String NAME = "sliderAndScrollbarDialogControl";
                 childLayoutHorizontal();
                 height("35%");
 
-                panel(new PanelBuilder() {{
-                childLayoutVertical();
-                width("23px");
-                control(new SliderBuilder("sliderA0", true));
-                control(new LabelBuilder() {{
-                  alignCenter();
-                  text("A");
-                  width("100%");
-                }});
-                }});
-                panel(builders.hspacer("5px"));
+                panel(builders.hspacer("20px"));
                 panel(new PanelBuilder() {{
                 childLayoutVertical();
                 width("23px");
@@ -98,7 +101,7 @@ public static final String NAME = "sliderAndScrollbarDialogControl";
                   valignCenter();
                   width("50px");
                   height("50px");
-                  backgroundColor("#ffff");
+                  backgroundColor("#000f");
                 }});
                 }});
                 panel(builders.hspacer("9px"));
@@ -116,17 +119,7 @@ public static final String NAME = "sliderAndScrollbarDialogControl";
             childLayoutHorizontal();
             height("35%");
 
-            panel(new PanelBuilder() {{
-            childLayoutVertical();
-            width("23px");
-            control(new SliderBuilder("sliderA1", true));
-            control(new LabelBuilder() {{
-              alignCenter();
-              text("A");
-              width("100%");
-            }});
-            }});
-            panel(builders.hspacer("5px"));
+            panel(builders.hspacer("20px"));
             panel(new PanelBuilder() {{
             childLayoutVertical();
             width("23px");
@@ -172,7 +165,7 @@ public static final String NAME = "sliderAndScrollbarDialogControl";
                   valignCenter();
                   width("50px");
                   height("50px");
-                  backgroundColor("#ffff");
+                  backgroundColor("#000f");
                 }});
                 }});
             panel(builders.hspacer("9px"));
@@ -190,17 +183,7 @@ public static final String NAME = "sliderAndScrollbarDialogControl";
             childLayoutHorizontal();
             height("35%");
 
-            panel(new PanelBuilder() {{
-            childLayoutVertical();
-            width("23px");
-            control(new SliderBuilder("sliderA2", true));
-            control(new LabelBuilder() {{
-              alignCenter();
-              text("A");
-              width("100%");
-            }});
-            }});
-            panel(builders.hspacer("5px"));
+            panel(builders.hspacer("20px"));
             panel(new PanelBuilder() {{
             childLayoutVertical();
             width("23px");
@@ -246,7 +229,7 @@ public static final String NAME = "sliderAndScrollbarDialogControl";
                   valignCenter();
                   width("50px");
                   height("50px");
-                  backgroundColor("#ffff");
+                  backgroundColor("#000f");
                 }});
                 }});
             panel(builders.hspacer("9px"));
@@ -264,17 +247,7 @@ public static final String NAME = "sliderAndScrollbarDialogControl";
             childLayoutHorizontal();
             height("35%");
 
-            panel(new PanelBuilder() {{
-            childLayoutVertical();
-            width("23px");
-            control(new SliderBuilder("sliderA3", true));
-            control(new LabelBuilder() {{
-              alignCenter();
-              text("A");
-              width("100%");
-            }});
-            }});
-            panel(builders.hspacer("5px"));
+            panel(builders.hspacer("20px"));
             panel(new PanelBuilder() {{
             childLayoutVertical();
             width("23px");
@@ -319,7 +292,7 @@ public static final String NAME = "sliderAndScrollbarDialogControl";
                   valignCenter();
                   width("50px");
                   height("50px");
-                  backgroundColor("#ffff");
+                  backgroundColor("#000f");
                 }});
                 }});
             panel(builders.hspacer("9px"));
