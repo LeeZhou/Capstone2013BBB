@@ -149,7 +149,6 @@ public class Main extends SimpleApplication {
     // abilities variables
     private long [] abilityMapping;
     private int [] abilityFromUI;
-    private boolean newEsc;
     
     //Buff varaibles
     private long buffTimer = (System.nanoTime()/1000000000);
@@ -309,7 +308,7 @@ public class Main extends SimpleApplication {
         deGhostMat = new Material[numPlayers];
         ghoststat = new boolean [numPlayers];
         mineCnt = 0;
-        deathClk = (System.nanoTime()/1000000000) + 10; 
+        deathClk = (System.nanoTime()/1000000000) + 60; 
         
     }
     
@@ -505,11 +504,6 @@ public class Main extends SimpleApplication {
     }    
 
     private void setUpKeys() {
-        if (!inputManager.hasMapping(INPUT_MAPPING_EXIT)) {
-            inputManager.addMapping("newESC", new KeyTrigger(KeyInput.KEY_ESCAPE));
-            newEsc = true;
-            inputManager.addListener(analogListener, new String[]{"newESC"});
-        }
         for(int i = 0; i < numPlayers; i++){
             if(key[i] == 0){
                 inputManager.addMapping("Ability"+i, new KeyTrigger(KeyInput.KEY_Q));
@@ -550,7 +544,7 @@ public class Main extends SimpleApplication {
     
     private AnalogListener analogListener = new AnalogListener() {
         public void onAnalog(String binding, float value, float tpf) {
-            if (binding.equals("newESC") && newEsc) {
+            if (binding.equals("newESC")) {
                 app.stop();
             }
             // New code: maps ball array
@@ -1065,14 +1059,20 @@ public class Main extends SimpleApplication {
         rootNode.detachAllChildren(); 
         guiNode.detachAllChildren();
         inputManager.clearMappings();
+        inputManager.addMapping("newESC", new KeyTrigger(KeyInput.KEY_ESCAPE));
+        inputManager.addListener(analogListener, new String[]{"newESC"});
         
         key = null;
         abilityMapping = null;
         abilityFromUI = null;
+        ball_phy = null;
+        ball = null;
         objNum = 0;
-        counter = 0;        
-        if(mineCnt > 0){
+        counter = 0;    
+        while(mineCnt > 0){
             bulletAppState.getPhysicsSpace().remove(mine_phy);
+            mine_phy.destroy();
+            mineCnt--;
         }
     }    
     
@@ -1096,7 +1096,7 @@ public class Main extends SimpleApplication {
             //buffJugg
             ball_phy[player].setRestitution(.5f);
             ball_phy[player].setMass(2f);
-            ballSpeed[player] = 2;
+            ballSpeed[player] = 3;
             //Make it Glow
             /*
             FilterPostProcessor fpp=new FilterPostProcessor(assetManager);
@@ -1113,6 +1113,7 @@ public class Main extends SimpleApplication {
          {
            //buffSize
             ball[player].scale(2);
+            ballSpeed[player] = 2;
             ball_phy[player].setMass(2);
             ball_phy[player].setPhysicsLocation(new Vector3f(ball_phy[player].getPhysicsLocation().x,ball_phy[player].getPhysicsLocation().y*2,ball_phy[player].getPhysicsLocation().z));
             ball_phy[player].getCollisionShape().setScale(new Vector3f(2f,2f,2f));
