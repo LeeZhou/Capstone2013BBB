@@ -119,7 +119,7 @@ public class Main extends SimpleApplication {
     private long winClk;
     
     //Ghost Control
-    GhostControl ghost=new GhostControl(new SphereCollisionShape(5));
+    //GhostControl ghost=new GhostControl(new SphereCollisionShape(5));
     GhostControl ghosts=new GhostControl(new SphereCollisionShape(0.2f));
     Node gnode = new Node("a ghost-controlled thing");
     private Material[]  deGhostMat;
@@ -226,6 +226,7 @@ public class Main extends SimpleApplication {
         //Selected map
         setCam();
         setUpLight();
+        
         //Load Map texture and object arraies 
         InitGUI();
    }   
@@ -234,7 +235,8 @@ public class Main extends SimpleApplication {
     private void InitObj(){ 
         getInputFromGUI();
         flyCam.setDragToRotate(false);  
-        setCam();
+        //setCam();
+        //setUpLight();
         maptexture = selectedMapTexture(currentmap);
         mapobjects = selectedMapObject(currentmap);   
         createFloor(currentmap);
@@ -309,6 +311,9 @@ public class Main extends SimpleApplication {
         ghoststat = new boolean [numPlayers];
         mineCnt = 0;
         deathClk = (System.nanoTime()/1000000000) + 60; 
+        buffTimer = System.nanoTime()/1000000000;
+        buffTimer2 = System.nanoTime()/1000000000;
+        buffOn = false;
         
     }
     
@@ -387,6 +392,14 @@ public class Main extends SimpleApplication {
 
     }
     
+    //pwerUpRemoval
+    private void removePowerUp() {
+        rootNode.detachChild(fire);
+        rootNode.detachChild(pwrup);
+        gnode.removeControl(ghosts);
+        rootNode.detachChild(gnode);
+        bulletAppState.getPhysicsSpace().remove(ghosts);
+    }
     
     //Initialize material and texture
     private void initbg(){
@@ -495,12 +508,13 @@ public class Main extends SimpleApplication {
         sun = new DirectionalLight();
         sun.setColor(ColorRGBA.DarkGray.mult(0.1f));
         sun.setDirection(new Vector3f(-.5f,-.5f,-.5f).normalizeLocal());
+        rootNode.addLight(sun);
         
         sun2 = new DirectionalLight();
         sun2.setColor(ColorRGBA.White.mult(.9f));
         sun2.setDirection(new Vector3f(-.5f,-.5f,-2.5f).normalizeLocal());
         
-        rootNode.addLight(sun);
+        
     }    
 
     private void setUpKeys() {
@@ -511,33 +525,35 @@ public class Main extends SimpleApplication {
                 inputManager.addMapping("Right"+i, new KeyTrigger(KeyInput.KEY_D));
                 inputManager.addMapping("Up"+i, new KeyTrigger(KeyInput.KEY_W));
                 inputManager.addMapping("Down"+i, new KeyTrigger(KeyInput.KEY_S));                
-                inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});
-                inputManager.addListener(actionListener, "Ability"+i);
+                //inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});
+                //inputManager.addListener(actionListener, "Ability"+i);
             }else if(key[i] == 1){
                 inputManager.addMapping("Ability"+i, new KeyTrigger(KeyInput.KEY_SPACE));
                 inputManager.addMapping("Left"+i, new KeyTrigger(KeyInput.KEY_J));
                 inputManager.addMapping("Right"+i, new KeyTrigger(KeyInput.KEY_L));
                 inputManager.addMapping("Up"+i, new KeyTrigger(KeyInput.KEY_I));
                 inputManager.addMapping("Down"+i, new KeyTrigger(KeyInput.KEY_K));
-                inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});  
-                inputManager.addListener(actionListener, "Ability"+i);
+                //inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});  
+                //inputManager.addListener(actionListener, "Ability"+i);
             }else if(key[i] == 2){
                 inputManager.addMapping("Ability"+i, new KeyTrigger(KeyInput.KEY_RSHIFT));
                 inputManager.addMapping("Left"+i, new KeyTrigger(KeyInput.KEY_LEFT));
                 inputManager.addMapping("Right"+i, new KeyTrigger(KeyInput.KEY_RIGHT));
                 inputManager.addMapping("Up"+i, new KeyTrigger(KeyInput.KEY_UP));
                 inputManager.addMapping("Down"+i, new KeyTrigger(KeyInput.KEY_DOWN));
-                inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});   
-                inputManager.addListener(actionListener, "Ability"+i);
+                //inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});   
+                //inputManager.addListener(actionListener, "Ability"+i);
             }else if(key[i] == 3){
                 inputManager.addMapping("Ability"+i, new KeyTrigger(KeyInput.KEY_NUMPAD0));
                 inputManager.addMapping("Left"+i, new KeyTrigger(KeyInput.KEY_NUMPAD4));
                 inputManager.addMapping("Right"+i, new KeyTrigger(KeyInput.KEY_NUMPAD6));
                 inputManager.addMapping("Up"+i, new KeyTrigger(KeyInput.KEY_NUMPAD8));
                 inputManager.addMapping("Down"+i, new KeyTrigger(KeyInput.KEY_NUMPAD5));
-                inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});
-                inputManager.addListener(actionListener, "Ability"+i);
+                //inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});
+                //inputManager.addListener(actionListener, "Ability"+i);
             }
+            inputManager.addListener(analogListener,new String[]{ "Left"+i,"Right"+i, "Up"+i, "Down"+i});
+            inputManager.addListener(actionListener, "Ability"+i);
         }        
      
     }
@@ -623,7 +639,7 @@ public class Main extends SimpleApplication {
             jump(i);
         }
         else if (abilityFromUI[i] == 3) {
-            glue(i);
+            stop(i);
         }
         else if (abilityFromUI[i] == 4) {
             forcePush(i);
@@ -746,8 +762,12 @@ public class Main extends SimpleApplication {
         
     }
     
-    private void glue(int i) {
-        ball_phy[i].setLinearVelocity(new Vector3f(0,0,0));
+    private void stop(int i) {
+        for (int x = 0; x < numPlayers; x++) {
+            if (x != i) {
+                ball_phy[x].setLinearVelocity(new Vector3f(0,0,0));
+            }
+        }
     }   
 
     private void createStatus(){
@@ -843,6 +863,7 @@ public class Main extends SimpleApplication {
         int d;
         if (buffOn && buffTimer < System.nanoTime()/1000000000) {
             buffOn = false;
+            createPowerUp();
             pwrup.emitAllParticles();
             pwrup.setEnabled(true);
         }
@@ -859,6 +880,7 @@ public class Main extends SimpleApplication {
                 {
                     pwrup.killAllParticles();
                     pwrup.setEnabled(false);
+                    removePowerUp();
                     buffOn=true;
                     buffRand(d);
                     buffTimer = System.nanoTime()/1000000000 + 20;
@@ -1053,28 +1075,63 @@ public class Main extends SimpleApplication {
     
     // destroy objects
     private void destroyObj(){
-        while(counter < boardLength*boardWidth) {
+        //clean up board physics
+        /*while(counter < boardLength*boardWidth) {
             destroyMap(counter++);
+        }*/
+        boardMemClean(0);
+        if (buffOn) {
+            removePowerUp();
+            buffOn = false;
         }
+        //clean up root Node
         rootNode.detachAllChildren(); 
         guiNode.detachAllChildren();
+        
+        //clean up key mapping
         inputManager.clearMappings();
+        inputManager.removeListener(analogListener);
+        inputManager.removeListener(actionListener);
         inputManager.addMapping("newESC", new KeyTrigger(KeyInput.KEY_ESCAPE));
         inputManager.addListener(analogListener, new String[]{"newESC"});
         
+        //clena up variables
         key = null;
         abilityMapping = null;
         abilityFromUI = null;
+        ballShape = null;
         ball_phy = null;
         ball = null;
+        buffTimer = 0;
+        buffTimer2 = 0;
         objNum = 0;
         counter = 0;    
+        
         while(mineCnt > 0){
             bulletAppState.getPhysicsSpace().remove(mine_phy);
             mine_phy.destroy();
             mineCnt--;
         }
     }    
+    
+    private void boardMemClean(int x) {
+        while (x < boardWidth*boardLength) {
+            bulletAppState.getPhysicsSpace().remove(rootNode.getChild(x).getControl(RigidBodyControl.class));
+            rootNode.getChild(x++).getControl(RigidBodyControl.class).destroy();
+        }
+        int j = 0;
+        
+        while (j < mapObjNum) {
+            mapObj[j].removeLight(sun2);
+            bulletAppState.getPhysicsSpace().remove(mapObj[j].getControl(RigidBodyControl.class));
+            mapObj[j++].getControl(RigidBodyControl.class).destroy();
+        }
+        j = 0;
+        /*while (j < numPlayers) {
+            bulletAppState.getPhysicsSpace().remove(ball_phy[j]);
+            ball_phy[j++].destroy();
+        }*/
+    }
     
      private void initAbilities(long[] temp) {
         for (int i = 0; i < numPlayers; i++) {
@@ -1215,9 +1272,7 @@ public class Main extends SimpleApplication {
         Geometry tile = new Geometry("Box", box2);
         Material mat2 = new Material(assetManager,
                 "Common/MatDefs/Misc/Unshaded.j3md");
-        TextureKey key = loadTexture(maptexture[i]);
-        key.setGenerateMips(true);
-        Texture tex = assetManager.loadTexture(key);
+        Texture tex = assetManager.loadTexture(loadTexture(maptexture[i]));
         tex.setWrap(Texture.WrapMode.Repeat);
         mat2.setTexture("ColorMap",tex);
         tile.setMaterial(mat2);
@@ -1319,6 +1374,7 @@ public class Main extends SimpleApplication {
         else {
             key = new TextureKey("Textures/Terrain/splat/dirt.jpg");
         }
+        key.setGenerateMips(true);
         return key;
     }
     
@@ -1356,7 +1412,7 @@ public class Main extends SimpleApplication {
         temp.addControl(new RigidBodyControl(0f));
         bulletAppState.getPhysicsSpace().add(temp.getControl(RigidBodyControl.class));
         if (i== 6||i==7) {
-            temp.getControl(RigidBodyControl.class).setFriction(-.5f);
+            temp.getControl(RigidBodyControl.class).setFriction(-.1f);
         }
     }
     

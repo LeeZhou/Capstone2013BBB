@@ -44,7 +44,7 @@ public class PlayerSettingController implements Controller {
             dropDown[k].addItem("No Ability");
             dropDown[k].addItem("Dash");
             dropDown[k].addItem("Jump");        
-            dropDown[k].addItem("Glue");
+            dropDown[k].addItem("Stop");
             dropDown[k].addItem("Force Push");
             dropDown[k].addItem("Ghost");
             dropDown[k].addItem("Blink");
