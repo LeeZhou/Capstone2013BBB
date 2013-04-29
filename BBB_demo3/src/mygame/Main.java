@@ -103,6 +103,7 @@ public class Main extends SimpleApplication {
     private DirectionalLight sun;
     private DirectionalLight sun2;
     private int counter = 0;
+    public static int gamecounter = 0;
      
     //board parameter
     private int boardLength;
@@ -131,15 +132,15 @@ public class Main extends SimpleApplication {
     private Geometry [] ball;
     private int [] ballSpeed;
     private Vector3f [] loc;
-    private float[][] colorMapping;
+    public static float[][] colorMapping;
     
     // Mine instance
-    private RigidBodyControl mine_phy;
+    private RigidBodyControl [] mine_phy;
     private Geometry mine;
     private int mineCnt = 0;
     private int numPlayers;
     private static Main app;
-    private static int [] key;
+    public static int [] key;
     
     // GUI instance
     private static CommonBuilders builders = new CommonBuilders();
@@ -215,7 +216,7 @@ public class Main extends SimpleApplication {
     
     @Override
     public void simpleInitApp() {  
-
+        key = new int [4];
         app.setDisplayFps(false);
         app.setDisplayStatView(false);
 
@@ -309,6 +310,7 @@ public class Main extends SimpleApplication {
         gameEnd = false;   
         deGhostMat = new Material[numPlayers];
         ghoststat = new boolean [numPlayers];
+        mine_phy = new RigidBodyControl [124];
         mineCnt = 0;
         deathClk = (System.nanoTime()/1000000000) + 60; 
         buffTimer = System.nanoTime()/1000000000;
@@ -639,7 +641,7 @@ public class Main extends SimpleApplication {
             jump(i);
         }
         else if (abilityFromUI[i] == 3) {
-            stop(i);
+            glue(i);
         }
         else if (abilityFromUI[i] == 4) {
             forcePush(i);
@@ -666,7 +668,8 @@ public class Main extends SimpleApplication {
     }
     
     private void mine(int i) {
-        
+        int cnt = mineCnt;
+        mineCnt++;
         c = new Sphere(5, 5, 0.2f, true, false);
         c.setTextureMode(Sphere.TextureMode.Projected);
         TangentBinormalGenerator.generate(c);
@@ -680,15 +683,13 @@ public class Main extends SimpleApplication {
         mine.setMaterial(min_mat);
         rootNode.attachChild(mine);
         mine.setLocalTranslation(ball_phy[i].getPhysicsLocation().setX(ball_phy[i].getPhysicsLocation().x+1.5f));
-        mine_phy = new RigidBodyControl(1f);
-        mine.addControl(mine_phy);
-        bulletAppState.getPhysicsSpace().add(mine);
-        mine_phy.setMass(1000f);
-        mine_phy.setDamping(0f, 1f); 
-        mine_phy.setGravity(new Vector3f(0f,-10f,0f));
-        mine_phy.setRestitution(3f);        
-        
-        mineCnt++;
+        mine_phy[cnt] = new RigidBodyControl(1f);
+        mine.addControl(mine_phy[cnt]);
+        bulletAppState.getPhysicsSpace().add(mine_phy[cnt]);
+        mine_phy[cnt].setMass(1000f);
+        mine_phy[cnt].setDamping(0f, 1f); 
+        mine_phy[cnt].setGravity(new Vector3f(0f,-10f,0f));
+        mine_phy[cnt].setRestitution(3f); 
     }
     
     private void ghost(int i) {
@@ -747,12 +748,12 @@ public class Main extends SimpleApplication {
                         (temp.z >= (mapObj[j].getLocalTranslation().z-1.5f)) && 
                         (temp.z <= (mapObj[j].getLocalTranslation().z+1.5f))) {
                     if (temp.x != 0) {
-                        newx = norm.x*1.5f;
+                        newx = norm.x*1f;
                     }
                     if (temp.z != 0) {
-                        newz = norm.z*1.5f;
+                        newz = norm.z*1f;
                     }
-                    temp = temp.add(newx, 0, newz);
+                    temp = temp.subtract(newx, 0, newz);
                     break;
                 }
             }
@@ -762,12 +763,8 @@ public class Main extends SimpleApplication {
         
     }
     
-    private void stop(int i) {
-        for (int x = 0; x < numPlayers; x++) {
-            if (x != i) {
-                ball_phy[x].setLinearVelocity(new Vector3f(0,0,0));
-            }
-        }
+    private void glue(int i) {
+        ball_phy[i].setLinearVelocity(new Vector3f(0,0,0));
     }   
 
     private void createStatus(){
@@ -957,7 +954,7 @@ public class Main extends SimpleApplication {
             isRunning = false;
             isScreenEnd = false;
             destroyObj();
-            InitGUI();
+            InitGUI();            
       }
       
       
@@ -1076,13 +1073,17 @@ public class Main extends SimpleApplication {
     // destroy objects
     private void destroyObj(){
         //clean up board physics
-        /*while(counter < boardLength*boardWidth) {
-            destroyMap(counter++);
-        }*/
-        boardMemClean(0);
+        boardMemClean();
+        gamecounter++;
+        System.out.println("GAMe COUNTER: " + gamecounter);
         if (buffOn) {
             removePowerUp();
             buffOn = false;
+        }
+        
+        for(int i = 0; i < mineCnt; i++){
+            bulletAppState.getPhysicsSpace().remove(mine_phy[i]);
+            mine_phy[i].destroy();
         }
         //clean up root Node
         rootNode.detachAllChildren(); 
@@ -1096,7 +1097,7 @@ public class Main extends SimpleApplication {
         inputManager.addListener(analogListener, new String[]{"newESC"});
         
         //clena up variables
-        key = null;
+        //key = null;
         abilityMapping = null;
         abilityFromUI = null;
         ballShape = null;
@@ -1107,30 +1108,22 @@ public class Main extends SimpleApplication {
         objNum = 0;
         counter = 0;    
         
-        while(mineCnt > 0){
-            bulletAppState.getPhysicsSpace().remove(mine_phy);
-            mine_phy.destroy();
-            mineCnt--;
-        }
+        
     }    
     
-    private void boardMemClean(int x) {
-        while (x < boardWidth*boardLength) {
-            bulletAppState.getPhysicsSpace().remove(rootNode.getChild(x).getControl(RigidBodyControl.class));
-            rootNode.getChild(x++).getControl(RigidBodyControl.class).destroy();
-        }
+    private void boardMemClean() {
         int j = 0;
+        while (j < boardWidth*boardLength) {
+            bulletAppState.getPhysicsSpace().remove(rootNode.getChild(j).getControl(RigidBodyControl.class));
+            rootNode.getChild(j++).getControl(RigidBodyControl.class).destroy();
+        }
         
+        j = 0;
         while (j < mapObjNum) {
             mapObj[j].removeLight(sun2);
             bulletAppState.getPhysicsSpace().remove(mapObj[j].getControl(RigidBodyControl.class));
             mapObj[j++].getControl(RigidBodyControl.class).destroy();
         }
-        j = 0;
-        /*while (j < numPlayers) {
-            bulletAppState.getPhysicsSpace().remove(ball_phy[j]);
-            ball_phy[j++].destroy();
-        }*/
     }
     
      private void initAbilities(long[] temp) {
@@ -1384,35 +1377,42 @@ public class Main extends SimpleApplication {
         if (i == 4) {
             temp = assetManager.loadModel("Models/stone_felsite7.j3o");
             temp.scale(.3f);
+            temp.setLocalTranslation(loc.mult(2).x, 0, loc.mult(2).z);
         }
         else if (i == 5) {
             temp = assetManager.loadModel("Models/ground_pallisade.j3o");
             temp.scale(2f);
+            temp.setLocalTranslation(loc.mult(2).x, .5f, loc.mult(2).z);
         }
         else if (i == 6) {
             temp = assetManager.loadModel("Models/ramp.j3o");
+            temp.scale(.97f);
             temp.rotate(0, 29.8f, 0);
+            temp.setLocalTranslation(loc.mult(2).x, -.01f, loc.mult(2).z);
         }
         else if (i == 7) {
             temp = assetManager.loadModel("Models/ramp.j3o");
+            temp.scale(.95f);
             temp.rotate(0, 45.55f, 0);
+            temp.setLocalTranslation(loc.mult(2).x, -.01f, loc.mult(2).z);
         }
         else if (i == 8) {
             temp = assetManager.loadModel("Models/barrel.j3o");
             temp.scale(2);
+            temp.setLocalTranslation(loc.mult(2).x, 0, loc.mult(2).z);
         }
         else {
             return;
         }
-        loc.y = 0;
-        temp.setLocalTranslation(loc.mult(2));
+        
+        //temp.setLocalTranslation(loc.mult(2).x, 0, loc.mult(2).z);
         temp.addLight(sun2);
         mapObj[objNum++] = temp;
         rootNode.attachChild(temp);
         temp.addControl(new RigidBodyControl(0f));
         bulletAppState.getPhysicsSpace().add(temp.getControl(RigidBodyControl.class));
         if (i== 6||i==7) {
-            temp.getControl(RigidBodyControl.class).setFriction(-.1f);
+            temp.getControl(RigidBodyControl.class).setFriction(1f);
         }
     }
     
@@ -1879,9 +1879,7 @@ public class Main extends SimpleApplication {
     private void getInputFromGUI(){       
           if(JmeScreenController.getExitStatus()){
               app.stop();
-          }
-
-          key = new int [4];
+          }         
           
           colorMapping = ColorPickerController.getColorMapping();
           numPlayers = PlayerSettingController.getNumberPlayer();  

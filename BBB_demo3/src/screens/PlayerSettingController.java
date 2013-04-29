@@ -44,11 +44,11 @@ public class PlayerSettingController implements Controller {
             dropDown[k].addItem("No Ability");
             dropDown[k].addItem("Dash");
             dropDown[k].addItem("Jump");        
-            dropDown[k].addItem("Stop");
+            dropDown[k].addItem("Glue");
             dropDown[k].addItem("Force Push");
             dropDown[k].addItem("Ghost");
             dropDown[k].addItem("Blink");
-            dropDown[k].addItem("Mine");
+            dropDown[k].addItem("Land Mine");
         }       
         
 
@@ -113,7 +113,7 @@ public class PlayerSettingController implements Controller {
         else if(dropDown[0].getSelection() == "Blink"){
             selection[0] = 6;
         }
-        else if(dropDown[0].getSelection() == "Mine"){
+        else if(dropDown[0].getSelection() == "Land Mine"){
             selection[0] = 7;
         }
         else if(dropDown[0].getSelection() == "No Ability"){
@@ -141,7 +141,7 @@ public class PlayerSettingController implements Controller {
         else if(dropDown[1].getSelection() == "Blink"){
             selection[1] = 6;
         }
-        else if(dropDown[1].getSelection() == "Mine"){
+        else if(dropDown[1].getSelection() == "Land Mine"){
             selection[1] = 7;
         }       
         else if(dropDown[1].getSelection() == "No Ability"){
@@ -169,7 +169,7 @@ public class PlayerSettingController implements Controller {
             else if(dropDown[2].getSelection() == "Blink"){
                 selection[2] = 6;
             }
-            else if(dropDown[2].getSelection() == "Mine"){
+            else if(dropDown[2].getSelection() == "Land Mine"){
                 selection[2] = 7;
             }
             else if(dropDown[2].getSelection() == "No Ability"){
@@ -198,7 +198,7 @@ public class PlayerSettingController implements Controller {
         else if(dropDown[3].getSelection() == "Blink"){
             selection[3] = 6;
         }
-        else if(dropDown[3].getSelection() == "Mine"){
+        else if(dropDown[3].getSelection() == "Land Mine"){
             selection[3] = 7;
         }
         else if(dropDown[3].getSelection() == "No Ability"){

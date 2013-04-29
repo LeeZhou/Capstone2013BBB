@@ -14,6 +14,7 @@ import de.lessvoid.nifty.input.NiftyInputEvent;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.xml.xpp3.Attributes;
 import java.util.Properties;
+import mygame.Main;
 import niftyclass.JustAnExampleModelClass;
 
 /**
@@ -32,7 +33,7 @@ public class KeyBindingController implements Controller {
         keybinding = new DropDown[4];
 
         for(int j = 0; j < 4; j++){
-             this.keybinding[j] = screen.findNiftyControl("key"+j, DropDown.class);            
+             this.keybinding[j] = screen.findNiftyControl("key"+j, DropDown.class);
         }
         
     }
@@ -40,12 +41,17 @@ public class KeyBindingController implements Controller {
     public void init(Properties parameter, Attributes controlDefinitionAttributes) {
          key = new int[4];
          for(int i = 0; i < 4; i++){
-            keybinding[i].addItem(" ");
+            keybinding[i].addItem("Default/Last Key");
             keybinding[i].addItem("WASD + Q");
             keybinding[i].addItem("IJKL + SPACE");
             keybinding[i].addItem("ARROW + RIGHTSHIFT");        
             keybinding[i].addItem("8456 + 0");
-            key[i] = 4;
+            if(Main.gamecounter == 0){
+                key[i] = i;
+            }
+            else{
+             key[i] = Main.key[i];
+         }
       }        
 
     }
@@ -76,8 +82,13 @@ public class KeyBindingController implements Controller {
       else if(keybinding[0].getSelection() == "8456 + 0"){
           key[0] = 3;
       }
-      else if(keybinding[0].getSelection() == " "){
-          key[0] = 4;
+      else if(keybinding[0].getSelection() == "Default/Last Key"){
+          if(Main.gamecounter==0){
+              key[0] = 0;
+          }
+          else{
+              key[0] = Main.key[0];
+          }
       }
   }
   
@@ -95,8 +106,13 @@ public class KeyBindingController implements Controller {
       else if(keybinding[1].getSelection() == "8456 + 0"){
           key[1] = 3;
       }
-      else if(keybinding[1].getSelection() == " "){
-          key[1] = 4;
+      else if(keybinding[1].getSelection() == "Default/Last Key"){
+          if(Main.gamecounter==0){
+              key[1] = 1;
+          }
+          else{
+              key[1] = Main.key[1];
+          }
       }
   }
   
@@ -114,8 +130,13 @@ public class KeyBindingController implements Controller {
       else if(keybinding[2].getSelection() == "8456 + 0"){
           key[2] = 3;
       }
-      else if(keybinding[2].getSelection() == " "){
-          key[2] = 4;
+      else if(keybinding[2].getSelection() == "Default/Last Key"){
+          if(Main.gamecounter==0){
+              key[2] = 2;
+          }
+          else{
+              key[2] = Main.key[2];
+          }
       }
   }
   
@@ -133,8 +154,13 @@ public class KeyBindingController implements Controller {
       else if(keybinding[3].getSelection() == "8456 + 0"){
           key[3] = 3;
       }
-      else if(keybinding[3].getSelection() == " "){
-          key[3] = 4;
+      else if(keybinding[3].getSelection() == "Default/Last Key"){
+          if(Main.gamecounter==0){
+              key[3] = 3;
+          }
+          else{
+              key[3] = Main.key[3];
+          }
       }
   }
   
@@ -173,7 +199,7 @@ public class KeyBindingController implements Controller {
       }
   
     }
-  
+  /*
   public static Boolean isKeyBindingSelected(){
       int numberPlayer = PlayerSettingController.getNumberPlayer();
       if(numberPlayer ==2){
@@ -203,7 +229,7 @@ public class KeyBindingController implements Controller {
         else{
             return false;
         }
-  }
+  }*/
   
     
 }

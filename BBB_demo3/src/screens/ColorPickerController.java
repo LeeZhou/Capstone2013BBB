@@ -16,6 +16,7 @@ import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.tools.Color;
 import de.lessvoid.xml.xpp3.Attributes;
 import java.util.Properties;
+import mygame.Main;
 
 /**
  *
@@ -63,22 +64,51 @@ public class ColorPickerController implements Controller{
       for(int i = 0; i < 4; i++){
        alpha[i] = 255.f ;
       }
-      getSlider("sliderR0").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderG0").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderB0").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+      if(Main.gamecounter > 0){
+        getSlider("sliderR0").setup(0.f, 255.f,   Main.colorMapping[0][0], 1.f, 10.f);
+        getSlider("sliderG0").setup(0.f, 255.f,   Main.colorMapping[0][1], 1.f, 10.f);
+        getSlider("sliderB0").setup(0.f, 255.f,   Main.colorMapping[0][2], 1.f, 10.f);
+
+        getSlider("sliderR1").setup(0.f, 255.f,   Main.colorMapping[1][0], 1.f, 10.f);
+        getSlider("sliderG1").setup(0.f, 255.f,   Main.colorMapping[1][1], 1.f, 10.f);
+        getSlider("sliderB1").setup(0.f, 255.f,   Main.colorMapping[1][2], 1.f, 10.f);
+
+        getSlider("sliderR2").setup(0.f, 255.f,   Main.colorMapping[2][0], 1.f, 10.f);
+        getSlider("sliderG2").setup(0.f, 255.f,   Main.colorMapping[2][1], 1.f, 10.f);
+        getSlider("sliderB2").setup(0.f, 255.f,   Main.colorMapping[2][2], 1.f, 10.f);
+
+        getSlider("sliderR3").setup(0.f, 255.f,   Main.colorMapping[3][0], 1.f, 10.f);
+        getSlider("sliderG3").setup(0.f, 255.f,   Main.colorMapping[3][1], 1.f, 10.f);
+        getSlider("sliderB3").setup(0.f, 255.f,   Main.colorMapping[3][2], 1.f, 10.f);
         
-      getSlider("sliderR1").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderG1").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderB1").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      
-      getSlider("sliderR2").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderG2").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderB2").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+        
+        for(int i = 0; i < 4; i ++){
+            red[i] = Main.colorMapping[i][0];
+            green[i] = Main.colorMapping[i][1];
+            blue[i] = Main.colorMapping[i][2];            
+        }
+        changeColor0();
+        changeColor1();
+        changeColor2();
+        changeColor3();
+      }
+      else{
+        getSlider("sliderR0").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+        getSlider("sliderG0").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+        getSlider("sliderB0").setup(0.f, 255.f,   0.f, 1.f, 10.f);
 
-      getSlider("sliderR3").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderG3").setup(0.f, 255.f,   0.f, 1.f, 10.f);
-      getSlider("sliderB3").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+        getSlider("sliderR1").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+        getSlider("sliderG1").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+        getSlider("sliderB1").setup(0.f, 255.f,   0.f, 1.f, 10.f);
 
+        getSlider("sliderR2").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+        getSlider("sliderG2").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+        getSlider("sliderB2").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+
+        getSlider("sliderR3").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+        getSlider("sliderG3").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+        getSlider("sliderB3").setup(0.f, 255.f,   0.f, 1.f, 10.f);
+      }
     }
 
     @Override
