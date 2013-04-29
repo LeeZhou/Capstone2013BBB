@@ -11,6 +11,7 @@ import de.lessvoid.nifty.render.NiftyImage;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.xml.xpp3.Attributes;
 import java.util.Properties;
+import mygame.Main;
 
 /**
  *
@@ -35,7 +36,12 @@ public class MapSelectionController implements Controller{
 
   @Override
   public void init(final Properties parameter, final Attributes controlDefinitionAttributes) {   
-
+      if(Main.gamecounter > 0){
+          currentMap = Main.currentmap;
+          Element niftyElement = nifty.getCurrentScreen().findElementByName("map0");
+        NiftyImage img = nifty.getRenderEngine().createImage("Interface/map"+currentMap +".png", false);
+        niftyElement.getRenderer(ImageRenderer.class).setImage(img);
+      }
             
   }
 

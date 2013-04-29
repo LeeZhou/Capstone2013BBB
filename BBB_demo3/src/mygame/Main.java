@@ -108,7 +108,7 @@ public class Main extends SimpleApplication {
     //board parameter
     private int boardLength;
     private int boardWidth;
-    public int currentmap;
+    public static int currentmap;
     private int[] maptexture;
     private int[] mapobjects;    
     private int mapObjNum;
@@ -150,6 +150,7 @@ public class Main extends SimpleApplication {
     // abilities variables
     private long [] abilityMapping;
     private int [] abilityFromUI;
+    private boolean [] glueOn;
     
     //Buff varaibles
     private long buffTimer = (System.nanoTime()/1000000000);
@@ -310,6 +311,7 @@ public class Main extends SimpleApplication {
         gameEnd = false;   
         deGhostMat = new Material[numPlayers];
         ghoststat = new boolean [numPlayers];
+        glueOn = new boolean [numPlayers];
         mine_phy = new RigidBodyControl [124];
         mineCnt = 0;
         deathClk = (System.nanoTime()/1000000000) + 60; 
@@ -682,14 +684,15 @@ public class Main extends SimpleApplication {
         min_mat.setColor("Diffuse",ColorRGBA.Blue);
         mine.setMaterial(min_mat);
         rootNode.attachChild(mine);
-        mine.setLocalTranslation(ball_phy[i].getPhysicsLocation().setX(ball_phy[i].getPhysicsLocation().x+1.5f));
+        mine.setLocalTranslation(ball[i].getLocalTranslation().add(ball_phy[i].getLinearVelocity().normalize().mult(-1)));
         mine_phy[cnt] = new RigidBodyControl(1f);
         mine.addControl(mine_phy[cnt]);
         bulletAppState.getPhysicsSpace().add(mine_phy[cnt]);
         mine_phy[cnt].setMass(1000f);
         mine_phy[cnt].setDamping(0f, 1f); 
         mine_phy[cnt].setGravity(new Vector3f(0f,-10f,0f));
-        mine_phy[cnt].setRestitution(3f); 
+        mine_phy[cnt].setRestitution(3f);
+        mine_phy[cnt].activate();
     }
     
     private void ghost(int i) {
@@ -730,7 +733,8 @@ public class Main extends SimpleApplication {
             if(isBall(cr.getGeometry())&&!(cr.getGeometry().equals(ball[i])))
             {
                 cr.getGeometry().getControl(RigidBodyControl.class).applyImpulse(
-                    push.getDirection(), Vector3f.ZERO);
+                    push.getDirection().mult(4), Vector3f.ZERO);
+                
             }
             x++;
          }
@@ -764,7 +768,15 @@ public class Main extends SimpleApplication {
     }
     
     private void glue(int i) {
-        ball_phy[i].setLinearVelocity(new Vector3f(0,0,0));
+        if (!glueOn[i]) {
+            ball_phy[i].setMass(0);
+            ball_phy[i].setLinearVelocity(Vector3f.ZERO);
+            glueOn[i] = true;
+        }
+        else {
+            ball_phy[i].setMass(1);
+            glueOn[i] = false;
+        }
     }   
 
     private void createStatus(){
@@ -967,6 +979,9 @@ public class Main extends SimpleApplication {
               if (cd1 == 2 && abilityFromUI[0] == 5 && ghoststat[0] == true) {
                   ghost(0);
               }
+              if (glueOn[0] && cd1 == 4 && abilityFromUI[0] == 3) {
+                  glue(0);
+              }
               cdText.setSize(guiFont.getCharSet().getRenderedSize());      // font size
               cdText.setColor(ColorRGBA.White);                             // font color
               cdText.setText("CoolDown: " + cd1 +"s");             // the text
@@ -986,6 +1001,9 @@ public class Main extends SimpleApplication {
               }
               if (cd2 == 2 && abilityFromUI[1] == 5 && ghoststat[1] == true) {
                   ghost(1);
+              }
+              if (glueOn[1] && cd2 == 4 && abilityFromUI[1] == 3) {
+                  glue(1);
               }
               cdText1.setSize(guiFont.getCharSet().getRenderedSize());      // font size
               cdText1.setColor(ColorRGBA.White);                             // font color
@@ -1008,6 +1026,9 @@ public class Main extends SimpleApplication {
                   if (cd3 == 2 && abilityFromUI[2] == 5 && ghoststat[2] == true) {
                       ghost(2);
                   }
+                  if (glueOn[2] && cd3 == 4 && abilityFromUI[2] == 3) {
+                      glue(2);
+                  }
                   cdText2.setSize(guiFont.getCharSet().getRenderedSize());      // font size
                   cdText2.setColor(ColorRGBA.White);                             // font color
                   cdText2.setText("CoolDown: " + cd3 +"s");             // the text
@@ -1028,6 +1049,9 @@ public class Main extends SimpleApplication {
                       }
                       if (cd4 == 2 && abilityFromUI[3] == 5 && ghoststat[3] == true) {
                           ghost(3);
+                      }
+                      if (glueOn[3] && cd4 == 4 && abilityFromUI[3] == 3) {
+                          glue(3);
                       }
                       cdText3.setSize(guiFont.getCharSet().getRenderedSize());      // font size
                       cdText3.setColor(ColorRGBA.White);                             // font color
