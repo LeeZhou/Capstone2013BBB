@@ -27,6 +27,7 @@ import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
@@ -440,7 +441,7 @@ public class Main extends SimpleApplication {
        
        
         ball_phy[i].setRestitution(1f);            
-        ball_phy[i].setDamping(.4f,.4f);
+        ball_phy[i].setDamping(.3f,.3f);
     }
     
     public void placeBall(Geometry[] ball, int i) {
@@ -733,7 +734,7 @@ public class Main extends SimpleApplication {
             if(isBall(cr.getGeometry())&&!(cr.getGeometry().equals(ball[i])))
             {
                 cr.getGeometry().getControl(RigidBodyControl.class).applyImpulse(
-                    push.getDirection().mult(4), Vector3f.ZERO);
+                    push.getDirection().normalize().mult(4f), Vector3f.ZERO);
                 
             }
             x++;
@@ -1189,6 +1190,7 @@ public class Main extends SimpleApplication {
             ball[player].scale(2);
             ballSpeed[player] = 2;
             ball_phy[player].setMass(2);
+            ball_phy[player].setRestitution(1.5f);
             ball_phy[player].setPhysicsLocation(new Vector3f(ball_phy[player].getPhysicsLocation().x,ball_phy[player].getPhysicsLocation().y*2,ball_phy[player].getPhysicsLocation().z));
             ball_phy[player].getCollisionShape().setScale(new Vector3f(2f,2f,2f));
          }
