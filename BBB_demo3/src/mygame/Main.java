@@ -319,6 +319,9 @@ public class Main extends SimpleApplication {
         buffTimer = System.nanoTime()/1000000000;
         buffTimer2 = System.nanoTime()/1000000000;
         buffOn = false;
+        mat_ghost= new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat_ghost.setColor("Color", new ColorRGBA(0,0,0,0.5f));
+        mat_ghost.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
         
     }
     
@@ -701,16 +704,13 @@ public class Main extends SimpleApplication {
                 {
                     ghoststat[i]=false;
                     ball[i].setMaterial(deGhostMat[i]);
+                    ball_phy[i].removeCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_03);
                     ball_phy[i].setCollisionGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
                     ball_phy[i].addCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
-
                 }
                 else
                 {   
                     ghoststat[i]=true;
-                    mat_ghost= new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-                    mat_ghost.setColor("Color", new ColorRGBA(0,0,0,0.5f));
-                    mat_ghost.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
                     ball[i].setMaterial(mat_ghost);
                     ball[i].setQueueBucket(Bucket.Transparent);
                     ball_phy[i].removeCollideWithGroup(PhysicsCollisionObject.COLLISION_GROUP_02);
@@ -744,14 +744,15 @@ public class Main extends SimpleApplication {
     private void blink(int i) {
         Vector3f temp = ball[i].getLocalTranslation().add(ball_phy[i].getLinearVelocity().normalize().mult(4));
         Vector3f norm = ball_phy[i].getLinearVelocity().normalize();
+        
         float newx = 0,newz = 0;
         int cnt = 0;
-        while(cnt<4) {
+        while(cnt < 10) {
             for (int j = objNum; j < mapObjNum; j++) {
-                if ((temp.x >= (mapObj[j].getLocalTranslation().x-1.5f)) && 
-                        (temp.x <= (mapObj[j].getLocalTranslation().x+1.5f)) &&
-                        (temp.z >= (mapObj[j].getLocalTranslation().z-1.5f)) && 
-                        (temp.z <= (mapObj[j].getLocalTranslation().z+1.5f))) {
+                if ((temp.x >= (mapObj[j].getLocalTranslation().x-1f)) && 
+                        (temp.x <= (mapObj[j].getLocalTranslation().x+1f)) &&
+                        (temp.z >= (mapObj[j].getLocalTranslation().z-1f)) && 
+                        (temp.z <= (mapObj[j].getLocalTranslation().z+1f))) {
                     if (temp.x != 0) {
                         newx = norm.x*1f;
                     }
@@ -759,8 +760,10 @@ public class Main extends SimpleApplication {
                         newz = norm.z*1f;
                     }
                     temp = temp.subtract(newx, 0, newz);
-                    break;
                 }
+            }
+            if (temp.y != 0) {
+                temp = temp.subtract(0,temp.y,0);
             }
             cnt++;
         }
