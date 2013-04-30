@@ -161,17 +161,10 @@ public class JmeScreenController implements ScreenController, KeyInputHandler {
   @NiftyEventSubscriber(id="startGameButton")
   public void onTestButton1Click(final String id, final ButtonClickedEvent clickedEvent) {
       Boolean isKeyBindingValid = KeyBindingController.isKeyBindingValid();
-      Boolean isKeySelected = KeyBindingController.isKeyBindingSelected();
-      if(isKeyBindingValid && isKeySelected){
+      if(isKeyBindingValid){
                nifty.exit();
           }
       else{
-          if(!isKeyBindingValid){
-              System.out.println("Key Binding Duplicated");
-          }
-          else if(!isKeySelected){
-              System.out.println("Key Binding Empty");
-          }
               
           }
   }
